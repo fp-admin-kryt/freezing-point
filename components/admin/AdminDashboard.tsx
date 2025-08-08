@@ -163,8 +163,8 @@ export default function AdminDashboard() {
           </div>
         ) : (
           <div className="space-y-4">
-            {activeTab === 'research' && researchPosts.map((post) => (
-              <div key={post.id} className="bg-space-gray rounded-lg p-4 border border-gray-700">
+            {activeTab === 'research' && researchPosts.map((post, index) => (
+              <div key={post.id || `research-${index}`} className="bg-space-gray rounded-lg p-4 border border-gray-700">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <h3 className="text-white font-semibold">{post.title}</h3>
@@ -178,8 +178,9 @@ export default function AdminDashboard() {
                       <Edit className="h-4 w-4" />
                     </button>
                     <button
-                      onClick={() => handleDelete(post.id, 'research')}
+                      onClick={() => post.id && handleDelete(post.id, 'research')}
                       className="p-2 text-gray-400 hover:text-red-400 transition-colors"
+                      disabled={!post.id}
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -188,8 +189,8 @@ export default function AdminDashboard() {
               </div>
             ))}
 
-            {activeTab === 'signals' && signalPosts.map((post) => (
-              <div key={post.id} className="bg-space-gray rounded-lg p-4 border border-gray-700">
+            {activeTab === 'signals' && signalPosts.map((post, index) => (
+              <div key={post.id || `signal-${index}`} className="bg-space-gray rounded-lg p-4 border border-gray-700">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <h3 className="text-white font-semibold">{post.heading}</h3>
@@ -203,8 +204,9 @@ export default function AdminDashboard() {
                       <Edit className="h-4 w-4" />
                     </button>
                     <button
-                      onClick={() => handleDelete(post.id, 'signal')}
+                      onClick={() => post.id && handleDelete(post.id, 'signal')}
                       className="p-2 text-gray-400 hover:text-red-400 transition-colors"
+                      disabled={!post.id}
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -213,8 +215,8 @@ export default function AdminDashboard() {
               </div>
             ))}
 
-            {activeTab === 'observer' && observerPosts.map((post) => (
-              <div key={post.id} className="bg-space-gray rounded-lg p-4 border border-gray-700">
+            {activeTab === 'observer' && observerPosts.map((post, index) => (
+              <div key={post.id || `observer-${index}`} className="bg-space-gray rounded-lg p-4 border border-gray-700">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <h3 className="text-white font-semibold">{post.heading}</h3>
@@ -228,8 +230,9 @@ export default function AdminDashboard() {
                       <Edit className="h-4 w-4" />
                     </button>
                     <button
-                      onClick={() => handleDelete(post.id, 'observer')}
+                      onClick={() => post.id && handleDelete(post.id, 'observer')}
                       className="p-2 text-gray-400 hover:text-red-400 transition-colors"
+                      disabled={!post.id}
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>

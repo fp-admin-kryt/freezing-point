@@ -251,7 +251,7 @@ export default function Home() {
                 <div className="flex gap-8 pb-4" style={{ minWidth: 'max-content' }}>
                   {researchPosts.slice(0, 6).map((post, index) => (
                     <motion.div
-                      key={post.id}
+                      key={post.id || `research-${index}`}
                       initial={{ opacity: 0, y: 30 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.6, delay: index * 0.1 }}
@@ -351,7 +351,7 @@ export default function Home() {
                   <div className="flex gap-6 pb-4" style={{ minWidth: 'max-content' }}>
                     {signalPosts.slice(0, 6).map((post, index) => (
                       <motion.div
-                        key={post.id}
+                        key={post.id || `signal-${index}`}
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: index * 0.1 }}
@@ -417,7 +417,7 @@ export default function Home() {
                   <div className="flex gap-6 pb-4" style={{ minWidth: 'max-content' }}>
                     {observerPosts.slice(0, 6).map((post, index) => (
                       <motion.div
-                        key={post.id}
+                        key={post.id || `observer-${index}`}
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: index * 0.1 }}
