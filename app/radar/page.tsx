@@ -215,7 +215,7 @@ export default function RadarPage() {
                 )}
                 
                 <div className="flex items-center gap-2 mb-3">
-                  {post.tags.map(tagId => {
+                  {post.tags.map((tagId: string) => {
                     const tag = getTagById(tagId)
                     return tag ? (
                       <span
