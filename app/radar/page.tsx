@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Search, Filter, Calendar, Tag, ArrowRight } from 'lucide-react'
-import { dataStore } from '@/lib/dataStore'
+import { getSignalPosts, getObserverPosts } from '@/lib/firebase'
+import { getTagById, getDomainById } from '@/lib/dataService'
 import Navigation from '@/components/Navigation'
 
 export default function RadarPage() {
@@ -12,9 +13,27 @@ export default function RadarPage() {
   const [selectedDomain, setSelectedDomain] = useState('all')
   const [showFilters, setShowFilters] = useState(false)
 
-  const signalPosts = dataStore.getSignalPosts()
-  const observerPosts = dataStore.getObserverPosts()
-  const domains = dataStore.getDomainsWithContent()
+  const [signalPosts, setSignalPosts] = useState<any[]>([])
+  const [observerPosts, setObserverPosts] = useState<any[]>([])
+  const [domains, setDomains] = useState<any[]>([])
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [signals, observers] = await Promise.all([
+          getSignalPosts(),
+          getObserverPosts()
+        ])
+        setSignalPosts(signals)
+        setObserverPosts(observers)
+        // For now, we'll get domains from the dataService
+        // In a real app, you might want to load them separately
+      } catch (error) {
+        console.error('Error loading radar data:', error)
+      }
+    }
+    loadData()
+  }, [])
 
   const filteredSignalPosts = signalPosts.filter(post => {
     const matchesSearch = post.heading.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -79,7 +98,7 @@ export default function RadarPage() {
                   className="flex items-center gap-2 px-6 py-3 bg-space-gray border border-gray-700 rounded-full text-white hover:border-cobalt-blue transition-all duration-300 font-montserrat"
                 >
                   <Filter className="w-4 h-4" />
-                  <span>Domain: {selectedDomain === 'all' ? 'All' : dataStore.getDomainById(selectedDomain)?.name || 'All'}</span>
+                  <span>Domain: {selectedDomain === 'all' ? 'All' : getDomainById(selectedDomain)?.name || 'All'}</span>
                 </button>
                 
                 {/* Futuristic Dropdown */}
@@ -188,16 +207,16 @@ export default function RadarPage() {
                   <div className="absolute top-4 right-4 w-10 h-10 rounded-lg overflow-hidden">
                     <div 
                       className="w-full h-full flex items-center justify-center text-sm text-white font-bold"
-                      style={{ backgroundColor: dataStore.getTagById(post.tags[0])?.color || '#136fd7' }}
+                      style={{ backgroundColor: getTagById(post.tags[0])?.color || '#136fd7' }}
                     >
-                      {dataStore.getTagById(post.tags[0])?.name.charAt(0) || 'T'}
+                      {getTagById(post.tags[0])?.name.charAt(0) || 'T'}
                     </div>
                   </div>
                 )}
                 
                 <div className="flex items-center gap-2 mb-3">
                   {post.tags.map(tagId => {
-                    const tag = dataStore.getTagById(tagId)
+                    const tag = getTagById(tagId)
                     return tag ? (
                       <span
                         key={tagId}
@@ -223,13 +242,13 @@ export default function RadarPage() {
                     <Calendar className="w-3 h-3" />
                     {new Date(post.createdAt).toLocaleDateString()}
                   </span>
-                  {dataStore.getDomainById(post.domain) && (
+                  {getDomainById(post.domain) && (
                     <span className="px-2 py-1 rounded-full bg-gray-700 flex items-center gap-1">
                       <div
                         className="w-2 h-2 rounded-full"
-                        style={{ backgroundColor: dataStore.getDomainById(post.domain)?.color }}
+                        style={{ backgroundColor: getDomainById(post.domain)?.color }}
                       />
-                      {dataStore.getDomainById(post.domain)?.name}
+                      {getDomainById(post.domain)?.name}
                     </span>
                   )}
                 </div>

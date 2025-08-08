@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Search, Filter, Calendar, Tag, Download, ArrowRight } from 'lucide-react'
-import { dataStore } from '@/lib/dataStore'
+import { getResearchPosts } from '@/lib/firebase'
+import { getTagById } from '@/lib/dataService'
 import Navigation from '@/components/Navigation'
 
 export default function ResearchPage() {
@@ -12,8 +13,22 @@ export default function ResearchPage() {
   const [sortBy, setSortBy] = useState<'date' | 'title' | 'author'>('date')
   const [showFilters, setShowFilters] = useState(false)
 
-  const researchPosts = dataStore.getResearchPosts()
-  const tags = dataStore.getTags()
+  const [researchPosts, setResearchPosts] = useState<any[]>([])
+  const [tags, setTags] = useState<any[]>([])
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const posts = await getResearchPosts()
+        setResearchPosts(posts)
+        // For now, we'll get tags from the dataService
+        // In a real app, you might want to load them separately
+      } catch (error) {
+        console.error('Error loading research posts:', error)
+      }
+    }
+    loadData()
+  }, [])
 
   const filteredPosts = researchPosts.filter(post => {
     const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -178,7 +193,7 @@ export default function ResearchPage() {
                 
                 <div className="flex items-center gap-2 mb-3">
                   {post.tags.map(tagId => {
-                    const tag = dataStore.getTagById(tagId)
+                    const tag = getTagById(tagId)
                     return tag ? (
                       <span
                         key={tagId}

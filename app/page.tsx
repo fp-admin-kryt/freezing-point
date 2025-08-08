@@ -363,16 +363,16 @@ export default function Home() {
                           <div className="absolute top-4 right-4 w-8 h-8 rounded-lg overflow-hidden">
                             <div 
                               className="w-full h-full flex items-center justify-center text-xs text-white font-bold"
-                              style={{ backgroundColor: dataStore.getTagById(post.tags[0])?.color || '#136fd7' }}
+                              style={{ backgroundColor: getTagById(post.tags[0])?.color || '#136fd7' }}
                             >
-                              {dataStore.getTagById(post.tags[0])?.name.charAt(0) || 'T'}
+                              {getTagById(post.tags[0])?.name.charAt(0) || 'T'}
                             </div>
                           </div>
                         )}
                         
                         <div className="flex items-center gap-2 mb-3">
                           {post.tags.map(tagId => {
-                            const tag = dataStore.getTagById(tagId)
+                            const tag = getTagById(tagId)
                             return tag ? (
                               <span
                                 key={tagId}
@@ -392,9 +392,9 @@ export default function Home() {
                         </p>
                         <div className="flex items-center justify-between text-xs text-gray-500">
                           <span>{new Date(post.createdAt).toLocaleDateString()}</span>
-                          {dataStore.getDomainById(post.domain) && (
+                          {getDomainById(post.domain) && (
                             <span className="px-2 py-1 rounded-full bg-gray-700">
-                              {dataStore.getDomainById(post.domain)?.name}
+                              {getDomainById(post.domain)?.name}
                             </span>
                           )}
                         </div>
@@ -429,16 +429,16 @@ export default function Home() {
                           <div className="absolute top-4 right-4 w-8 h-8 rounded-lg overflow-hidden">
                             <div 
                               className="w-full h-full flex items-center justify-center text-xs text-white font-bold"
-                              style={{ backgroundColor: dataStore.getTagById(post.tags[0])?.color || '#136fd7' }}
+                              style={{ backgroundColor: getTagById(post.tags[0])?.color || '#136fd7' }}
                             >
-                              {dataStore.getTagById(post.tags[0])?.name.charAt(0) || 'T'}
+                              {getTagById(post.tags[0])?.name.charAt(0) || 'T'}
                             </div>
                           </div>
                         )}
                         
                         <div className="flex items-center gap-2 mb-3">
                           {post.tags.map(tagId => {
-                            const tag = dataStore.getTagById(tagId)
+                            const tag = getTagById(tagId)
                             return tag ? (
                               <span
                                 key={tagId}
@@ -458,9 +458,9 @@ export default function Home() {
                         </p>
                         <div className="flex items-center justify-between text-xs text-gray-500">
                           <span>{new Date(post.createdAt).toLocaleDateString()}</span>
-                          {dataStore.getDomainById(post.domain) && (
+                          {getDomainById(post.domain) && (
                             <span className="px-2 py-1 rounded-full bg-gray-700">
-                              {dataStore.getDomainById(post.domain)?.name}
+                              {getDomainById(post.domain)?.name}
                             </span>
                           )}
                         </div>
