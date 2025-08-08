@@ -5,6 +5,8 @@ import { useDropzone } from 'react-dropzone'
 import { Upload, X, Image as ImageIcon } from 'lucide-react'
 import { uploadToCloudinaryDirect } from '@/lib/cloudinary'
 import { saveSignalPost, saveObserverPost } from '@/lib/firebase'
+import TagSelector from './TagSelector'
+import DomainSelector from './DomainSelector'
 import toast from 'react-hot-toast'
 
 interface RadarFormProps {
@@ -137,13 +139,10 @@ export default function RadarForm({ onBack, type, editPost }: RadarFormProps) {
           <label className="block text-sm font-medium text-white mb-2">
             Domain *
           </label>
-          <input
-            type="text"
-            required
-            value={formData.domain}
-            onChange={(e) => setFormData({ ...formData, domain: e.target.value })}
-            className="w-full px-4 py-2 bg-space-gray border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cobalt-blue"
-            placeholder="Enter domain name"
+          <DomainSelector
+            selectedDomain={formData.domain}
+            onChange={(domain) => setFormData({ ...formData, domain })}
+            placeholder="Select domain for this post"
           />
         </div>
 
@@ -152,12 +151,10 @@ export default function RadarForm({ onBack, type, editPost }: RadarFormProps) {
           <label className="block text-sm font-medium text-white mb-2">
             Tags
           </label>
-          <input
-            type="text"
-            value={formData.tags.join(', ')}
-            onChange={(e) => setFormData({ ...formData, tags: e.target.value.split(',').map(t => t.trim()).filter(t => t) })}
-            className="w-full px-4 py-2 bg-space-gray border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cobalt-blue"
-            placeholder="Enter tags separated by commas"
+          <TagSelector
+            selectedTags={formData.tags}
+            onChange={(tags) => setFormData({ ...formData, tags })}
+            placeholder="Select tags for this post"
           />
         </div>
 

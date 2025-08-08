@@ -35,15 +35,23 @@ const nextConfig = {
         assert: false,
         os: false,
         path: false,
+        util: false,
+        buffer: false,
       }
     }
+
+    // Fix for undici module
+    config.module.rules.push({
+      test: /node_modules\/undici/,
+      use: 'null-loader',
+    })
 
     return config
   },
   experimental: {
     esmExternals: 'loose',
   },
-  transpilePackages: ['firebase'],
+  transpilePackages: ['firebase', 'undici'],
 }
 
 module.exports = nextConfig 

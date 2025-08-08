@@ -5,6 +5,7 @@ import { useDropzone } from 'react-dropzone'
 import { Upload, X, FileText, Image as ImageIcon } from 'lucide-react'
 import { uploadToCloudinaryDirect } from '@/lib/cloudinary'
 import { saveResearchPost } from '@/lib/firebase'
+import TagSelector from './TagSelector'
 import toast from 'react-hot-toast'
 
 interface ResearchFormProps {
@@ -181,12 +182,10 @@ export default function ResearchForm({ onBack, editPost }: ResearchFormProps) {
           <label className="block text-sm font-medium text-white mb-2">
             Tags
           </label>
-          <input
-            type="text"
-            value={formData.tags.join(', ')}
-            onChange={(e) => setFormData({ ...formData, tags: e.target.value.split(',').map(t => t.trim()).filter(t => t) })}
-            className="w-full px-4 py-2 bg-space-gray border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cobalt-blue"
-            placeholder="Enter tags separated by commas"
+          <TagSelector
+            selectedTags={formData.tags}
+            onChange={(tags) => setFormData({ ...formData, tags })}
+            placeholder="Select tags for this research post"
           />
         </div>
 

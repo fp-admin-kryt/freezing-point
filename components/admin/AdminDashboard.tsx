@@ -17,18 +17,19 @@ import ResearchForm from './ResearchForm'
 import RadarForm from './RadarForm'
 import TagManager from './TagManager'
 import DomainManager from './DomainManager'
+import { getResearchPosts, getSignalPosts, getObserverPosts, deleteResearchPost, deleteSignalPost, deleteObserverPost } from '@/lib/firebase'
 import toast from 'react-hot-toast'
 
 type TabType = 'research' | 'signals' | 'observer' | 'tags' | 'domains'
 type ViewType = 'manage' | 'create' | 'edit'
 
 interface Post {
-  id: string
+  id?: string
   title?: string
   heading?: string
   author?: string
-  date: string
-  type: 'research' | 'signal' | 'observer'
+  date?: string
+  type?: 'research' | 'signal' | 'observer'
 }
 
 export default function AdminDashboard() {
@@ -40,33 +41,41 @@ export default function AdminDashboard() {
   const [editingPost, setEditingPost] = useState<Post | null>(null)
   const [loading, setLoading] = useState(false)
 
-  // Mock data for testing
+  // Load data from Firebase
   useEffect(() => {
-    setResearchPosts([
-      { id: '1', title: 'Sample Research', author: 'John Doe', date: '2024-01-15', type: 'research' }
-    ])
-    setSignalPosts([
-      { id: '1', heading: 'Sample Signal', date: '2024-01-15', type: 'signal' }
-    ])
-    setObserverPosts([
-      { id: '1', heading: 'Sample Observer', date: '2024-01-15', type: 'observer' }
-    ])
+    const loadData = async () => {
+      try {
+        const [research, signals, observers] = await Promise.all([
+          getResearchPosts(),
+          getSignalPosts(),
+          getObserverPosts()
+        ])
+        setResearchPosts(research)
+        setSignalPosts(signals)
+        setObserverPosts(observers)
+      } catch (error) {
+        console.error('Error loading data:', error)
+        toast.error('Failed to load data')
+      }
+    }
+    loadData()
   }, [])
 
   const handleDelete = async (postId: string, type: 'research' | 'signal' | 'observer') => {
     if (window.confirm('Are you sure you want to delete this post?')) {
       try {
-        // Mock delete
-        console.log(`Deleting ${type} post:`, postId)
-        toast.success('Post deleted successfully!')
-        
-        // Update local state
-        if (type === 'research') {
-          setResearchPosts(prev => prev.filter(p => p.id !== postId))
-        } else if (type === 'signal') {
-          setSignalPosts(prev => prev.filter(p => p.id !== postId))
-        } else if (type === 'observer') {
-          setObserverPosts(prev => prev.filter(p => p.id !== postId))
+        if (postId) {
+          if (type === 'research') {
+            await deleteResearchPost(postId)
+            setResearchPosts(prev => prev.filter(p => p.id !== postId))
+          } else if (type === 'signal') {
+            await deleteSignalPost(postId)
+            setSignalPosts(prev => prev.filter(p => p.id !== postId))
+          } else if (type === 'observer') {
+            await deleteObserverPost(postId)
+            setObserverPosts(prev => prev.filter(p => p.id !== postId))
+          }
+          toast.success('Post deleted successfully!')
         }
       } catch (error) {
         console.error('Error deleting post:', error)
