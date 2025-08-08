@@ -1,309 +1,296 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { 
+  FileText, 
+  Radio, 
+  Eye, 
+  Tag, 
+  Globe, 
+  Plus, 
+  Edit, 
+  Trash2,
+  ArrowLeft 
+} from 'lucide-react'
 import ResearchForm from './ResearchForm'
 import RadarForm from './RadarForm'
 import TagManager from './TagManager'
 import DomainManager from './DomainManager'
-import PostManager from './PostManager'
-import { dataStore } from '@/lib/dataStore'
-import { ArrowLeft } from 'lucide-react'
+import toast from 'react-hot-toast'
 
-type TabType = 'manage-research' | 'manage-signals' | 'manage-observer' | 'tags' | 'domains' | 'create-research' | 'create-signal' | 'create-observer'
+type TabType = 'research' | 'signals' | 'observer' | 'tags' | 'domains'
+type ViewType = 'manage' | 'create' | 'edit'
+
+interface Post {
+  id: string
+  title?: string
+  heading?: string
+  author?: string
+  date: string
+  type: 'research' | 'signal' | 'observer'
+}
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<TabType>('manage-research')
-  const [editingPost, setEditingPost] = useState<any>(null)
-  const [editingType, setEditingType] = useState<'research' | 'signal' | 'observer' | null>(null)
+  const [activeTab, setActiveTab] = useState<TabType>('research')
+  const [view, setView] = useState<ViewType>('manage')
+  const [researchPosts, setResearchPosts] = useState<Post[]>([])
+  const [signalPosts, setSignalPosts] = useState<Post[]>([])
+  const [observerPosts, setObserverPosts] = useState<Post[]>([])
+  const [editingPost, setEditingPost] = useState<Post | null>(null)
+  const [loading, setLoading] = useState(false)
 
-  const tabs = [
-    { id: 'manage-research', label: 'Manage Research' },
-    { id: 'manage-signals', label: 'Manage Signals' },
-    { id: 'manage-observer', label: 'Manage Observer' },
-    { id: 'tags', label: 'Tag Management' },
-    { id: 'domains', label: 'Domain Management' },
-  ]
+  // Mock data for testing
+  useEffect(() => {
+    setResearchPosts([
+      { id: '1', title: 'Sample Research', author: 'John Doe', date: '2024-01-15', type: 'research' }
+    ])
+    setSignalPosts([
+      { id: '1', heading: 'Sample Signal', date: '2024-01-15', type: 'signal' }
+    ])
+    setObserverPosts([
+      { id: '1', heading: 'Sample Observer', date: '2024-01-15', type: 'observer' }
+    ])
+  }, [])
 
-  const handleCreateNew = (type: 'research' | 'signal' | 'observer') => {
-    setEditingPost(null)
-    setEditingType(null)
-    switch (type) {
-      case 'research':
-        setActiveTab('create-research')
-        break
-      case 'signal':
-        setActiveTab('create-signal')
-        break
-      case 'observer':
-        setActiveTab('create-observer')
-        break
+  const handleDelete = async (postId: string, type: 'research' | 'signal' | 'observer') => {
+    if (window.confirm('Are you sure you want to delete this post?')) {
+      try {
+        // Mock delete
+        console.log(`Deleting ${type} post:`, postId)
+        toast.success('Post deleted successfully!')
+        
+        // Update local state
+        if (type === 'research') {
+          setResearchPosts(prev => prev.filter(p => p.id !== postId))
+        } else if (type === 'signal') {
+          setSignalPosts(prev => prev.filter(p => p.id !== postId))
+        } else if (type === 'observer') {
+          setObserverPosts(prev => prev.filter(p => p.id !== postId))
+        }
+      } catch (error) {
+        console.error('Error deleting post:', error)
+        toast.error('Failed to delete post')
+      }
     }
   }
 
-  const handleEdit = (post: any, type: 'research' | 'signal' | 'observer') => {
+  const handleEdit = (post: Post) => {
     setEditingPost(post)
-    setEditingType(type)
-    switch (type) {
-      case 'research':
-        setActiveTab('create-research')
-        break
-      case 'signal':
-        setActiveTab('create-signal')
-        break
-      case 'observer':
-        setActiveTab('create-observer')
-        break
-    }
-  }
-
-  const handleDelete = (id: string, type: 'research' | 'signal' | 'observer') => {
-    if (confirm('Are you sure you want to delete this post?')) {
-      switch (type) {
-        case 'research':
-          dataStore.deleteResearchPost(id)
-          break
-        case 'signal':
-          dataStore.deleteSignalPost(id)
-          break
-        case 'observer':
-          dataStore.deleteObserverPost(id)
-          break
-      }
-      // Force re-render
-      setActiveTab(activeTab)
-    }
-  }
-
-  const handleFormSubmit = (data: any, type: 'research' | 'signal' | 'observer') => {
-    if (editingPost) {
-      // Update existing post
-      switch (type) {
-        case 'research':
-          dataStore.updateResearchPost(editingPost.id, data)
-          break
-        case 'signal':
-          dataStore.updateSignalPost(editingPost.id, data)
-          break
-        case 'observer':
-          dataStore.updateObserverPost(editingPost.id, data)
-          break
-      }
-    } else {
-      // Create new post
-      switch (type) {
-        case 'research':
-          dataStore.addResearchPost(data)
-          break
-        case 'signal':
-          dataStore.addSignalPost(data)
-          break
-        case 'observer':
-          dataStore.addObserverPost(data)
-          break
-      }
-    }
-    setEditingPost(null)
-    setEditingType(null)
-    // Switch to management tab
-    switch (type) {
-      case 'research':
-        setActiveTab('manage-research')
-        break
-      case 'signal':
-        setActiveTab('manage-signals')
-        break
-      case 'observer':
-        setActiveTab('manage-observer')
-        break
-    }
+    setView('edit')
   }
 
   const handleBack = () => {
+    setView('manage')
     setEditingPost(null)
-    setEditingType(null)
-    if (activeTab.startsWith('create-')) {
-      const type = activeTab.replace('create-', '') as 'research' | 'signal' | 'observer'
-      setActiveTab(`manage-${type}` as TabType)
-    }
   }
 
-  // Transform data for PostManager
-  const transformResearchPosts = () => {
-    return dataStore.getResearchPosts().map(post => ({
-      ...post,
-      type: 'research' as const,
-      title: post.title,
-      author: post.author,
-      date: post.date,
-      excerpt: post.excerpt,
-      content: post.excerpt, // Use excerpt as content for display
-      tags: post.tags,
-      image: post.image,
-      whitepaper: post.whitepaper
-    }))
-  }
+  const tabs = [
+    { id: 'research', label: 'Research', icon: FileText },
+    { id: 'signals', label: 'Signals', icon: Radio },
+    { id: 'observer', label: 'Observer', icon: Eye },
+    { id: 'tags', label: 'Tags', icon: Tag },
+    { id: 'domains', label: 'Domains', icon: Globe },
+  ]
 
-  const transformSignalPosts = () => {
-    return dataStore.getSignalPosts().map(post => ({
-      ...post,
-      type: 'signals' as const,
-      title: post.heading,
-      author: undefined,
-      date: post.createdAt,
-      excerpt: post.content,
-      content: post.content,
-      tags: post.tags,
-      image: post.image,
-      whitepaper: undefined
-    }))
-  }
-
-  const transformObserverPosts = () => {
-    return dataStore.getObserverPosts().map(post => ({
-      ...post,
-      type: 'observer' as const,
-      title: post.heading,
-      author: undefined,
-      date: post.createdAt,
-      excerpt: post.content,
-      content: post.content,
-      tags: post.tags,
-      image: post.image,
-      whitepaper: undefined
-    }))
-  }
-
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case 'create-research':
+  const renderContent = () => {
+    if (view === 'create' || view === 'edit') {
+      if (activeTab === 'research') {
         return (
-          <div>
-            <button
-              onClick={handleBack}
-              className="flex items-center gap-2 text-cobalt-light hover:text-cobalt-blue transition-colors mb-6 font-montserrat"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Manage Research
-            </button>
-            <ResearchForm 
-              onSubmit={(data) => handleFormSubmit(data, 'research')}
-              initialData={editingPost}
-            />
-          </div>
-        )
-      case 'create-signal':
-        return (
-          <div>
-            <button
-              onClick={handleBack}
-              className="flex items-center gap-2 text-cobalt-light hover:text-cobalt-blue transition-colors mb-6 font-montserrat"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Manage Signals
-            </button>
-            <RadarForm 
-              onSubmit={(data) => handleFormSubmit(data, 'signal')}
-              initialData={editingPost}
-              type="signal"
-            />
-          </div>
-        )
-      case 'create-observer':
-        return (
-          <div>
-            <button
-              onClick={handleBack}
-              className="flex items-center gap-2 text-cobalt-light hover:text-cobalt-blue transition-colors mb-6 font-montserrat"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Manage Observer
-            </button>
-            <RadarForm 
-              onSubmit={(data) => handleFormSubmit(data, 'observer')}
-              initialData={editingPost}
-              type="observer"
-            />
-          </div>
-        )
-      case 'manage-research':
-        return (
-          <PostManager
-            type="research"
-            posts={transformResearchPosts()}
-            onEdit={(post) => handleEdit(post, 'research')}
-            onDelete={(id) => handleDelete(id, 'research')}
-            onCreateNew={() => handleCreateNew('research')}
+          <ResearchForm 
+            onBack={handleBack}
+            editPost={view === 'edit' ? editingPost : undefined}
           />
         )
-      case 'manage-signals':
+      } else if (activeTab === 'signals') {
         return (
-          <PostManager
-            type="signals"
-            posts={transformSignalPosts()}
-            onEdit={(post) => handleEdit(post, 'signal')}
-            onDelete={(id) => handleDelete(id, 'signal')}
-            onCreateNew={() => handleCreateNew('signal')}
+          <RadarForm 
+            onBack={handleBack}
+            type="signal"
+            editPost={view === 'edit' ? editingPost : undefined}
           />
         )
-      case 'manage-observer':
+      } else if (activeTab === 'observer') {
         return (
-          <PostManager
+          <RadarForm 
+            onBack={handleBack}
             type="observer"
-            posts={transformObserverPosts()}
-            onEdit={(post) => handleEdit(post, 'observer')}
-            onDelete={(id) => handleDelete(id, 'observer')}
-            onCreateNew={() => handleCreateNew('observer')}
+            editPost={view === 'edit' ? editingPost : undefined}
           />
         )
-      case 'tags':
+      } else if (activeTab === 'tags') {
         return <TagManager />
-      case 'domains':
+      } else if (activeTab === 'domains') {
         return <DomainManager />
-      default:
-        return null
+      }
     }
+
+    // Manage view
+    return (
+      <div className="space-y-6">
+        {/* Header with Create Button */}
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-white">
+            Manage {activeTab === 'research' ? 'Research Posts' : 
+                   activeTab === 'signals' ? 'Signal Posts' : 
+                   activeTab === 'observer' ? 'Observer Posts' : 
+                   activeTab === 'tags' ? 'Tags' : 'Domains'}
+          </h2>
+          {(activeTab === 'research' || activeTab === 'signals' || activeTab === 'observer') && (
+            <button
+              onClick={() => setView('create')}
+              className="px-4 py-2 bg-cobalt-blue text-white rounded-lg hover:bg-cobalt-light transition-colors flex items-center space-x-2"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Create New</span>
+            </button>
+          )}
+        </div>
+
+        {/* Posts List */}
+        {loading ? (
+          <div className="flex justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cobalt-blue"></div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {activeTab === 'research' && researchPosts.map((post) => (
+              <div key={post.id} className="bg-space-gray rounded-lg p-4 border border-gray-700">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <h3 className="text-white font-semibold">{post.title}</h3>
+                    <p className="text-gray-400 text-sm">By {post.author} • {post.date}</p>
+                  </div>
+                  <div className="flex space-x-2 ml-4">
+                    <button
+                      onClick={() => handleEdit({ ...post, type: 'research' })}
+                      className="p-2 text-gray-400 hover:text-blue-400 transition-colors"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(post.id, 'research')}
+                      className="p-2 text-gray-400 hover:text-red-400 transition-colors"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {activeTab === 'signals' && signalPosts.map((post) => (
+              <div key={post.id} className="bg-space-gray rounded-lg p-4 border border-gray-700">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <h3 className="text-white font-semibold">{post.heading}</h3>
+                    <p className="text-gray-400 text-sm">{post.date}</p>
+                  </div>
+                  <div className="flex space-x-2 ml-4">
+                    <button
+                      onClick={() => handleEdit({ ...post, type: 'signal' })}
+                      className="p-2 text-gray-400 hover:text-blue-400 transition-colors"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(post.id, 'signal')}
+                      className="p-2 text-gray-400 hover:text-red-400 transition-colors"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {activeTab === 'observer' && observerPosts.map((post) => (
+              <div key={post.id} className="bg-space-gray rounded-lg p-4 border border-gray-700">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <h3 className="text-white font-semibold">{post.heading}</h3>
+                    <p className="text-gray-400 text-sm">{post.date}</p>
+                  </div>
+                  <div className="flex space-x-2 ml-4">
+                    <button
+                      onClick={() => handleEdit({ ...post, type: 'observer' })}
+                      className="p-2 text-gray-400 hover:text-blue-400 transition-colors"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(post.id, 'observer')}
+                      className="p-2 text-gray-400 hover:text-red-400 transition-colors"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {/* Empty state */}
+            {((activeTab === 'research' && researchPosts.length === 0) ||
+              (activeTab === 'signals' && signalPosts.length === 0) ||
+              (activeTab === 'observer' && observerPosts.length === 0)) && (
+              <div className="text-center py-8">
+                <p className="text-gray-400">No {activeTab} posts found.</p>
+                <button
+                  onClick={() => setView('create')}
+                  className="mt-4 px-4 py-2 bg-cobalt-blue text-white rounded-lg hover:bg-cobalt-light transition-colors"
+                >
+                  Create your first post
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    )
   }
 
   return (
-    <div className="min-h-screen bg-space-black text-white p-6">
-      <div className="max-w-7xl mx-auto">
-        <motion.h1
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-4xl font-bold mb-8 text-center font-montserrat"
-        >
-          Admin Dashboard
-        </motion.h1>
-
-        {/* Tabs */}
-        <div className="flex flex-wrap gap-2 mb-8 justify-center">
-          {tabs.map((tab) => (
-            <motion.button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as TabType)}
-              className={`px-6 py-3 rounded-full font-montserrat-alternates transition-all duration-300 ${
-                activeTab === tab.id
-                  ? 'bg-cobalt-blue text-white shadow-lg'
-                  : 'bg-space-gray text-gray-300 hover:bg-gray-700'
-              }`}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              {tab.label}
-            </motion.button>
-          ))}
+    <div className="min-h-screen bg-space-black">
+      <div className="max-w-7xl mx-auto p-6">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-white mb-2">Admin Dashboard</h1>
+          <p className="text-gray-400">Manage your content, tags, and domains</p>
         </div>
 
-        {/* Tab Content */}
+        {/* Tabs */}
+        <div className="flex space-x-1 bg-space-gray rounded-lg p-1 mb-8">
+          {tabs.map((tab) => {
+            const Icon = tab.icon
+            return (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setActiveTab(tab.id as TabType)
+                  setView('manage')
+                  setEditingPost(null)
+                }}
+                className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
+                  activeTab === tab.id
+                    ? 'bg-cobalt-blue text-white'
+                    : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                }`}
+              >
+                <Icon className="h-4 w-4" />
+                <span>{tab.label}</span>
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Content */}
         <motion.div
-          key={activeTab}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
+          key={`${activeTab}-${view}`}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="glass-morphism rounded-2xl p-8"
         >
-          {renderTabContent()}
+          {renderContent()}
         </motion.div>
       </div>
     </div>

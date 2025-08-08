@@ -16,7 +16,8 @@
     "lucide-react": "^0.294.0",
     "react-dropzone": "^14.2.3",
     "zod": "^3.22.4",
-    "react-hot-toast": "^2.4.1"
+    "react-hot-toast": "^2.4.1",
+    "firebase": "^10.7.1"
   },
   "devDependencies": {
     "typescript": "^5",

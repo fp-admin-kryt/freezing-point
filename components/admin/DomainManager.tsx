@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { useState, useEffect } from 'react'
+import { Plus, Edit, Trash2 } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 interface Domain {
   id: string
@@ -11,163 +12,215 @@ interface Domain {
   postCount: number
 }
 
-const DomainManager = () => {
-  const [domains, setDomains] = useState<Domain[]>([
-    { id: '1', name: 'Machine Learning', description: 'Core ML algorithms and techniques', color: '#0066cc', postCount: 12 },
-    { id: '2', name: 'Computer Vision', description: 'Image and video processing', color: '#4da6ff', postCount: 8 },
-    { id: '3', name: 'Natural Language Processing', description: 'Text and language understanding', color: '#ff6b6b', postCount: 15 },
-    { id: '4', name: 'Robotics', description: 'Autonomous systems and robotics', color: '#51cf66', postCount: 6 },
-    { id: '5', name: 'AI Ethics', description: 'Ethical considerations in AI', color: '#ffd43b', postCount: 9 },
-  ])
-  const [newDomain, setNewDomain] = useState({
-    name: '',
-    description: '',
-    color: '#0066cc',
-  })
-  const [isSubmitting, setIsSubmitting] = useState(false)
+export default function DomainManager() {
+  const [domains, setDomains] = useState<Domain[]>([])
+  const [newDomain, setNewDomain] = useState({ name: '', description: '', color: '#136fd7' })
+  const [editingDomain, setEditingDomain] = useState<Domain | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  // Mock data for testing
+  useEffect(() => {
+    setDomains([
+      { id: '1', name: 'Machine Learning', description: 'Core ML algorithms and techniques', color: '#136fd7', postCount: 12 },
+      { id: '2', name: 'AI Ethics', description: 'Ethical considerations in AI', color: '#ff6b6b', postCount: 8 }
+    ])
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsSubmitting(true)
+    setLoading(true)
 
-    // Here you would typically send the data to your API
-    const domainData = {
-      id: Date.now().toString(),
-      name: newDomain.name,
-      description: newDomain.description,
-      color: newDomain.color,
-      postCount: 0,
+    try {
+      if (editingDomain) {
+        // Mock update
+        setDomains(prev => prev.map(domain => 
+          domain.id === editingDomain.id 
+            ? { ...domain, name: newDomain.name, description: newDomain.description, color: newDomain.color }
+            : domain
+        ))
+        toast.success('Domain updated successfully!')
+      } else {
+        // Mock create
+        const newDomainWithId = {
+          id: Date.now().toString(),
+          name: newDomain.name,
+          description: newDomain.description,
+          color: newDomain.color,
+          postCount: 0
+        }
+        setDomains(prev => [...prev, newDomainWithId])
+        toast.success('Domain created successfully!')
+      }
+
+      // Reset form
+      setNewDomain({ name: '', description: '', color: '#136fd7' })
+      setEditingDomain(null)
+    } catch (error) {
+      console.error('Error saving domain:', error)
+      toast.error('Failed to save domain')
+    } finally {
+      setLoading(false)
     }
-
-    setDomains(prev => [...prev, domainData])
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    setIsSubmitting(false)
-    setNewDomain({ name: '', description: '', color: '#0066cc' })
   }
 
-  const handleDeleteDomain = (id: string) => {
-    setDomains(prev => prev.filter(domain => domain.id !== id))
+  const handleEdit = (domain: Domain) => {
+    setEditingDomain(domain)
+    setNewDomain({
+      name: domain.name,
+      description: domain.description,
+      color: domain.color
+    })
+  }
+
+  const handleDelete = async (domainId: string) => {
+    if (window.confirm('Are you sure you want to delete this domain?')) {
+      try {
+        // Mock delete
+        setDomains(prev => prev.filter(domain => domain.id !== domainId))
+        toast.success('Domain deleted successfully!')
+      } catch (error) {
+        console.error('Error deleting domain:', error)
+        toast.error('Failed to delete domain')
+      }
+    }
+  }
+
+  const handleCancel = () => {
+    setEditingDomain(null)
+    setNewDomain({ name: '', description: '', color: '#136fd7' })
   }
 
   return (
-    <div>
-      <h2 className="text-2xl font-bold text-white font-montserrat mb-6">
-        Domain Management
-      </h2>
+    <div className="max-w-4xl mx-auto p-6">
+      <h2 className="text-2xl font-bold text-white mb-6">Domain Management</h2>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Create New Domain */}
-        <div className="glass-morphism rounded-2xl p-6">
-          <h3 className="text-xl font-semibold text-white font-montserrat mb-4">
-            Create New Domain
-          </h3>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Create/Edit Form */}
+      <div className="bg-space-gray rounded-lg p-6 mb-6">
+        <h3 className="text-lg font-semibold text-white mb-4">
+          {editingDomain ? 'Edit Domain' : 'Create New Domain'}
+        </h3>
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Domain Name */}
             <div>
-              <label className="block text-white font-montserrat mb-2">Domain Name</label>
+              <label className="block text-sm font-medium text-white mb-2">
+                Domain Name *
+              </label>
               <input
                 type="text"
+                required
                 value={newDomain.name}
-                onChange={(e) => setNewDomain(prev => ({ ...prev, name: e.target.value }))}
-                className="w-full px-4 py-3 bg-space-gray border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cobalt-blue transition-colors font-montserrat"
+                onChange={(e) => setNewDomain({ ...newDomain, name: e.target.value })}
+                className="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cobalt-blue"
                 placeholder="Enter domain name"
-                required
               />
             </div>
 
+            {/* Domain Color */}
             <div>
-              <label className="block text-white font-montserrat mb-2">Description</label>
-              <textarea
-                value={newDomain.description}
-                onChange={(e) => setNewDomain(prev => ({ ...prev, description: e.target.value }))}
-                rows={3}
-                className="w-full px-4 py-3 bg-space-gray border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cobalt-blue transition-colors font-montserrat resize-none"
-                placeholder="Enter domain description"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-white font-montserrat mb-2">Color</label>
+              <label className="block text-sm font-medium text-white mb-2">
+                Domain Color *
+              </label>
               <input
                 type="color"
                 value={newDomain.color}
-                onChange={(e) => setNewDomain(prev => ({ ...prev, color: e.target.value }))}
-                className="w-full h-12 bg-space-gray border border-gray-600 rounded-lg cursor-pointer"
+                onChange={(e) => setNewDomain({ ...newDomain, color: e.target.value })}
+                className="w-full h-10 bg-gray-800 border border-gray-600 rounded-lg cursor-pointer"
               />
             </div>
+          </div>
 
+          {/* Description */}
+          <div>
+            <label className="block text-sm font-medium text-white mb-2">
+              Description *
+            </label>
+            <textarea
+              required
+              value={newDomain.description}
+              onChange={(e) => setNewDomain({ ...newDomain, description: e.target.value })}
+              rows={3}
+              className="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cobalt-blue"
+              placeholder="Enter domain description"
+            />
+          </div>
+
+          {/* Submit Buttons */}
+          <div className="flex justify-end space-x-4">
+            {editingDomain && (
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                Cancel
+              </button>
+            )}
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="w-full bg-gradient-to-r from-cobalt-blue to-cobalt-light text-white py-3 rounded-lg font-semibold font-montserrat hover:opacity-90 transition-opacity disabled:opacity-50"
+              disabled={loading}
+              className="px-4 py-2 bg-cobalt-blue text-white rounded-lg hover:bg-cobalt-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
             >
-              {isSubmitting ? 'Creating...' : 'Create Domain'}
+              {loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <span>Saving...</span>
+                </>
+              ) : (
+                <>
+                  {editingDomain ? <Edit className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                  <span>{editingDomain ? 'Update Domain' : 'Create Domain'}</span>
+                </>
+              )}
             </button>
-          </form>
-        </div>
+          </div>
+        </form>
+      </div>
 
-        {/* Existing Domains */}
-        <div className="glass-morphism rounded-2xl p-6">
-          <h3 className="text-xl font-semibold text-white font-montserrat mb-4">
-            Existing Domains
-          </h3>
-
-          <div className="space-y-3">
-            {domains.map((domain) => (
-              <motion.div
-                key={domain.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="p-4 bg-space-gray rounded-lg"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center space-x-3">
-                    <div
-                      className="w-4 h-4 rounded-full"
-                      style={{ backgroundColor: domain.color }}
-                    />
-                    <span className="text-white font-semibold font-montserrat">
-                      {domain.name}
-                    </span>
-                  </div>
+      {/* Domains List */}
+      <div className="bg-space-gray rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-white mb-4">Existing Domains</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {domains.map((domain) => (
+            <div
+              key={domain.id}
+              className="bg-gray-800 rounded-lg p-4 border border-gray-700 hover:border-gray-600 transition-colors"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-2">
+                  <div
+                    className="w-4 h-4 rounded-full"
+                    style={{ backgroundColor: domain.color }}
+                  ></div>
+                  <span className="text-white font-medium">{domain.name}</span>
+                </div>
+                <div className="flex space-x-2">
                   <button
-                    onClick={() => handleDeleteDomain(domain.id)}
-                    className="text-red-400 hover:text-red-300 transition-colors font-montserrat text-sm"
+                    onClick={() => handleEdit(domain)}
+                    className="p-1 text-gray-400 hover:text-blue-400 transition-colors"
                   >
-                    Delete
+                    <Edit className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(domain.id)}
+                    className="p-1 text-gray-400 hover:text-red-400 transition-colors"
+                  >
+                    <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
-                <p className="text-gray-400 font-montserrat text-sm mb-2">
-                  {domain.description}
-                </p>
-                <div className="flex items-center justify-between">
-                  <span className="text-cobalt-light font-montserrat text-sm">
-                    {domain.postCount} posts
-                  </span>
-                  <div
-                    className="w-16 h-2 rounded-full bg-gray-700"
-                    style={{ backgroundColor: `${domain.color}20` }}
-                  >
-                    <div
-                      className="h-2 rounded-full transition-all duration-300"
-                      style={{ 
-                        backgroundColor: domain.color,
-                        width: `${Math.min((domain.postCount / 20) * 100, 100)}%`
-                      }}
-                    />
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+              </div>
+              <p className="text-gray-300 text-sm mb-2">{domain.description}</p>
+              <div className="flex items-center justify-between text-xs text-gray-400">
+                <span>Posts: {domain.postCount}</span>
+              </div>
+            </div>
+          ))}
         </div>
+        {domains.length === 0 && (
+          <p className="text-gray-400 text-center py-8">No domains created yet.</p>
+        )}
       </div>
     </div>
   )
-}
-
-export default DomainManager 
+} 
