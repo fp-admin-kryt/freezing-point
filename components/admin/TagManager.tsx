@@ -253,9 +253,9 @@ export default function TagManager() {
       <div className="bg-space-gray rounded-lg p-6">
         <h3 className="text-lg font-semibold text-white mb-4">Existing Tags</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {tags.map((tag) => (
+          {tags.map((tag, index) => (
             <div
-              key={tag.id}
+              key={tag.id || `tag-${index}`}
               className="bg-gray-800 rounded-lg p-4 border border-gray-700 hover:border-gray-600 transition-colors"
             >
               <div className="flex items-center justify-between mb-3">
@@ -274,8 +274,9 @@ export default function TagManager() {
                     <Edit className="h-4 w-4" />
                   </button>
                   <button
-                    onClick={() => handleDelete(tag.id)}
+                    onClick={() => tag.id && handleDelete(tag.id)}
                     className="p-1 text-gray-400 hover:text-red-400 transition-colors"
+                    disabled={!tag.id}
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>

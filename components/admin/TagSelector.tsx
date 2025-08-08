@@ -65,17 +65,18 @@ export default function TagSelector({ selectedTags, onChange, placeholder = "Sel
         {selectedTags.length > 0 ? `${selectedTags.length} tag(s) selected` : placeholder}
       </div>
       <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
-        {tags.map((tag) => (
+        {tags.map((tag, index) => (
           <button
-            key={tag.id}
+            key={tag.id || `tag-${index}`}
             type="button"
-            onClick={() => handleTagToggle(tag.id!)}
+            onClick={() => tag.id && handleTagToggle(tag.id)}
             className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
-              selectedTags.includes(tag.id!)
+              tag.id && selectedTags.includes(tag.id)
                 ? 'ring-2 ring-cobalt-blue'
                 : 'hover:opacity-80'
             }`}
             style={{ backgroundColor: tag.color, color: 'white' }}
+            disabled={!tag.id}
           >
             {tag.name}
           </button>

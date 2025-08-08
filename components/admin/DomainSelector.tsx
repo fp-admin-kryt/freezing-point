@@ -57,8 +57,8 @@ export default function DomainSelector({ selectedDomain, onChange, placeholder =
       className="w-full px-4 py-2 bg-space-gray border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cobalt-blue"
     >
       <option value="">{placeholder}</option>
-      {domains.map((domain) => (
-        <option key={domain.id} value={domain.id}>
+      {domains.map((domain, index) => (
+        <option key={domain.id || `domain-${index}`} value={domain.id || ''}>
           {domain.name}
         </option>
       ))}
