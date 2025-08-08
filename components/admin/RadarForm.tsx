@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { Upload, X, Image as ImageIcon } from 'lucide-react'
-import { uploadToCloudinaryRobust } from '@/lib/cloudinary'
+import { uploadToCloudinaryDirect } from '@/lib/cloudinary'
+import { saveSignalPost, saveObserverPost } from '@/lib/firebase'
 import toast from 'react-hot-toast'
 
 interface RadarFormProps {
@@ -45,7 +46,7 @@ export default function RadarForm({ onBack, type, editPost }: RadarFormProps) {
       // Upload image if new file selected
       if (imageFile) {
         toast.loading('Uploading image...')
-        finalImageUrl = await uploadToCloudinaryRobust(imageFile, `freezing-point/${type}/images`)
+        finalImageUrl = await uploadToCloudinaryDirect(imageFile)
         toast.dismiss()
         toast.success('Image uploaded successfully!')
       }
@@ -55,9 +56,13 @@ export default function RadarForm({ onBack, type, editPost }: RadarFormProps) {
         imageUrl: finalImageUrl || undefined
       }
 
-      // For now, just log the data
-      console.log(`${type} post data:`, postData)
-      toast.success(`${type === 'signal' ? 'Signal' : 'Observer'} post saved successfully! (Check console)`)
+      // Save to Firebase
+      if (type === 'signal') {
+        await saveSignalPost(postData)
+      } else {
+        await saveObserverPost(postData)
+      }
+      toast.success(`${type === 'signal' ? 'Signal' : 'Observer'} post saved successfully!`)
 
       onBack()
     } catch (error) {

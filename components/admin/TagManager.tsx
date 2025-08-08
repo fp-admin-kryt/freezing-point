@@ -3,11 +3,12 @@
 import { useState, useEffect } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { Upload, X, Image as ImageIcon, Plus, Edit, Trash2 } from 'lucide-react'
-import { uploadToCloudinaryRobust } from '@/lib/cloudinary'
+import { uploadToCloudinaryDirect } from '@/lib/cloudinary'
+import { saveTag, getTags, deleteTag } from '@/lib/firebase'
 import toast from 'react-hot-toast'
 
 interface Tag {
-  id: string
+  id?: string
   name: string
   color: string
   imageUrl?: string
@@ -20,12 +21,22 @@ export default function TagManager() {
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
 
-  // Mock data for testing
+  // Load tags from Firebase
   useEffect(() => {
-    setTags([
-      { id: '1', name: 'Machine Learning', color: '#136fd7', imageUrl: '' },
-      { id: '2', name: 'AI Ethics', color: '#ff6b6b', imageUrl: '' }
-    ])
+    const loadTags = async () => {
+      try {
+        const tags = await getTags()
+        setTags(tags)
+      } catch (error) {
+        console.error('Error loading tags:', error)
+        // Fallback to mock data
+        setTags([
+          { id: '1', name: 'Machine Learning', color: '#136fd7', imageUrl: '' },
+          { id: '2', name: 'AI Ethics', color: '#ff6b6b', imageUrl: '' }
+        ])
+      }
+    }
+    loadTags()
   }, [])
 
   const { getRootProps, getInputProps } = useDropzone({
@@ -48,13 +59,13 @@ export default function TagManager() {
       // Upload image if new file selected
       if (imageFile) {
         toast.loading('Uploading image...')
-        finalImageUrl = await uploadToCloudinaryRobust(imageFile, 'freezing-point/tags')
+        finalImageUrl = await uploadToCloudinaryDirect(imageFile)
         toast.dismiss()
         toast.success('Image uploaded successfully!')
       }
 
       if (editingTag) {
-        // Mock update
+        // Update tag (for now, just update local state)
         setTags(prev => prev.map(tag => 
           tag.id === editingTag.id 
             ? { ...tag, name: newTag.name, color: newTag.color, imageUrl: finalImageUrl || undefined }
@@ -62,14 +73,16 @@ export default function TagManager() {
         ))
         toast.success('Tag updated successfully!')
       } else {
-        // Mock create
-        const newTagWithId = {
-          id: Date.now().toString(),
+        // Save new tag to Firebase
+        await saveTag({
           name: newTag.name,
           color: newTag.color,
           imageUrl: finalImageUrl || undefined
-        }
-        setTags(prev => [...prev, newTagWithId])
+        })
+        
+        // Refresh tags from Firebase
+        const freshTags = await getTags()
+        setTags(freshTags)
         toast.success('Tag created successfully!')
       }
 
@@ -98,9 +111,11 @@ export default function TagManager() {
   const handleDelete = async (tagId: string) => {
     if (window.confirm('Are you sure you want to delete this tag?')) {
       try {
-        // Mock delete
-        setTags(prev => prev.filter(tag => tag.id !== tagId))
-        toast.success('Tag deleted successfully!')
+        if (tagId) {
+          await deleteTag(tagId)
+          setTags(prev => prev.filter(tag => tag.id !== tagId))
+          toast.success('Tag deleted successfully!')
+        }
       } catch (error) {
         console.error('Error deleting tag:', error)
         toast.error('Failed to delete tag')

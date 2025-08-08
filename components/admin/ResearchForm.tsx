@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { Upload, X, FileText, Image as ImageIcon } from 'lucide-react'
 import { uploadToCloudinaryDirect } from '@/lib/cloudinary'
+import { saveResearchPost } from '@/lib/firebase'
 import toast from 'react-hot-toast'
 
 interface ResearchFormProps {
@@ -88,9 +89,9 @@ export default function ResearchForm({ onBack, editPost }: ResearchFormProps) {
         whitepaperUrl: finalWhitepaperUrl || undefined
       }
 
-      // For now, just log the data
-      console.log('Research post data:', postData)
-      toast.success('Research post saved successfully! (Check console)')
+      // Save to Firebase
+      await saveResearchPost(postData)
+      toast.success('Research post saved successfully!')
 
       onBack()
     } catch (error) {

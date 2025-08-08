@@ -6,14 +6,14 @@ import Navigation from '@/components/Navigation'
 import InteractiveCard from '@/components/InteractiveCard'
 import ScrollIndicator from '@/components/ScrollIndicator'
 import { Target, Zap, Eye, TrendingUp, Download, ArrowRight } from 'lucide-react'
-import { dataStore } from '@/lib/dataStore'
+import { getResearchPosts, getSignalPosts, getObserverPosts } from '@/lib/firebase'
 import Image from 'next/image'
 
 export default function Home() {
   const [showContent, setShowContent] = useState(false)
-  const [researchPosts, setResearchPosts] = useState(dataStore.getResearchPosts())
-  const [signalPosts, setSignalPosts] = useState(dataStore.getSignalPosts())
-  const [observerPosts, setObserverPosts] = useState(dataStore.getObserverPosts())
+  const [researchPosts, setResearchPosts] = useState<any[]>([])
+  const [signalPosts, setSignalPosts] = useState<any[]>([])
+  const [observerPosts, setObserverPosts] = useState<any[]>([])
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -22,14 +22,23 @@ export default function Home() {
     return () => clearTimeout(timer)
   }, [])
 
-  // Update data when it changes (in a real app, this would be a subscription)
+  // Load data from Firebase
   useEffect(() => {
-    const interval = setInterval(() => {
-      setResearchPosts(dataStore.getResearchPosts())
-      setSignalPosts(dataStore.getSignalPosts())
-      setObserverPosts(dataStore.getObserverPosts())
-    }, 1000)
-    return () => clearInterval(interval)
+    const loadData = async () => {
+      try {
+        const [research, signals, observers] = await Promise.all([
+          getResearchPosts(),
+          getSignalPosts(),
+          getObserverPosts()
+        ])
+        setResearchPosts(research)
+        setSignalPosts(signals)
+        setObserverPosts(observers)
+      } catch (error) {
+        console.error('Error loading data:', error)
+      }
+    }
+    loadData()
   }, [])
 
   const heroCards = [
