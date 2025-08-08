@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import LogoFP from '@/components/LogoFP'
 import { Home, ArrowLeft } from 'lucide-react'
 
 const messages = [
@@ -170,15 +169,10 @@ export default function NotFound() {
             className="relative"
             style={{ width: 80, height: 80 }}
           >
-            <LogoFP size={80} />
-            {/* Winking eye: animate the small filled circle */}
-            <motion.circle
-              cx="60" cy="40" r={wink ? 2 : 4}
-              fill="#136fd7"
-              style={{ position: 'absolute', left: 44, top: 32 }}
-              animate={{ r: wink ? 2 : 4 }}
-              transition={{ duration: 0.3 }}
-            />
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="50" cy="50" r="40" fill="#136fd7" />
+              <circle cx="50" cy="50" r={wink ? 2 : 4} fill="#136fd7" />
+            </svg>
           </motion.div>
         </motion.div>
         {/* Main Message */}

@@ -3,6 +3,7 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 
 # Next.js
 .next/
@@ -101,3 +102,23 @@ jspm_packages/
 # Temporary folders
 tmp/
 temp/
+
+# Additional exclusions for build issues
+*.tsbuildinfo
+.next/
+.vercel/
+.env*.local
+
+# Large files that might cause issues
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.zip
+*.tar.gz
+*.rar
+
+# Backup files
+*.bak
+*.backup
+*~

@@ -1,27 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { useInView } from 'react-intersection-observer'
+import { motion, AnimatePresence } from 'framer-motion'
 import Navigation from '@/components/Navigation'
-import ScrollIndicator from '@/components/ScrollIndicator'
-import VantaBackground from '@/components/VantaBackground'
 import InteractiveCard from '@/components/InteractiveCard'
+import ScrollIndicator from '@/components/ScrollIndicator'
+import { Target, Zap, Eye, TrendingUp, Download, ArrowRight } from 'lucide-react'
 import { dataStore } from '@/lib/dataStore'
 import Image from 'next/image'
-import { 
-  Brain, 
-  FileText, 
-  Radio, 
-  TrendingUp, 
-  Eye, 
-  Download,
-  ArrowRight,
-  Search,
-  Filter,
-  Calendar,
-  Tag
-} from 'lucide-react'
 
 export default function Home() {
   const [showContent, setShowContent] = useState(false)
@@ -48,7 +34,7 @@ export default function Home() {
 
   const heroCards = [
     {
-      icon: Brain,
+      icon: Target,
       title: 'Impact',
       description: 'At FreezingPoint.Ai, every breakthrough begins as an idea in a fluid state, shaped by research, exploration and raw data. The freezing point marks the critical moment when abstract insights solidify into real solutions. The mission is to crystallize innovation, transforming research into tangible outcomes that shape the future of healthcare. This begins with publishing white papers and conceptual frameworks that will evolve into real-word applications and products.',
       link: '#research',
@@ -69,7 +55,7 @@ export default function Home() {
       color: 'from-purple-500 to-pink-400'
     },
     {
-      icon: FileText,
+      icon: Zap,
       title: 'The Observer',
       description: 'The Observer offers a curated lens on the evolving landscape of AI, systems innovation, and healthcare transformation. Expect in-depth analysis, ideas, critical commentary, and comprehensive trend reviews that cut through the noise. Whether it\'s a deep dive into policy shifts or reflections on paradigm-changing research, this space invites critical thought and continuous learning.',
       link: '#radar',
@@ -90,9 +76,6 @@ export default function Home() {
 
   return (
     <main className="min-h-screen relative overflow-hidden">
-      {/* Vanta.js Background */}
-      <VantaBackground />
-
       {/* New Entrance Animation */}
       {!showContent && (
         <div className="absolute inset-0 flex items-center justify-center z-10 bg-space-black">
