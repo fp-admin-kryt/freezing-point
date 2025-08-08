@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { Upload, X, FileText, Image as ImageIcon } from 'lucide-react'
-import { uploadToCloudinary, uploadToCloudinarySimple } from '@/lib/cloudinary'
+import { uploadToCloudinaryRobust } from '@/lib/cloudinary'
 import toast from 'react-hot-toast'
 
 interface ResearchFormProps {
@@ -58,26 +58,28 @@ export default function ResearchForm({ onBack, editPost }: ResearchFormProps) {
       if (imageFile) {
         toast.loading('Uploading image...')
         try {
-          finalImageUrl = await uploadToCloudinary(imageFile, 'freezing-point/research/images')
+          finalImageUrl = await uploadToCloudinaryRobust(imageFile, 'freezing-point/research/images')
+          toast.dismiss()
+          toast.success('Image uploaded successfully!')
         } catch (error) {
-          console.log('Main upload failed, trying fallback...')
-          finalImageUrl = await uploadToCloudinarySimple(imageFile)
+          toast.dismiss()
+          toast.error('Failed to upload image')
+          throw error
         }
-        toast.dismiss()
-        toast.success('Image uploaded successfully!')
       }
 
       // Upload whitepaper if new file selected
       if (whitepaperFile) {
         toast.loading('Uploading whitepaper...')
         try {
-          finalWhitepaperUrl = await uploadToCloudinary(whitepaperFile, 'freezing-point/research/whitepapers')
+          finalWhitepaperUrl = await uploadToCloudinaryRobust(whitepaperFile, 'freezing-point/research/whitepapers')
+          toast.dismiss()
+          toast.success('Whitepaper uploaded successfully!')
         } catch (error) {
-          console.log('Main upload failed, trying fallback...')
-          finalWhitepaperUrl = await uploadToCloudinarySimple(whitepaperFile)
+          toast.dismiss()
+          toast.error('Failed to upload whitepaper')
+          throw error
         }
-        toast.dismiss()
-        toast.success('Whitepaper uploaded successfully!')
       }
 
       const postData = {

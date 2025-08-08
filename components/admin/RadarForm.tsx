@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { Upload, X, Image as ImageIcon } from 'lucide-react'
-import { uploadToCloudinary } from '@/lib/cloudinary'
+import { uploadToCloudinaryRobust } from '@/lib/cloudinary'
 import toast from 'react-hot-toast'
 
 interface RadarFormProps {
@@ -45,7 +45,7 @@ export default function RadarForm({ onBack, type, editPost }: RadarFormProps) {
       // Upload image if new file selected
       if (imageFile) {
         toast.loading('Uploading image...')
-        finalImageUrl = await uploadToCloudinary(imageFile, `freezing-point/${type}/images`)
+        finalImageUrl = await uploadToCloudinaryRobust(imageFile, `freezing-point/${type}/images`)
         toast.dismiss()
         toast.success('Image uploaded successfully!')
       }
