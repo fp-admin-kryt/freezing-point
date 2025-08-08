@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { Upload, X, FileText, Image as ImageIcon } from 'lucide-react'
-import { uploadToCloudinaryRobust } from '@/lib/cloudinary'
+import { uploadToCloudinaryDirect } from '@/lib/cloudinary'
 import toast from 'react-hot-toast'
 
 interface ResearchFormProps {
@@ -58,7 +58,7 @@ export default function ResearchForm({ onBack, editPost }: ResearchFormProps) {
       if (imageFile) {
         toast.loading('Uploading image...')
         try {
-          finalImageUrl = await uploadToCloudinaryRobust(imageFile, 'freezing-point/research/images')
+          finalImageUrl = await uploadToCloudinaryDirect(imageFile)
           toast.dismiss()
           toast.success('Image uploaded successfully!')
         } catch (error) {
@@ -72,7 +72,7 @@ export default function ResearchForm({ onBack, editPost }: ResearchFormProps) {
       if (whitepaperFile) {
         toast.loading('Uploading whitepaper...')
         try {
-          finalWhitepaperUrl = await uploadToCloudinaryRobust(whitepaperFile, 'freezing-point/research/whitepapers')
+          finalWhitepaperUrl = await uploadToCloudinaryDirect(whitepaperFile)
           toast.dismiss()
           toast.success('Whitepaper uploaded successfully!')
         } catch (error) {
