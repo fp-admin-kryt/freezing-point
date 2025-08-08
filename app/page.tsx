@@ -7,6 +7,7 @@ import InteractiveCard from '@/components/InteractiveCard'
 import ScrollIndicator from '@/components/ScrollIndicator'
 import { Target, Zap, Eye, TrendingUp, Download, ArrowRight } from 'lucide-react'
 import { getResearchPosts, getSignalPosts, getObserverPosts } from '@/lib/firebase'
+import { getTagById, getDomainById } from '@/lib/dataService'
 import Image from 'next/image'
 
 export default function Home() {
@@ -265,8 +266,8 @@ export default function Home() {
                         </div>
                       )}
                       <div className="flex items-center gap-2 mb-3">
-                        {post.tags.map(tagId => {
-                          const tag = dataStore.getTagById(tagId)
+                        {post.tags.map((tagId: string) => {
+                          const tag = getTagById(tagId)
                           return tag ? (
                             <span
                               key={tagId}
