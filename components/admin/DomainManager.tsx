@@ -8,8 +8,8 @@ import toast from 'react-hot-toast'
 interface Domain {
   id?: string
   name: string
-  description: string
-  color: string
+  description?: string
+  color?: string
   postCount: number
 }
 
@@ -30,7 +30,7 @@ export default function DomainManager() {
       try {
         const fetched = await getDomains()
         // Ensure postCount exists for UI; default 0
-        setDomains(fetched.map(d => ({ postCount: 0, ...d })))
+        setDomains(fetched.map(d => ({ postCount: 0, description: '', color: '#136fd7', ...d })))
       } catch (e) {
         console.error('Error loading domains', e)
         setDomains([])

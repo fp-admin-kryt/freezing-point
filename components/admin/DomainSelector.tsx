@@ -7,6 +7,7 @@ interface Domain {
   id?: string
   name: string
   description?: string
+  color?: string
 }
 
 interface DomainSelectorProps {
