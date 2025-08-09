@@ -26,17 +26,20 @@ export default function DomainManager() {
 
   // Load from Firebase
   useEffect(() => {
+    let mounted = true
     const load = async () => {
       try {
         const fetched = await getDomains()
-        // Ensure postCount exists for UI; default 0
-        setDomains(fetched.map(d => ({ postCount: 0, description: '', color: '#136fd7', ...d })))
+        if (!mounted) return
+        setDomains(fetched.map(d => ({ postCount: 0, description: d.description || '', color: d.color || '#136fd7', ...d })))
       } catch (e) {
         console.error('Error loading domains', e)
-        setDomains([])
+        if (mounted) setDomains([])
       }
     }
     load()
+    const interval = setInterval(load, 4000)
+    return () => { mounted = false; clearInterval(interval) }
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -51,7 +54,7 @@ export default function DomainManager() {
           color: newDomain.color
         })
         const refreshed = await getDomains()
-        setDomains(refreshed.map(d => ({ postCount: 0, ...d })))
+        setDomains(refreshed.map(d => ({ postCount: 0, description: d.description || '', color: d.color || '#136fd7', ...d })))
         toast.success('Domain updated successfully!')
       } else {
         await saveDomain({
@@ -60,7 +63,7 @@ export default function DomainManager() {
           color: newDomain.color
         })
         const refreshed = await getDomains()
-        setDomains(refreshed.map(d => ({ postCount: 0, ...d })))
+        setDomains(refreshed.map(d => ({ postCount: 0, description: d.description || '', color: d.color || '#136fd7', ...d })))
         toast.success('Domain created successfully!')
       }
 
