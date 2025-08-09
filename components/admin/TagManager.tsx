@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { Upload, X, Image as ImageIcon, Plus, Edit, Trash2 } from 'lucide-react'
 import { uploadToCloudinaryDirect } from '@/lib/cloudinary'
-import { saveTag, getTags, deleteTag } from '@/lib/firebase'
+import { saveTag, getTags, deleteTag, updateTag } from '@/lib/firebase'
 import toast from 'react-hot-toast'
 
 interface Tag {
@@ -20,6 +20,11 @@ export default function TagManager() {
   const [editingTag, setEditingTag] = useState<Tag | null>(null)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
+  const scrollToTop = () => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
 
   // Load tags from Firebase
   useEffect(() => {
@@ -64,13 +69,15 @@ export default function TagManager() {
         toast.success('Image uploaded successfully!')
       }
 
-      if (editingTag) {
-        // Update tag (for now, just update local state)
-        setTags(prev => prev.map(tag => 
-          tag.id === editingTag.id 
-            ? { ...tag, name: newTag.name, color: newTag.color, imageUrl: finalImageUrl || undefined }
-            : tag
-        ))
+      if (editingTag && editingTag.id) {
+        // Persist update to Firebase, then refresh
+        await updateTag(editingTag.id, {
+          name: newTag.name,
+          color: newTag.color,
+          imageUrl: finalImageUrl || undefined
+        })
+        const fresh = await getTags()
+        setTags(fresh)
         toast.success('Tag updated successfully!')
       } else {
         // Save new tag to Firebase
@@ -131,7 +138,16 @@ export default function TagManager() {
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <h2 className="text-2xl font-bold text-white mb-6">Tag Management</h2>
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-white">Tag Management</h2>
+        <button
+          type="button"
+          onClick={() => { setEditingTag(null); setNewTag({ name: '', color: '#136fd7', imageUrl: '' }); setImageFile(null); scrollToTop(); }}
+          className="px-4 py-2 rounded-full bg-white/10 border border-white/20 text-white hover:bg-white/15 transition-colors"
+        >
+          Create Tag
+        </button>
+      </div>
 
       {/* Create/Edit Form */}
       <div className="bg-space-gray rounded-lg p-6 mb-6">
@@ -251,7 +267,16 @@ export default function TagManager() {
 
       {/* Tags List */}
       <div className="bg-space-gray rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-white mb-4">Existing Tags</h3>
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-white">Existing Tags</h3>
+          <button
+            type="button"
+            onClick={() => { setEditingTag(null); setNewTag({ name: '', color: '#136fd7', imageUrl: '' }); setImageFile(null); scrollToTop(); }}
+            className="px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-white text-sm hover:bg-white/15 transition-colors"
+          >
+            + Create Tag
+          </button>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {tags.map((tag, index) => (
             <div

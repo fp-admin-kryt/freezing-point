@@ -1,7 +1,7 @@
 'use client'
 
 import { initializeApp, getApps } from 'firebase/app';
-import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, updateDoc, query, orderBy, limit } from 'firebase/firestore';
+import { initializeFirestore, collection, addDoc, getDocs, doc, deleteDoc, updateDoc, query, orderBy } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
@@ -16,8 +16,14 @@ const firebaseConfig = {
 // Initialize Firebase only if it hasn't been initialized
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
-// Initialize Firebase services
-export const db = getFirestore(app);
+// Initialize Firestore with robust transport settings to avoid WebChannel 400s
+// See: https://firebase.google.com/docs/firestore/troubleshoot#web-channel-errors
+export const db = initializeFirestore(app, {
+  // Force long-polling to avoid corporate proxies / ad-blockers breaking WebChannel
+  experimentalForceLongPolling: true,
+  experimentalAutoDetectLongPolling: true,
+  useFetchStreams: false
+});
 export const auth = getAuth(app);
 
 export default app;
@@ -66,6 +72,7 @@ export interface Domain {
   id?: string;
   name: string;
   description?: string;
+  color?: string; // optional color support for UI
 }
 
 // Research Posts
@@ -200,6 +207,16 @@ export const saveTag = async (tag: Omit<Tag, 'id'>): Promise<string> => {
   }
 };
 
+export const updateTag = async (id: string, data: Partial<Tag>): Promise<void> => {
+  try {
+    await updateDoc(doc(db, 'tags', id), data);
+    console.log('Tag updated:', id);
+  } catch (error) {
+    console.error('Error updating tag:', error);
+    throw error;
+  }
+};
+
 export const getTags = async (): Promise<Tag[]> => {
   try {
     const querySnapshot = await getDocs(collection(db, 'tags'));
@@ -256,6 +273,16 @@ export const deleteDomain = async (id: string): Promise<void> => {
     console.log('Domain deleted:', id);
   } catch (error) {
     console.error('Error deleting domain:', error);
+    throw error;
+  }
+};
+
+export const updateDomain = async (id: string, data: Partial<Domain>): Promise<void> => {
+  try {
+    await updateDoc(doc(db, 'domains', id), data);
+    console.log('Domain updated:', id);
+  } catch (error) {
+    console.error('Error updating domain:', error);
     throw error;
   }
 };

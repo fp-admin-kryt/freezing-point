@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Plus, Edit, Trash2 } from 'lucide-react'
+import { getDomains, saveDomain, updateDomain, deleteDomain } from '@/lib/firebase'
 import toast from 'react-hot-toast'
 
 interface Domain {
@@ -17,13 +18,25 @@ export default function DomainManager() {
   const [newDomain, setNewDomain] = useState({ name: '', description: '', color: '#136fd7' })
   const [editingDomain, setEditingDomain] = useState<Domain | null>(null)
   const [loading, setLoading] = useState(false)
+  const scrollToTop = () => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
 
-  // Mock data for testing
+  // Load from Firebase
   useEffect(() => {
-    setDomains([
-      { id: '1', name: 'Machine Learning', description: 'Core ML algorithms and techniques', color: '#136fd7', postCount: 12 },
-      { id: '2', name: 'AI Ethics', description: 'Ethical considerations in AI', color: '#ff6b6b', postCount: 8 }
-    ])
+    const load = async () => {
+      try {
+        const fetched = await getDomains()
+        // Ensure postCount exists for UI; default 0
+        setDomains(fetched.map(d => ({ postCount: 0, ...d })))
+      } catch (e) {
+        console.error('Error loading domains', e)
+        setDomains([])
+      }
+    }
+    load()
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,24 +44,23 @@ export default function DomainManager() {
     setLoading(true)
 
     try {
-      if (editingDomain) {
-        // Mock update
-        setDomains(prev => prev.map(domain => 
-          domain.id === editingDomain.id 
-            ? { ...domain, name: newDomain.name, description: newDomain.description, color: newDomain.color }
-            : domain
-        ))
-        toast.success('Domain updated successfully!')
-      } else {
-        // Mock create
-        const newDomainWithId = {
-          id: Date.now().toString(),
+      if (editingDomain && editingDomain.id) {
+        await updateDomain(editingDomain.id, {
           name: newDomain.name,
           description: newDomain.description,
-          color: newDomain.color,
-          postCount: 0
-        }
-        setDomains(prev => [...prev, newDomainWithId])
+          color: newDomain.color
+        })
+        const refreshed = await getDomains()
+        setDomains(refreshed.map(d => ({ postCount: 0, ...d })))
+        toast.success('Domain updated successfully!')
+      } else {
+        await saveDomain({
+          name: newDomain.name,
+          description: newDomain.description,
+          color: newDomain.color
+        })
+        const refreshed = await getDomains()
+        setDomains(refreshed.map(d => ({ postCount: 0, ...d })))
         toast.success('Domain created successfully!')
       }
 
@@ -75,7 +87,7 @@ export default function DomainManager() {
   const handleDelete = async (domainId: string) => {
     if (window.confirm('Are you sure you want to delete this domain?')) {
       try {
-        // Mock delete
+        await deleteDomain(domainId)
         setDomains(prev => prev.filter(domain => domain.id !== domainId))
         toast.success('Domain deleted successfully!')
       } catch (error) {
@@ -92,7 +104,16 @@ export default function DomainManager() {
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <h2 className="text-2xl font-bold text-white mb-6">Domain Management</h2>
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-white">Domain Management</h2>
+        <button
+          type="button"
+          onClick={() => { setEditingDomain(null); setNewDomain({ name: '', description: '', color: '#136fd7' }); scrollToTop(); }}
+          className="px-4 py-2 rounded-full bg-white/10 border border-white/20 text-white hover:bg-white/15 transition-colors"
+        >
+          Create Domain
+        </button>
+      </div>
 
       {/* Create/Edit Form */}
       <div className="bg-space-gray rounded-lg p-6 mb-6">
@@ -180,7 +201,16 @@ export default function DomainManager() {
 
       {/* Domains List */}
       <div className="bg-space-gray rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-white mb-4">Existing Domains</h3>
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-white">Existing Domains</h3>
+          <button
+            type="button"
+            onClick={() => { setEditingDomain(null); setNewDomain({ name: '', description: '', color: '#136fd7' }); scrollToTop(); }}
+            className="px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-white text-sm hover:bg-white/15 transition-colors"
+          >
+            + Create Domain
+          </button>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {domains.map((domain, index) => (
             <div
