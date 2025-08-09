@@ -22,7 +22,6 @@ export const db = initializeFirestore(app, {
   // Force long-polling to avoid corporate proxies / ad-blockers breaking WebChannel
   experimentalForceLongPolling: true,
   experimentalAutoDetectLongPolling: true,
-  useFetchStreams: false
 });
 export const auth = getAuth(app);
 
