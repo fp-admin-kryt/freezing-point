@@ -16,13 +16,11 @@ const firebaseConfig = {
 // Initialize Firebase only if it hasn't been initialized
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
-// Initialize Firestore with robust transport settings to avoid WebChannel 400s
+// Initialize Firestore with client-only long-polling tweaks. On the server (SSR/prerender), use defaults.
 // See: https://firebase.google.com/docs/firestore/troubleshoot#web-channel-errors
-export const db = initializeFirestore(app, {
-  // Force long-polling to avoid corporate proxies / ad-blockers breaking WebChannel
-  experimentalForceLongPolling: true,
-  experimentalAutoDetectLongPolling: true,
-});
+export const db = typeof window === 'undefined'
+  ? initializeFirestore(app, {})
+  : initializeFirestore(app, { experimentalAutoDetectLongPolling: true });
 export const auth = getAuth(app);
 
 export default app;
