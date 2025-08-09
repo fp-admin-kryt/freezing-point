@@ -19,11 +19,20 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0
 // Initialize Firestore with client-only long-polling tweaks. On the server (SSR/prerender), use defaults.
 // See: https://firebase.google.com/docs/firestore/troubleshoot#web-channel-errors
 export const db = typeof window === 'undefined'
-  ? initializeFirestore(app, {})
-  : initializeFirestore(app, { experimentalForceLongPolling: true });
+  ? initializeFirestore(app, { ignoreUndefinedProperties: true })
+  : initializeFirestore(app, { experimentalForceLongPolling: true, ignoreUndefinedProperties: true });
 export const auth = getAuth(app);
 
 export default app;
+// Utility: remove undefined values to keep Firestore writes clean
+const sanitize = <T extends Record<string, any>>(obj: T): T => {
+  const copy: Record<string, any> = {}
+  for (const key of Object.keys(obj)) {
+    const value = (obj as any)[key]
+    if (value !== undefined) copy[key] = value
+  }
+  return copy as T
+}
 
 // Types
 export interface ResearchPost {
@@ -75,10 +84,10 @@ export interface Domain {
 // Research Posts
 export const saveResearchPost = async (post: Omit<ResearchPost, 'id' | 'createdAt'>): Promise<string> => {
   try {
-    const docRef = await addDoc(collection(db, 'research'), {
+    const docRef = await addDoc(collection(db, 'research'), sanitize({
       ...post,
       createdAt: new Date()
-    });
+    }));
     console.log('Research post saved with ID:', docRef.id);
     return docRef.id;
   } catch (error) {
@@ -115,10 +124,10 @@ export const deleteResearchPost = async (id: string): Promise<void> => {
 // Signal Posts
 export const saveSignalPost = async (post: Omit<SignalPost, 'id' | 'createdAt'>): Promise<string> => {
   try {
-    const docRef = await addDoc(collection(db, 'signals'), {
+    const docRef = await addDoc(collection(db, 'signals'), sanitize({
       ...post,
       createdAt: new Date()
-    });
+    }));
     console.log('Signal post saved with ID:', docRef.id);
     return docRef.id;
   } catch (error) {
@@ -155,10 +164,10 @@ export const deleteSignalPost = async (id: string): Promise<void> => {
 // Observer Posts
 export const saveObserverPost = async (post: Omit<ObserverPost, 'id' | 'createdAt'>): Promise<string> => {
   try {
-    const docRef = await addDoc(collection(db, 'observers'), {
+    const docRef = await addDoc(collection(db, 'observers'), sanitize({
       ...post,
       createdAt: new Date()
-    });
+    }));
     console.log('Observer post saved with ID:', docRef.id);
     return docRef.id;
   } catch (error) {
@@ -195,7 +204,7 @@ export const deleteObserverPost = async (id: string): Promise<void> => {
 // Tags
 export const saveTag = async (tag: Omit<Tag, 'id'>): Promise<string> => {
   try {
-    const docRef = await addDoc(collection(db, 'tags'), tag);
+    const docRef = await addDoc(collection(db, 'tags'), sanitize(tag));
     console.log('Tag saved with ID:', docRef.id);
     return docRef.id;
   } catch (error) {
@@ -241,7 +250,7 @@ export const deleteTag = async (id: string): Promise<void> => {
 // Domains
 export const saveDomain = async (domain: Omit<Domain, 'id'>): Promise<string> => {
   try {
-    const docRef = await addDoc(collection(db, 'domains'), domain);
+    const docRef = await addDoc(collection(db, 'domains'), sanitize(domain));
     console.log('Domain saved with ID:', docRef.id);
     return docRef.id;
   } catch (error) {
