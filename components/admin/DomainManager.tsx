@@ -79,8 +79,8 @@ export default function DomainManager() {
     setEditingDomain(domain)
     setNewDomain({
       name: domain.name,
-      description: domain.description,
-      color: domain.color
+      description: domain.description ?? '',
+      color: domain.color ?? '#136fd7'
     })
   }
 
