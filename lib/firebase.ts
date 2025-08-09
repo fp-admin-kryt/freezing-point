@@ -34,6 +34,20 @@ const sanitize = <T extends Record<string, any>>(obj: T): T => {
   return copy as T
 }
 
+// Retry helper for transient network/WebChannel errors
+const withRetry = async <T>(fn: () => Promise<T>, attempts = 3): Promise<T> => {
+  let lastErr: unknown
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await fn()
+    } catch (e) {
+      lastErr = e
+      await new Promise((r) => setTimeout(r, 500 * (i + 1)))
+    }
+  }
+  throw lastErr
+}
+
 // Types
 export interface ResearchPost {
   id?: string;
@@ -84,10 +98,10 @@ export interface Domain {
 // Research Posts
 export const saveResearchPost = async (post: Omit<ResearchPost, 'id' | 'createdAt'>): Promise<string> => {
   try {
-    const docRef = await addDoc(collection(db, 'research'), sanitize({
+    const docRef = await withRetry(() => addDoc(collection(db, 'research'), sanitize({
       ...post,
       createdAt: new Date()
-    }));
+    })));
     console.log('Research post saved with ID:', docRef.id);
     return docRef.id;
   } catch (error) {
@@ -99,7 +113,7 @@ export const saveResearchPost = async (post: Omit<ResearchPost, 'id' | 'createdA
 export const getResearchPosts = async (): Promise<ResearchPost[]> => {
   try {
     const q = query(collection(db, 'research'), orderBy('createdAt', 'desc'));
-    const querySnapshot = await getDocs(q);
+    const querySnapshot = await withRetry(() => getDocs(q));
     const posts: ResearchPost[] = [];
     querySnapshot.forEach((doc) => {
       posts.push({ id: doc.id, ...doc.data() } as ResearchPost);
@@ -113,7 +127,7 @@ export const getResearchPosts = async (): Promise<ResearchPost[]> => {
 
 export const deleteResearchPost = async (id: string): Promise<void> => {
   try {
-    await deleteDoc(doc(db, 'research', id));
+    await withRetry(() => deleteDoc(doc(db, 'research', id)));
     console.log('Research post deleted:', id);
   } catch (error) {
     console.error('Error deleting research post:', error);
@@ -124,10 +138,10 @@ export const deleteResearchPost = async (id: string): Promise<void> => {
 // Signal Posts
 export const saveSignalPost = async (post: Omit<SignalPost, 'id' | 'createdAt'>): Promise<string> => {
   try {
-    const docRef = await addDoc(collection(db, 'signals'), sanitize({
+    const docRef = await withRetry(() => addDoc(collection(db, 'signals'), sanitize({
       ...post,
       createdAt: new Date()
-    }));
+    })));
     console.log('Signal post saved with ID:', docRef.id);
     return docRef.id;
   } catch (error) {
@@ -139,7 +153,7 @@ export const saveSignalPost = async (post: Omit<SignalPost, 'id' | 'createdAt'>)
 export const getSignalPosts = async (): Promise<SignalPost[]> => {
   try {
     const q = query(collection(db, 'signals'), orderBy('createdAt', 'desc'));
-    const querySnapshot = await getDocs(q);
+    const querySnapshot = await withRetry(() => getDocs(q));
     const posts: SignalPost[] = [];
     querySnapshot.forEach((doc) => {
       posts.push({ id: doc.id, ...doc.data() } as SignalPost);
@@ -153,7 +167,7 @@ export const getSignalPosts = async (): Promise<SignalPost[]> => {
 
 export const deleteSignalPost = async (id: string): Promise<void> => {
   try {
-    await deleteDoc(doc(db, 'signals', id));
+    await withRetry(() => deleteDoc(doc(db, 'signals', id)));
     console.log('Signal post deleted:', id);
   } catch (error) {
     console.error('Error deleting signal post:', error);
@@ -164,10 +178,10 @@ export const deleteSignalPost = async (id: string): Promise<void> => {
 // Observer Posts
 export const saveObserverPost = async (post: Omit<ObserverPost, 'id' | 'createdAt'>): Promise<string> => {
   try {
-    const docRef = await addDoc(collection(db, 'observers'), sanitize({
+    const docRef = await withRetry(() => addDoc(collection(db, 'observers'), sanitize({
       ...post,
       createdAt: new Date()
-    }));
+    })));
     console.log('Observer post saved with ID:', docRef.id);
     return docRef.id;
   } catch (error) {
@@ -179,7 +193,7 @@ export const saveObserverPost = async (post: Omit<ObserverPost, 'id' | 'createdA
 export const getObserverPosts = async (): Promise<ObserverPost[]> => {
   try {
     const q = query(collection(db, 'observers'), orderBy('createdAt', 'desc'));
-    const querySnapshot = await getDocs(q);
+    const querySnapshot = await withRetry(() => getDocs(q));
     const posts: ObserverPost[] = [];
     querySnapshot.forEach((doc) => {
       posts.push({ id: doc.id, ...doc.data() } as ObserverPost);
@@ -193,7 +207,7 @@ export const getObserverPosts = async (): Promise<ObserverPost[]> => {
 
 export const deleteObserverPost = async (id: string): Promise<void> => {
   try {
-    await deleteDoc(doc(db, 'observers', id));
+    await withRetry(() => deleteDoc(doc(db, 'observers', id)));
     console.log('Observer post deleted:', id);
   } catch (error) {
     console.error('Error deleting observer post:', error);
@@ -204,7 +218,7 @@ export const deleteObserverPost = async (id: string): Promise<void> => {
 // Tags
 export const saveTag = async (tag: Omit<Tag, 'id'>): Promise<string> => {
   try {
-    const docRef = await addDoc(collection(db, 'tags'), sanitize(tag));
+    const docRef = await withRetry(() => addDoc(collection(db, 'tags'), sanitize(tag)));
     console.log('Tag saved with ID:', docRef.id);
     return docRef.id;
   } catch (error) {
@@ -225,7 +239,7 @@ export const updateTag = async (id: string, data: Partial<Tag>): Promise<void> =
 
 export const getTags = async (): Promise<Tag[]> => {
   try {
-    const querySnapshot = await getDocs(collection(db, 'tags'));
+    const querySnapshot = await withRetry(() => getDocs(collection(db, 'tags')));
     const tags: Tag[] = [];
     querySnapshot.forEach((doc) => {
       tags.push({ id: doc.id, ...doc.data() } as Tag);
@@ -239,7 +253,7 @@ export const getTags = async (): Promise<Tag[]> => {
 
 export const deleteTag = async (id: string): Promise<void> => {
   try {
-    await deleteDoc(doc(db, 'tags', id));
+    await withRetry(() => deleteDoc(doc(db, 'tags', id)));
     console.log('Tag deleted:', id);
   } catch (error) {
     console.error('Error deleting tag:', error);
@@ -250,7 +264,7 @@ export const deleteTag = async (id: string): Promise<void> => {
 // Domains
 export const saveDomain = async (domain: Omit<Domain, 'id'>): Promise<string> => {
   try {
-    const docRef = await addDoc(collection(db, 'domains'), sanitize(domain));
+    const docRef = await withRetry(() => addDoc(collection(db, 'domains'), sanitize(domain)));
     console.log('Domain saved with ID:', docRef.id);
     return docRef.id;
   } catch (error) {
@@ -261,7 +275,7 @@ export const saveDomain = async (domain: Omit<Domain, 'id'>): Promise<string> =>
 
 export const getDomains = async (): Promise<Domain[]> => {
   try {
-    const querySnapshot = await getDocs(collection(db, 'domains'));
+    const querySnapshot = await withRetry(() => getDocs(collection(db, 'domains')));
     const domains: Domain[] = [];
     querySnapshot.forEach((doc) => {
       domains.push({ id: doc.id, ...doc.data() } as Domain);
@@ -275,7 +289,7 @@ export const getDomains = async (): Promise<Domain[]> => {
 
 export const deleteDomain = async (id: string): Promise<void> => {
   try {
-    await deleteDoc(doc(db, 'domains', id));
+    await withRetry(() => deleteDoc(doc(db, 'domains', id)));
     console.log('Domain deleted:', id);
   } catch (error) {
     console.error('Error deleting domain:', error);
