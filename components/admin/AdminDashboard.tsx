@@ -145,13 +145,13 @@ export default function AdminDashboard() {
                    activeTab === 'observer' ? 'Observer Posts' : 
                    activeTab === 'tags' ? 'Tags' : 'Domains'}
           </h2>
-          {(activeTab === 'research' || activeTab === 'signals' || activeTab === 'observer') && (
+          {(activeTab === 'research' || activeTab === 'signals' || activeTab === 'observer' || activeTab === 'tags' || activeTab === 'domains') && (
             <button
               onClick={() => setView('create')}
               className="px-4 py-2 bg-cobalt-blue text-white rounded-lg hover:bg-cobalt-light transition-colors flex items-center space-x-2"
             >
               <Plus className="h-4 w-4" />
-              <span>Create New</span>
+              <span>{activeTab === 'tags' ? 'Create Tag' : activeTab === 'domains' ? 'Create Domain' : 'Create New'}</span>
             </button>
           )}
         </div>
@@ -240,6 +240,20 @@ export default function AdminDashboard() {
                 </div>
               </div>
             ))}
+
+            {(activeTab === 'tags' || activeTab === 'domains') && (
+              <div className="text-center py-8">
+                <p className="text-gray-400 mb-4">
+                  {activeTab === 'tags' ? 'Open Tag Manager to create or edit tags.' : 'Open Domain Manager to create or edit domains.'}
+                </p>
+                <button
+                  onClick={() => setView('create')}
+                  className="mt-2 px-4 py-2 bg-cobalt-blue text-white rounded-lg hover:bg-cobalt-light transition-colors"
+                >
+                  {activeTab === 'tags' ? 'Open Tag Manager' : 'Open Domain Manager'}
+                </button>
+              </div>
+            )}
 
             {/* Empty state */}
             {((activeTab === 'research' && researchPosts.length === 0) ||

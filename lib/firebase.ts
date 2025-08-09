@@ -20,7 +20,7 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0
 // See: https://firebase.google.com/docs/firestore/troubleshoot#web-channel-errors
 export const db = typeof window === 'undefined'
   ? initializeFirestore(app, {})
-  : initializeFirestore(app, { experimentalAutoDetectLongPolling: true });
+  : initializeFirestore(app, { experimentalForceLongPolling: true });
 export const auth = getAuth(app);
 
 export default app;
