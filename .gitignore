@@ -122,3 +122,7 @@ temp/
 *.bak
 *.backup
 *~
+
+# Node.js distributions (should not be in repo)
+node-v*/
+node.tar.gz
