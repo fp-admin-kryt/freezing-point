@@ -13,7 +13,7 @@ interface InteractiveCardProps {
   onClick?: () => void
 }
 
-const InteractiveCard = ({ icon: Icon, title, description, color }: InteractiveCardProps) => {
+const InteractiveCard = ({ icon: Icon, title, description, color, onClick }: InteractiveCardProps) => {
   const cardRef = useRef<HTMLDivElement>(null)
   const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 })
 
@@ -46,6 +46,7 @@ const InteractiveCard = ({ icon: Icon, title, description, color }: InteractiveC
       className="interactive-card rounded-2xl p-8 hover:shadow-xl transition-all duration-300 group relative overflow-hidden cursor-pointer"
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
+      onClick={onClick}
       whileHover={{ 
         scale: 1.02,
         rotateX: (mousePosition.y - 50) * 0.1,

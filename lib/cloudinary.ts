@@ -190,26 +190,9 @@ export const uploadToCloudinaryRobust = async (file: File, folder: string = 'fre
   throw new Error('All upload strategies failed');
 };
 
-// Direct upload method - simplest possible approach
-export const uploadToCloudinaryDirect = async (file: File): Promise<string> => {
-  console.log('Direct upload attempt for:', file.name);
-  
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('upload_preset', 'freezing-point'); // Hardcoded for now
-  
-  const response = await fetch('https://api.cloudinary.com/v1_1/dik6zsyzz/auto/upload', {
-    method: 'POST',
-    body: formData,
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('Direct upload error:', errorText);
-    throw new Error(`Direct upload failed: ${response.status} - ${errorText}`);
-  }
-
-  const data = await response.json();
-  console.log('Direct upload successful:', data.secure_url || data.url);
-  return data.secure_url || data.url;
+// Direct upload method – now just a thin wrapper around the robust uploader
+// so it always respects environment configuration (cloud name, preset, etc).
+export const uploadToCloudinaryDirect = async (file: File, folder: string = 'freezing-point'): Promise<string> => {
+  console.log('Direct upload attempt (delegating to robust uploader) for:', file.name);
+  return uploadToCloudinaryRobust(file, folder);
 };

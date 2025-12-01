@@ -12,8 +12,8 @@ interface Post {
   excerpt?: string
   content?: string
   tags: string[]
-  image?: string
-  whitepaper?: string
+  imageUrl?: string
+  whitepaperUrl?: string
   type: 'research' | 'signals' | 'observer'
 }
 
@@ -147,13 +147,13 @@ export default function PostManager({
                 </div>
                 
                 <div className="flex items-center space-x-4 text-sm text-gray-400 font-montserrat">
-                  {post.image && (
+                  {post.imageUrl && (
                     <span className="flex items-center space-x-1">
                       <Eye className="w-4 h-4" />
                       <span>Has Image</span>
                     </span>
                   )}
-                  {post.whitepaper && (
+                  {post.whitepaperUrl && (
                     <span className="flex items-center space-x-1">
                       <Download className="w-4 h-4" />
                       <span>Has Whitepaper</span>

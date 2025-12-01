@@ -183,7 +183,7 @@ export default function ResearchPage() {
                 transition={{ duration: 0.6, delay: index * 0.1 }}
                 className="glass-morphism rounded-2xl p-6 hover:shadow-xl transition-all duration-300 group"
               >
-                {post.image && (
+                {post.imageUrl && (
                   <div className="w-full h-48 bg-gray-700 rounded-lg mb-4 overflow-hidden">
                     <div className="w-full h-full bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center">
                       <span className="text-gray-400">Image Placeholder</span>
@@ -220,7 +220,7 @@ export default function ResearchPage() {
                 
                 <div className="flex items-center justify-between">
                   <a
-                    href={post.whitepaper || '#'}
+                    href={post.whitepaperUrl || '#'}
                     className="flex items-center gap-2 text-cobalt-light hover:text-cobalt-blue transition-colors text-sm font-montserrat"
                   >
                     <Download className="w-4 h-4" />

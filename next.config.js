@@ -5,20 +5,6 @@ const nextConfig = {
     formats: ['image/webp', 'image/avif'],
   },
   webpack: (config, { isServer }) => {
-    // Handle PDF files
-    config.module.rules.push({
-      test: /\.pdf$/,
-      use: [
-        {
-          loader: 'file-loader',
-          options: {
-            publicPath: '/_next/static/files/',
-            outputPath: 'static/files/',
-          },
-        },
-      ],
-    })
-
     // Handle Firebase modules
     if (!isServer) {
       config.resolve.fallback = {
