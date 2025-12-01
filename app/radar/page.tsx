@@ -257,7 +257,13 @@ export default function RadarPage() {
                   <span className="text-cobalt-light text-sm font-montserrat">
                     {activeTab === 'signals' ? 'Signal' : 'Observer'}
                   </span>
-                  <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-cobalt-light transition-colors" />
+                  <a
+                    href={`/radar/${post.id}`}
+                    className="flex items-center gap-2 text-cobalt-light hover:text-cobalt-blue transition-colors"
+                  >
+                    <span className="text-sm">Read More</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </a>
                 </div>
               </motion.div>
             ))}

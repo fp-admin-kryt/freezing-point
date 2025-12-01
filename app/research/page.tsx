@@ -219,14 +219,24 @@ export default function ResearchPage() {
                 </p>
                 
                 <div className="flex items-center justify-between">
+                  {post.whitepaperUrl && (
+                    <a
+                      href={post.whitepaperUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-cobalt-light hover:text-cobalt-blue transition-colors text-sm font-montserrat"
+                    >
+                      <Download className="w-4 h-4" />
+                      Download PDF
+                    </a>
+                  )}
                   <a
-                    href={post.whitepaperUrl || '#'}
+                    href={`/research/${post.id}`}
                     className="flex items-center gap-2 text-cobalt-light hover:text-cobalt-blue transition-colors text-sm font-montserrat"
                   >
-                    <Download className="w-4 h-4" />
-                    Download PDF
+                    <span>Read More</span>
+                    <ArrowRight className="w-4 h-4" />
                   </a>
-                  <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-cobalt-light transition-colors" />
                 </div>
               </motion.div>
             ))}

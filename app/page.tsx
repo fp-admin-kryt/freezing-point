@@ -289,14 +289,24 @@ export default function Home() {
                         {post.excerpt}
                       </p>
                       <div className="flex items-center justify-between">
+                        {post.whitepaperUrl && (
+                          <a
+                            href={post.whitepaperUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 text-cobalt-light hover:text-cobalt-blue transition-colors text-sm"
+                          >
+                            <Download className="w-4 h-4" />
+                            Download PDF
+                          </a>
+                        )}
                         <a
-                          href={post.whitepaperUrl || '#'}
+                          href={`/research/${post.id}`}
                           className="flex items-center gap-2 text-cobalt-light hover:text-cobalt-blue transition-colors text-sm"
                         >
-                          <Download className="w-4 h-4" />
-                          Download PDF
+                          <span>Read More</span>
+                          <ArrowRight className="w-4 h-4" />
                         </a>
-                        <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-cobalt-light transition-colors" />
                       </div>
                     </motion.div>
                   ))}
@@ -392,11 +402,13 @@ export default function Home() {
                         </p>
                         <div className="flex items-center justify-between text-xs text-gray-500">
                           <span>{new Date(post.createdAt).toLocaleDateString()}</span>
-                          {getDomainById(post.domain) && (
-                            <span className="px-2 py-1 rounded-full bg-gray-700">
-                              {getDomainById(post.domain)?.name}
-                            </span>
-                          )}
+                          <a
+                            href={`/radar/${post.id}`}
+                            className="flex items-center gap-1 text-cobalt-light hover:text-cobalt-blue transition-colors"
+                          >
+                            <span>Read More</span>
+                            <ArrowRight className="w-3 h-3" />
+                          </a>
                         </div>
                       </motion.div>
                     ))}
@@ -458,11 +470,13 @@ export default function Home() {
                         </p>
                         <div className="flex items-center justify-between text-xs text-gray-500">
                           <span>{new Date(post.createdAt).toLocaleDateString()}</span>
-                          {getDomainById(post.domain) && (
-                            <span className="px-2 py-1 rounded-full bg-gray-700">
-                              {getDomainById(post.domain)?.name}
-                            </span>
-                          )}
+                          <a
+                            href={`/radar/${post.id}`}
+                            className="flex items-center gap-1 text-cobalt-light hover:text-cobalt-blue transition-colors"
+                          >
+                            <span>Read More</span>
+                            <ArrowRight className="w-3 h-3" />
+                          </a>
                         </div>
                       </motion.div>
                     ))}

@@ -1,7 +1,7 @@
 'use client'
 
 import { initializeApp, getApps } from 'firebase/app';
-import { initializeFirestore, collection, addDoc, getDocs, doc, deleteDoc, updateDoc, query, orderBy } from 'firebase/firestore';
+import { initializeFirestore, collection, addDoc, getDocs, getDoc, setDoc, doc, deleteDoc, updateDoc, query, orderBy } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
@@ -49,6 +49,17 @@ const withRetry = async <T>(fn: () => Promise<T>, attempts = 3): Promise<T> => {
 }
 
 // Types
+export type TemplateType = 'singleImage' | 'document';
+
+export interface ContentBlock {
+  id: string;
+  type: 'text' | 'image' | 'imageText';
+  content?: string; // HTML content for text blocks
+  imageUrl?: string;
+  align?: 'left' | 'right' | 'full'; // For imageText blocks
+  order: number;
+}
+
 export interface ResearchPost {
   id?: string;
   title: string;
@@ -58,6 +69,9 @@ export interface ResearchPost {
   tags: string[];
   imageUrl?: string;
   whitepaperUrl?: string;
+  templateType?: TemplateType;
+  blocks?: ContentBlock[]; // For document template
+  richContent?: string; // HTML content for single image template
   createdAt: Date;
 }
 
@@ -68,6 +82,9 @@ export interface SignalPost {
   tags: string[];
   domain: string;
   imageUrl?: string;
+  templateType?: TemplateType;
+  blocks?: ContentBlock[]; // For document template
+  richContent?: string; // HTML content for single image template
   createdAt: Date;
 }
 
@@ -78,6 +95,9 @@ export interface ObserverPost {
   tags: string[];
   domain: string;
   imageUrl?: string;
+  templateType?: TemplateType;
+  blocks?: ContentBlock[]; // For document template
+  richContent?: string; // HTML content for single image template
   createdAt: Date;
 }
 
@@ -303,6 +323,70 @@ export const updateDomain = async (id: string, data: Partial<Domain>): Promise<v
     console.log('Domain updated:', id);
   } catch (error) {
     console.error('Error updating domain:', error);
+    throw error;
+  }
+};
+
+// Typography Settings
+export interface TypographySettings {
+  id?: string;
+  heading1: {
+    fontSize: { desktop: string; mobile: string };
+    fontWeight: string;
+    color: string;
+    lineHeight: string;
+  };
+  heading2: {
+    fontSize: { desktop: string; mobile: string };
+    fontWeight: string;
+    color: string;
+    lineHeight: string;
+  };
+  heading3: {
+    fontSize: { desktop: string; mobile: string };
+    fontWeight: string;
+    color: string;
+    lineHeight: string;
+  };
+  body: {
+    fontSize: { desktop: string; mobile: string };
+    fontWeight: string;
+    color: string;
+    lineHeight: string;
+  };
+  caption: {
+    fontSize: { desktop: string; mobile: string };
+    fontWeight: string;
+    color: string;
+    lineHeight: string;
+  };
+  updatedAt?: Date;
+}
+
+export const getTypographySettings = async (): Promise<TypographySettings | null> => {
+  try {
+    const settingsRef = doc(db, 'settings', 'typography');
+    const settingsSnap = await getDoc(settingsRef);
+    if (settingsSnap.exists()) {
+      return { id: settingsSnap.id, ...settingsSnap.data() } as TypographySettings;
+    }
+    return null;
+  } catch (error) {
+    console.error('Error getting typography settings:', error);
+    return null;
+  }
+};
+
+export const saveTypographySettings = async (settings: Omit<TypographySettings, 'id' | 'updatedAt'>): Promise<void> => {
+  try {
+    const settingsRef = doc(db, 'settings', 'typography');
+    await setDoc(settingsRef, {
+      ...settings,
+      updatedAt: new Date()
+    }, { merge: true });
+    console.log('Typography settings saved');
+  } catch (error) {
+    console.error('Error saving typography settings:', error);
     throw error;
   }
 };
