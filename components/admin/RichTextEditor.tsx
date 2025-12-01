@@ -2,12 +2,12 @@
 
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
-import TextStyle from '@tiptap/extension-text-style'
-import Color from '@tiptap/extension-color'
-import TextAlign from '@tiptap/extension-text-align'
-import FontFamily from '@tiptap/extension-font-family'
-import Heading from '@tiptap/extension-heading'
-import Image from '@tiptap/extension-image'
+import { TextStyle } from '@tiptap/extension-text-style'
+import { Color } from '@tiptap/extension-color'
+import { TextAlign } from '@tiptap/extension-text-align'
+import { FontFamily } from '@tiptap/extension-font-family'
+import { Heading } from '@tiptap/extension-heading'
+import { Image } from '@tiptap/extension-image'
 import { Bold, Italic, Underline, Strikethrough, Heading1, Heading2, Heading3, List, ListOrdered, AlignLeft, AlignCenter, AlignRight, Image as ImageIcon, Palette, Type } from 'lucide-react'
 import { useState } from 'react'
 
