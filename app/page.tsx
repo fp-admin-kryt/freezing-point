@@ -100,9 +100,20 @@ export default function Home() {
         <Navigation />
 
         {/* Hero + Explore Section */}
-        <section id="explore" className="section-padding">
+        <section
+          id="explore"
+          className={
+            hasScrolled
+              ? 'section-padding'
+              : 'min-h-screen flex items-center justify-center px-4'
+          }
+        >
           <div className="container mx-auto px-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-6xl mx-auto items-start">
+            <div
+              className={`max-w-6xl mx-auto items-start ${
+                hasScrolled ? 'grid grid-cols-1 md:grid-cols-2 gap-10' : 'flex flex-col items-center'
+              }`}
+            >
               {/* Left: sticky hero */}
               <div className="md:sticky md:top-32 space-y-6 flex flex-col items-center md:items-start">
                 <motion.h1
@@ -163,7 +174,7 @@ export default function Home() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 1, delay: 1 }}
-                    className="hidden md:flex flex-col items-start space-y-4 mt-8"
+                    className="flex flex-col items-center md:items-start space-y-4 mt-8"
                   >
                     <ScrollIndicator variant="new" />
                   </motion.div>
@@ -171,7 +182,11 @@ export default function Home() {
               </div>
 
               {/* Right: stacked cards */}
-              <div className="space-y-6 mt-10 md:mt-0">
+              <div
+                className={`space-y-6 mt-10 md:mt-0 w-full ${
+                  hasScrolled ? 'block' : 'hidden md:block opacity-0 pointer-events-none'
+                }`}
+              >
                 {heroCards.map((card, index) => {
                   const Icon = card.icon
                   return (
