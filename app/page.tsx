@@ -14,6 +14,7 @@ export default function Home() {
   const [researchPosts, setResearchPosts] = useState<any[]>([])
   const [signalPosts, setSignalPosts] = useState<any[]>([])
   const [observerPosts, setObserverPosts] = useState<any[]>([])
+  const [hasScrolled, setHasScrolled] = useState(false)
 
   // Load data from Firebase
   useEffect(() => {
@@ -76,6 +77,17 @@ export default function Home() {
     }
   }
 
+  // Track scroll to adjust hero layout / hide scroll indicator after first scroll
+  useEffect(() => {
+    const onScroll = () => {
+      setHasScrolled(window.scrollY > 10)
+    }
+
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
   return (
     <main className="min-h-screen relative overflow-hidden">
       <motion.div
@@ -92,12 +104,14 @@ export default function Home() {
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-6xl mx-auto items-start">
               {/* Left: sticky hero */}
-              <div className="md:sticky md:top-32 space-y-6">
+              <div className="md:sticky md:top-32 space-y-6 flex flex-col items-center md:items-start">
                 <motion.h1
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 1, delay: 0.3 }}
-                  className="text-5xl md:text-7xl font-bold text-white font-montserrat mb-4 md:text-left text-center"
+                  className={`text-5xl md:text-7xl font-bold text-white font-montserrat mb-4 ${
+                    hasScrolled ? 'text-left self-start' : 'text-center md:text-center'
+                  }`}
                 >
                   FREEZING POINT
                 </motion.h1>
@@ -106,7 +120,9 @@ export default function Home() {
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.8, delay: 0.6 }}
-                  className="relative inline-flex"
+                  className={`relative inline-flex ${
+                    hasScrolled ? 'self-start' : 'self-center'
+                  }`}
                 >
                   <div
                     className="relative px-6 py-2 rounded-full border-2 border-transparent bg-space-gray shadow-lg overflow-hidden"
@@ -142,14 +158,16 @@ export default function Home() {
                   </div>
                 </motion.div>
 
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 1, delay: 1 }}
-                  className="hidden md:flex flex-col items-start space-y-4 mt-8"
-                >
-                  <ScrollIndicator variant="new" />
-                </motion.div>
+                {!hasScrolled && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 1, delay: 1 }}
+                    className="hidden md:flex flex-col items-start space-y-4 mt-8"
+                  >
+                    <ScrollIndicator variant="new" />
+                  </motion.div>
+                )}
               </div>
 
               {/* Right: stacked cards */}
@@ -164,9 +182,9 @@ export default function Home() {
                       initial={{ opacity: 0, y: 20 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5, delay: index * 0.1 }}
-                      className="w-full text-left glass-morphism rounded-2xl p-6 hover:shadow-xl transition-all duration-300 flex items-start justify-between gap-6 cursor-pointer"
+                      className="relative w-full text-left glass-morphism rounded-2xl p-6 hover:shadow-xl transition-all duration-300 cursor-pointer"
                     >
-                      <div className="flex-1">
+                      <div className="pr-12">
                         <h3 className="text-xl md:text-2xl font-bold text-white mb-2 font-montserrat">
                           {card.title}
                         </h3>
@@ -174,8 +192,8 @@ export default function Home() {
                           {card.description}
                         </p>
                       </div>
-                      <div className="flex items-center justify-center flex-shrink-0">
-                        <Icon className="w-10 h-10 md:w-12 md:h-12 text-white" />
+                      <div className="absolute top-4 right-4 flex items-center justify-center">
+                        <Icon className="w-6 h-6 md:w-7 md:h-7 text-white" />
                       </div>
                     </motion.button>
                   )
