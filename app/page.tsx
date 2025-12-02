@@ -111,17 +111,23 @@ export default function Home() {
           <div className="container mx-auto px-4">
             <div
               className={`max-w-6xl mx-auto items-start ${
-                hasScrolled ? 'grid grid-cols-1 md:grid-cols-2 gap-10' : 'flex flex-col items-center'
+                hasScrolled
+                  ? 'grid grid-cols-1 md:grid-cols-2 gap-10'
+                  : 'flex flex-col items-center'
               }`}
             >
               {/* Left: sticky hero */}
-              <div className="md:sticky md:top-32 space-y-6 flex flex-col items-center md:items-start">
+              <div
+                className={`space-y-6 flex flex-col items-center md:items-start ${
+                  hasScrolled ? 'md:sticky md:top-1/2 md:-translate-y-1/2' : ''
+                }`}
+              >
                 <motion.h1
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 1, delay: 0.3 }}
                   className={`text-5xl md:text-7xl font-bold text-white font-montserrat mb-4 ${
-                    hasScrolled ? 'text-left self-start' : 'text-center md:text-center'
+                    hasScrolled ? 'md:text-left md:self-start text-center' : 'text-center'
                   }`}
                 >
                   FREEZING POINT
@@ -132,7 +138,7 @@ export default function Home() {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.8, delay: 0.6 }}
                   className={`relative inline-flex ${
-                    hasScrolled ? 'self-start' : 'self-center'
+                    hasScrolled ? 'md:self-start self-center' : 'self-center'
                   }`}
                 >
                   <div
@@ -169,6 +175,7 @@ export default function Home() {
                   </div>
                 </motion.div>
 
+                {/* Single scroll indicator: only before first scroll */}
                 {!hasScrolled && (
                   <motion.div
                     initial={{ opacity: 0 }}
@@ -215,16 +222,6 @@ export default function Home() {
                 })}
               </div>
             </div>
-
-            {/* Mobile scroll indicator under cards */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 1, delay: 0.8 }}
-              className="mt-10 flex md:hidden justify-center"
-            >
-              <ScrollIndicator variant="new" />
-            </motion.div>
           </div>
         </section>
 
