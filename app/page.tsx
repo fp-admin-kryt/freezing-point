@@ -128,12 +128,12 @@ export default function Home() {
           <ScrollIndicator variant="new" />
         </section>
 
-        {/* Explore Section: sticky video left, cards right */}
+        {/* Explore Section: sticky media left, cards right */}
         <section id="explore" className="section-padding">
           <div className="container mx-auto px-4">
-            <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
-              {/* Left: sticky video */}
-              <div className="md:sticky md:top-32 md:h-[60vh]">
+            <div className="max-w-6xl mx-auto md:flex md:min-h-screen">
+              {/* Left: media (sticky on desktop, regular on mobile) */}
+              <div className="w-full md:w-1/2 md:sticky md:top-24 md:h-screen overflow-hidden mb-8 md:mb-0">
                 <div className="w-full h-full rounded-2xl overflow-hidden bg-black/40">
                   <video
                     src="https://res.cloudinary.com/dik6zsyzz/video/upload/v1764679948/moHITMANoj__--ar_8953_--bs_1_--video_1_--end_loop_af4d8a8f-2c20-4c6f-a7ce-6f476dd24466_0_kciiks.mp4"
@@ -147,7 +147,7 @@ export default function Home() {
               </div>
 
               {/* Right: stacked cards */}
-              <div className="space-y-6 mt-8 md:mt-0">
+              <div className="w-full md:w-1/2 md:px-8 space-y-6 md:space-y-8">
                 {heroCards.map((card) => {
                   const Icon = card.icon
                   return (
