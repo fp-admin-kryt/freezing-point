@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import Navigation from '@/components/Navigation'
 import InteractiveCard from '@/components/InteractiveCard'
 import ScrollIndicator from '@/components/ScrollIndicator'
-import { Target, Zap, Eye, TrendingUp, Download, ArrowRight } from 'lucide-react'
+import { Target, PlusCircle, Radar, Eye, Download, ArrowRight } from 'lucide-react'
 import { getResearchPosts, getSignalPosts, getObserverPosts } from '@/lib/firebase'
 import { getTagById, getDomainById } from '@/lib/dataService'
 import Image from 'next/image'
@@ -43,21 +43,21 @@ export default function Home() {
       color: 'from-cobalt-blue to-cobalt-light'
     },
     {
-      icon: TrendingUp,
+      icon: PlusCircle,
       title: 'Health',
       description: 'Positioned at the crossroads of medicine and machine learning, Health at FreezingPoint.Ai delves into how artificial intelligence, systems thinking, and data-driven approaches are reshaping care delivery. From predictive diagnostics to patient-centered innovations, this section showcases cutting-edge research, actionable methodologies, and forward-looking solutions aimed at improving outcomes and fundamentally redefining healthcare.',
       link: '#research',
       color: 'from-green-500 to-emerald-400'
     },
     {
-      icon: Eye,
+      icon: Radar,
       title: 'Signals',
       description: 'A curated stream of early indicators, emerging patterns, and subtle shifts shaping the future of healthcare and artificial intelligence. Signals highlight emerging patterns and weak signals that often go unnoticed but hold the potential to redefine the landscape. This section invites curiosity and foresight, providing a front-row seat to innovation before it reaches the mainstream.',
       link: '#radar',
       color: 'from-purple-500 to-pink-400'
     },
     {
-      icon: Zap,
+      icon: Eye,
       title: 'The Observer',
       description: 'The Observer offers a curated lens on the evolving landscape of AI, systems innovation, and healthcare transformation. Expect in-depth analysis, ideas, critical commentary, and comprehensive trend reviews that cut through the noise. Whether it\'s a deep dive into policy shifts or reflections on paradigm-changing research, this space invites critical thought and continuous learning.',
       link: '#radar',
@@ -87,94 +87,111 @@ export default function Home() {
         {/* Navigation */}
         <Navigation />
 
-        {/* Hero Section */}
-        <section className="min-h-screen flex flex-col items-center justify-center px-4 relative">
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.5 }}
-            className="text-6xl md:text-8xl font-bold text-white font-montserrat text-center mb-8"
-          >
-            FREEZING POINT
-          </motion.h1>
-
-          {/* Explore Infinitely Capsule - updated */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 1 }}
-            className="relative mb-10"
-          >
-            <div
-              className="relative px-6 py-2 rounded-full border-2 border-transparent bg-space-gray shadow-lg overflow-hidden"
-              style={{ minWidth: 180 }}
-            >
-              <motion.div
-                className="absolute inset-0 rounded-full pointer-events-none"
-                animate={{
-                  background: [
-                    'radial-gradient(circle at 0% 50%, #136fd7 0%, transparent 70%)',
-                    'radial-gradient(circle at 100% 50%, #4da6ff 0%, transparent 70%)',
-                    'radial-gradient(circle at 0% 50%, #136fd7 0%, transparent 70%)'
-                  ]
-                }}
-                transition={{ duration: 3, repeat: Infinity }}
-                style={{ zIndex: 1, opacity: 0.4 }}
-              />
-              <span className="relative z-10 text-base md:text-lg font-semibold text-white font-montserrat">
-                Explore Infinitely
-              </span>
-              <motion.div
-                className="absolute inset-0 rounded-full border-2 border-cobalt-blue pointer-events-none"
-                animate={{
-                  boxShadow: [
-                    '0 0 8px 2px #136fd7',
-                    '0 0 16px 4px #4da6ff',
-                    '0 0 8px 2px #136fd7'
-                  ]
-                }}
-                transition={{ duration: 3, repeat: Infinity }}
-                style={{ zIndex: 2 }}
-              />
-            </div>
-          </motion.div>
-
-          {/* New Scroll Indicator */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 1.5 }}
-            className="flex flex-col items-center space-y-4"
-          >
-            <ScrollIndicator variant="new" />
-          </motion.div>
-        </section>
-
-        {/* Interactive Cards Section */}
+        {/* Hero + Explore Section */}
         <section id="explore" className="section-padding">
           <div className="container mx-auto px-4">
-            <motion.h2
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="text-4xl md:text-5xl font-bold text-white text-center mb-16 font-montserrat"
-            >
-              Explore Our World
-            </motion.h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-6xl mx-auto items-start">
+              {/* Left: sticky hero */}
+              <div className="md:sticky md:top-32 space-y-6">
+                <motion.h1
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 1, delay: 0.3 }}
+                  className="text-5xl md:text-7xl font-bold text-white font-montserrat mb-4 md:text-left text-center"
+                >
+                  FREEZING POINT
+                </motion.h1>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-              {heroCards.map((card, index) => (
-                <InteractiveCard
-                  key={index}
-                  icon={card.icon}
-                  title={card.title}
-                  description={card.description}
-                  link={card.link}
-                  color={card.color}
-                  onClick={() => scrollToSection(card.link.replace('#', ''))}
-                />
-              ))}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.8, delay: 0.6 }}
+                  className="relative inline-flex"
+                >
+                  <div
+                    className="relative px-6 py-2 rounded-full border-2 border-transparent bg-space-gray shadow-lg overflow-hidden"
+                    style={{ minWidth: 180 }}
+                  >
+                    <motion.div
+                      className="absolute inset-0 rounded-full pointer-events-none"
+                      animate={{
+                        background: [
+                          'radial-gradient(circle at 0% 50%, #136fd7 0%, transparent 70%)',
+                          'radial-gradient(circle at 100% 50%, #4da6ff 0%, transparent 70%)',
+                          'radial-gradient(circle at 0% 50%, #136fd7 0%, transparent 70%)'
+                        ]
+                      }}
+                      transition={{ duration: 3, repeat: Infinity }}
+                      style={{ zIndex: 1, opacity: 0.4 }}
+                    />
+                    <span className="relative z-10 text-base md:text-lg font-semibold text-white font-montserrat">
+                      Explore Infinitely
+                    </span>
+                    <motion.div
+                      className="absolute inset-0 rounded-full border-2 border-cobalt-blue pointer-events-none"
+                      animate={{
+                        boxShadow: [
+                          '0 0 8px 2px #136fd7',
+                          '0 0 16px 4px #4da6ff',
+                          '0 0 8px 2px #136fd7'
+                        ]
+                      }}
+                      transition={{ duration: 3, repeat: Infinity }}
+                      style={{ zIndex: 2 }}
+                    />
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 1, delay: 1 }}
+                  className="hidden md:flex flex-col items-start space-y-4 mt-8"
+                >
+                  <ScrollIndicator variant="new" />
+                </motion.div>
+              </div>
+
+              {/* Right: stacked cards */}
+              <div className="space-y-6 mt-10 md:mt-0">
+                {heroCards.map((card, index) => {
+                  const Icon = card.icon
+                  return (
+                    <motion.button
+                      key={card.title}
+                      type="button"
+                      onClick={() => scrollToSection(card.link.replace('#', ''))}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: index * 0.1 }}
+                      className="w-full text-left glass-morphism rounded-2xl p-6 hover:shadow-xl transition-all duration-300 flex items-start justify-between gap-6 cursor-pointer"
+                    >
+                      <div className="flex-1">
+                        <h3 className="text-xl md:text-2xl font-bold text-white mb-2 font-montserrat">
+                          {card.title}
+                        </h3>
+                        <p className="text-sm md:text-base text-gray-300 leading-relaxed">
+                          {card.description}
+                        </p>
+                      </div>
+                      <div className="flex items-center justify-center flex-shrink-0">
+                        <Icon className="w-10 h-10 md:w-12 md:h-12 text-white" />
+                      </div>
+                    </motion.button>
+                  )
+                })}
+              </div>
             </div>
+
+            {/* Mobile scroll indicator under cards */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1, delay: 0.8 }}
+              className="mt-10 flex md:hidden justify-center"
+            >
+              <ScrollIndicator variant="new" />
+            </motion.div>
           </div>
         </section>
 
