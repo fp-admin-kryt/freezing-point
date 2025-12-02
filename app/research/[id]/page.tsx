@@ -117,31 +117,42 @@ export default function ResearchDetailPage() {
                       ) : null
                     })}
                   </div>
-                  <h1
-                    className="text-4xl md:text-5xl font-bold text-white mb-4 font-montserrat"
-                    style={typography?.heading1 ? {
-                      fontSize: typography.heading1.fontSize.desktop,
-                      fontWeight: typography.heading1.fontWeight,
-                      color: typography.heading1.color,
-                      lineHeight: typography.heading1.lineHeight,
-                    } : {}}
-                  >
-                    {post.title}
-                  </h1>
+                  <div className="flex items-center justify-between mb-4">
+                    <h1
+                      className="text-4xl md:text-5xl font-bold text-white font-montserrat"
+                      style={typography?.heading1 ? {
+                        fontSize: typography.heading1.fontSize.desktop,
+                        fontWeight: typography.heading1.fontWeight,
+                        color: typography.heading1.color,
+                        lineHeight: typography.heading1.lineHeight,
+                      } : {}}
+                    >
+                      {post.title}
+                    </h1>
+                    {post.whitepaperUrl && (
+                      <a
+                        href={post.whitepaperUrl}
+                        onClick={(e) => {
+                          e.preventDefault()
+                          // Force download for Cloudinary PDFs
+                          const link = document.createElement('a')
+                          link.href = post.whitepaperUrl
+                          link.download = `${post.title || 'whitepaper'}.pdf`
+                          link.target = '_blank'
+                          document.body.appendChild(link)
+                          link.click()
+                          document.body.removeChild(link)
+                        }}
+                        className="ml-4 inline-flex items-center gap-2 px-4 py-2 bg-cobalt-blue text-white rounded-lg hover:bg-cobalt-light transition-colors flex-shrink-0"
+                      >
+                        <Download className="w-4 h-4" />
+                        <span className="hidden md:inline">Download PDF</span>
+                      </a>
+                    )}
+                  </div>
                   <p className="text-gray-400 mb-4">
                     By {post.author} • {new Date(post.date).toLocaleDateString()}
                   </p>
-                  {post.whitepaperUrl && (
-                    <a
-                      href={post.whitepaperUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-6 py-3 bg-cobalt-blue text-white rounded-lg hover:bg-cobalt-light transition-colors"
-                    >
-                      <Download className="w-5 h-5" />
-                      Download PDF
-                    </a>
-                  )}
                 </div>
 
                 {/* Rich Content */}
@@ -186,31 +197,36 @@ export default function ResearchDetailPage() {
                     ) : null
                   })}
                 </div>
-                <h1
-                  className="text-4xl md:text-5xl font-bold text-white mb-4 font-montserrat"
-                  style={typography?.heading1 ? {
-                    fontSize: typography.heading1.fontSize.desktop,
-                    fontWeight: typography.heading1.fontWeight,
-                    color: typography.heading1.color,
-                    lineHeight: typography.heading1.lineHeight,
-                  } : {}}
-                >
-                  {post.title}
-                </h1>
+                <div className="flex items-center justify-between mb-4">
+                  <h1
+                    className="text-4xl md:text-5xl font-bold text-white font-montserrat"
+                    style={typography?.heading1 ? {
+                      fontSize: typography.heading1.fontSize.desktop,
+                      fontWeight: typography.heading1.fontWeight,
+                      color: typography.heading1.color,
+                      lineHeight: typography.heading1.lineHeight,
+                    } : {}}
+                  >
+                    {post.title}
+                  </h1>
+                  {post.whitepaperUrl && (
+                    <a
+                      href={post.whitepaperUrl}
+                      download
+                      onClick={(e) => {
+                        e.preventDefault()
+                        window.open(post.whitepaperUrl, '_blank')
+                      }}
+                      className="ml-4 inline-flex items-center gap-2 px-4 py-2 bg-cobalt-blue text-white rounded-lg hover:bg-cobalt-light transition-colors flex-shrink-0"
+                    >
+                      <Download className="w-4 h-4" />
+                      <span className="hidden md:inline">Download PDF</span>
+                    </a>
+                  )}
+                </div>
                 <p className="text-gray-400 mb-4">
                   By {post.author} • {new Date(post.date).toLocaleDateString()}
                 </p>
-                {post.whitepaperUrl && (
-                  <a
-                    href={post.whitepaperUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-cobalt-blue text-white rounded-lg hover:bg-cobalt-light transition-colors"
-                  >
-                    <Download className="w-5 h-5" />
-                    Download PDF
-                  </a>
-                )}
               </div>
 
               {/* Blocks */}

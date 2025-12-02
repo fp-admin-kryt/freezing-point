@@ -16,25 +16,12 @@
 
 /* Custom scrollbar for horizontal sections */
 .horizontal-scroll {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .horizontal-scroll::-webkit-scrollbar {
-  height: 8px;
-}
-
-.horizontal-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.horizontal-scroll::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-}
-
-.horizontal-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  display: none;
 }
 
 /* Glass morphism effect */
@@ -65,6 +52,11 @@
 @keyframes scroll-bounce {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(10px); }
+}
+
+@keyframes grid-move {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(50px, 50px); }
 }
 
 /* Logo animation */

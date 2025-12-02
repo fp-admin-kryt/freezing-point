@@ -19,7 +19,7 @@ export default function Home() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowContent(true)
-    }, 4000) // Increased delay for new animation
+    }, 3000) // Animation duration
     return () => clearTimeout(timer)
   }, [])
 
@@ -86,47 +86,111 @@ export default function Home() {
 
   return (
     <main className="min-h-screen relative overflow-hidden">
-      {/* New Entrance Animation */}
+      {/* Futuristic Loading Animation */}
       {!showContent && (
         <div className="absolute inset-0 flex items-center justify-center z-10 bg-space-black">
-          {/* White dot in center */}
-          <motion.div
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="w-4 h-4 bg-white rounded-full relative"
-          >
-            {/* Pulsing waves */}
-            {[1, 2, 3].map((i) => (
+          {/* Animated grid background */}
+          <div className="absolute inset-0 opacity-20">
+            <div 
+              className="w-full h-full"
+              style={{
+                backgroundImage: `
+                  linear-gradient(rgba(19, 111, 215, 0.1) 1px, transparent 1px),
+                  linear-gradient(90deg, rgba(19, 111, 215, 0.1) 1px, transparent 1px)
+                `,
+                backgroundSize: '50px 50px',
+                animation: 'grid-move 20s linear infinite'
+              }}
+            />
+          </div>
+
+          {/* Central orb with pulsing rings */}
+          <div className="relative">
+            {/* Outer rings */}
+            {[0, 1, 2].map((i) => (
               <motion.div
                 key={i}
-                initial={{ scale: 0, opacity: 1 }}
-                animate={{ scale: 20, opacity: 0 }}
-                transition={{ 
-                  duration: 1.5, 
-                  delay: i * 0.3,
+                initial={{ scale: 0, opacity: 0.8 }}
+                animate={{ 
+                  scale: [1, 1.5, 2],
+                  opacity: [0.8, 0.4, 0]
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  delay: i * 0.4,
                   ease: "easeOut"
                 }}
-                className="absolute inset-0 border border-white rounded-full"
-                style={{ transformOrigin: 'center' }}
+                className="absolute inset-0 border-2 border-cobalt-blue rounded-full"
+                style={{
+                  width: '200px',
+                  height: '200px',
+                  margin: '-100px 0 0 -100px'
+                }}
               />
             ))}
-          </motion.div>
 
-          {/* Logo reveal after waves */}
+            {/* Central glowing orb */}
+            <motion.div
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ 
+                scale: [1, 1.1, 1],
+                opacity: [0.6, 1, 0.6]
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              className="w-32 h-32 rounded-full bg-gradient-to-br from-cobalt-blue via-cobalt-light to-cobalt-blue relative"
+              style={{
+                boxShadow: '0 0 60px rgba(19, 111, 215, 0.8), 0 0 100px rgba(77, 166, 255, 0.4)'
+              }}
+            >
+              {/* Inner core */}
+              <div className="absolute inset-4 rounded-full bg-white opacity-30 blur-sm" />
+            </motion.div>
+
+            {/* Floating particles */}
+            {[...Array(12)].map((_, i) => (
+              <motion.div
+                key={i}
+                initial={{ 
+                  x: 0, 
+                  y: 0,
+                  opacity: 0
+                }}
+                animate={{
+                  x: Math.cos((i * Math.PI * 2) / 12) * 150,
+                  y: Math.sin((i * Math.PI * 2) / 12) * 150,
+                  opacity: [0, 1, 0.5, 0]
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  delay: i * 0.1,
+                  ease: "easeInOut"
+                }}
+                className="absolute w-2 h-2 bg-cobalt-light rounded-full"
+                style={{
+                  left: '50%',
+                  top: '50%',
+                  marginLeft: '-4px',
+                  marginTop: '-4px',
+                  boxShadow: '0 0 10px rgba(77, 166, 255, 0.8)'
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Loading text */}
           <motion.div
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 1, delay: 2.5, ease: "easeOutBack" }}
-            className="absolute"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="absolute bottom-32 text-cobalt-light text-sm font-montserrat tracking-wider"
           >
-            <Image
-              src="/assets/logos/fp-logo.png"
-              alt="Freezing Point AI"
-              width={120}
-              height={120}
-              className="drop-shadow-2xl"
-            />
+            INITIALIZING...
           </motion.div>
         </div>
       )}
@@ -247,22 +311,27 @@ export default function Home() {
                 </p>
               </motion.div>
 
-              <div className="overflow-x-auto horizontal-scroll">
+              <div className="overflow-x-auto horizontal-scroll" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                 <div className="flex gap-8 pb-4" style={{ minWidth: 'max-content' }}>
                   {researchPosts.slice(0, 6).map((post, index) => (
-                    <motion.div
+                    <motion.a
                       key={post.id || `research-${index}`}
+                      href={`/research/${post.id}`}
                       initial={{ opacity: 0, y: 30 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.6, delay: index * 0.1 }}
-                      className="glass-morphism rounded-2xl p-6 hover:shadow-xl transition-all duration-300 group flex-shrink-0"
+                      className="glass-morphism rounded-2xl p-6 hover:shadow-xl transition-all duration-300 group flex-shrink-0 cursor-pointer block"
                       style={{ width: '400px', maxWidth: '400px' }}
                     >
                       {post.imageUrl && (
-                        <div className="w-full h-48 bg-gray-700 rounded-lg mb-4 overflow-hidden">
-                          <div className="w-full h-full bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center">
-                            <span className="text-gray-400">Image Placeholder</span>
-                          </div>
+                        <div className="w-full h-48 rounded-lg mb-4 overflow-hidden relative">
+                          <Image
+                            src={post.imageUrl}
+                            alt={post.title}
+                            fill
+                            className="object-cover"
+                            sizes="400px"
+                          />
                         </div>
                       )}
                       <div className="flex items-center gap-2 mb-3">
@@ -292,23 +361,30 @@ export default function Home() {
                         {post.whitepaperUrl && (
                           <a
                             href={post.whitepaperUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              e.preventDefault()
+                              // Force download for Cloudinary PDFs
+                              const link = document.createElement('a')
+                              link.href = post.whitepaperUrl
+                              link.download = `${post.title || 'whitepaper'}.pdf`
+                              link.target = '_blank'
+                              document.body.appendChild(link)
+                              link.click()
+                              document.body.removeChild(link)
+                            }}
                             className="flex items-center gap-2 text-cobalt-light hover:text-cobalt-blue transition-colors text-sm"
                           >
                             <Download className="w-4 h-4" />
                             Download PDF
                           </a>
                         )}
-                        <a
-                          href={`/research/${post.id}`}
-                          className="flex items-center gap-2 text-cobalt-light hover:text-cobalt-blue transition-colors text-sm"
-                        >
+                        <div className="flex items-center gap-2 text-cobalt-light text-sm">
                           <span>Read More</span>
                           <ArrowRight className="w-4 h-4" />
-                        </a>
+                        </div>
                       </div>
-                    </motion.div>
+                    </motion.a>
                   ))}
                 </div>
               </div>
@@ -357,15 +433,16 @@ export default function Home() {
                 <h3 className="text-2xl font-bold text-white mb-8 text-center font-montserrat">
                   Signals
                 </h3>
-                <div className="overflow-x-auto horizontal-scroll">
+                <div className="overflow-x-auto horizontal-scroll" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                   <div className="flex gap-6 pb-4" style={{ minWidth: 'max-content' }}>
                     {signalPosts.slice(0, 6).map((post, index) => (
-                      <motion.div
+                      <motion.a
                         key={post.id || `signal-${index}`}
+                        href={`/radar/${post.id}`}
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: index * 0.1 }}
-                        className="glass-morphism rounded-2xl p-6 hover:shadow-xl transition-all duration-300 group relative flex-shrink-0"
+                        className="glass-morphism rounded-2xl p-6 hover:shadow-xl transition-all duration-300 group relative flex-shrink-0 cursor-pointer block"
                         style={{ width: '380px', maxWidth: '380px' }}
                       >
                         {/* Tag image in top right */}
@@ -402,15 +479,12 @@ export default function Home() {
                         </p>
                         <div className="flex items-center justify-between text-xs text-gray-500">
                           <span>{new Date(post.createdAt).toLocaleDateString()}</span>
-                          <a
-                            href={`/radar/${post.id}`}
-                            className="flex items-center gap-1 text-cobalt-light hover:text-cobalt-blue transition-colors"
-                          >
+                          <div className="flex items-center gap-1 text-cobalt-light">
                             <span>Read More</span>
                             <ArrowRight className="w-3 h-3" />
-                          </a>
+                          </div>
                         </div>
-                      </motion.div>
+                      </motion.a>
                     ))}
                   </div>
                 </div>
@@ -425,15 +499,16 @@ export default function Home() {
                 <h3 className="text-2xl font-bold text-white mb-8 text-center font-montserrat">
                   The Observer
                 </h3>
-                <div className="overflow-x-auto horizontal-scroll">
+                <div className="overflow-x-auto horizontal-scroll" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                   <div className="flex gap-6 pb-4" style={{ minWidth: 'max-content' }}>
                     {observerPosts.slice(0, 6).map((post, index) => (
-                      <motion.div
+                      <motion.a
                         key={post.id || `observer-${index}`}
+                        href={`/radar/${post.id}`}
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: index * 0.1 }}
-                        className="glass-morphism rounded-2xl p-6 hover:shadow-xl transition-all duration-300 group relative flex-shrink-0"
+                        className="glass-morphism rounded-2xl p-6 hover:shadow-xl transition-all duration-300 group relative flex-shrink-0 cursor-pointer block"
                         style={{ width: '380px', maxWidth: '380px' }}
                       >
                         {/* Tag image in top right */}
@@ -470,15 +545,12 @@ export default function Home() {
                         </p>
                         <div className="flex items-center justify-between text-xs text-gray-500">
                           <span>{new Date(post.createdAt).toLocaleDateString()}</span>
-                          <a
-                            href={`/radar/${post.id}`}
-                            className="flex items-center gap-1 text-cobalt-light hover:text-cobalt-blue transition-colors"
-                          >
+                          <div className="flex items-center gap-1 text-cobalt-light">
                             <span>Read More</span>
                             <ArrowRight className="w-3 h-3" />
-                          </a>
+                          </div>
                         </div>
-                      </motion.div>
+                      </motion.a>
                     ))}
                   </div>
                 </div>

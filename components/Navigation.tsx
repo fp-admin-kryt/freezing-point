@@ -48,7 +48,7 @@ const Navigation = () => {
         <div className="max-w-6xl mx-auto">
           <div className="glass-morphism rounded-full px-6 py-3 flex items-center justify-between">
             {/* Logo as link to home */}
-            <a href="/" className="flex items-center space-x-2 group">
+            <a href="/" className="flex items-center group">
               <Image
                 src="/assets/logos/fp-logo.png"
                 alt="Freezing Point AI"
@@ -56,12 +56,6 @@ const Navigation = () => {
                 height={32}
                 className="transition-transform group-hover:scale-110"
               />
-              <span
-                className="text-white font-semibold font-montserrat-alternates tracking-[0.25em] text-lg"
-                style={{ letterSpacing: '4px', fontSize: '1.1rem' }}
-              >
-                Freezing Point
-              </span>
             </a>
 
             {/* Navigation Menu - Center Aligned */}

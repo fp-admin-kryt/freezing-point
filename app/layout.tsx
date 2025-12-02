@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import Image from 'next/image'
+import PageTransition from '@/components/PageTransition'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -23,7 +24,9 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <div className="min-h-screen bg-gradient-to-br from-space-black to-space-gray flex flex-col">
-          <div className="flex-1">{children}</div>
+          <div className="flex-1">
+            <PageTransition>{children}</PageTransition>
+          </div>
           <footer className="bg-space-black py-8 px-4 border-t border-gray-800 flex flex-col items-center">
             <Image
               src="/assets/logos/fp-logo.png"
