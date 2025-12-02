@@ -14,6 +14,26 @@ export default function Home() {
   const [signalPosts, setSignalPosts] = useState<any[]>([])
   const [observerPosts, setObserverPosts] = useState<any[]>([])
 
+  // Load data from Firebase for home sections
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [research, signals, observers] = await Promise.all([
+          getResearchPosts(),
+          getSignalPosts(),
+          getObserverPosts(),
+        ])
+        setResearchPosts(research)
+        setSignalPosts(signals)
+        setObserverPosts(observers)
+      } catch (error) {
+        console.error('Error loading home data:', error)
+      }
+    }
+
+    loadData()
+  }, [])
+
   const heroCards = [
     {
       icon: Target,
