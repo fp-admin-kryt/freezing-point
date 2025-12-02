@@ -1,9 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import Navigation from '@/components/Navigation'
-import InteractiveCard from '@/components/InteractiveCard'
 import ScrollIndicator from '@/components/ScrollIndicator'
 import { Target, PlusCircle, Radar, Eye, Download, ArrowRight } from 'lucide-react'
 import { getResearchPosts, getSignalPosts, getObserverPosts } from '@/lib/firebase'
@@ -14,27 +13,6 @@ export default function Home() {
   const [researchPosts, setResearchPosts] = useState<any[]>([])
   const [signalPosts, setSignalPosts] = useState<any[]>([])
   const [observerPosts, setObserverPosts] = useState<any[]>([])
-  const [hasScrolled, setHasScrolled] = useState(false)
-  const [isDesktop, setIsDesktop] = useState(false)
-
-  // Load data from Firebase
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const [research, signals, observers] = await Promise.all([
-          getResearchPosts(),
-          getSignalPosts(),
-          getObserverPosts()
-        ])
-        setResearchPosts(research)
-        setSignalPosts(signals)
-        setObserverPosts(observers)
-      } catch (error) {
-        console.error('Error loading data:', error)
-      }
-    }
-    loadData()
-  }, [])
 
   const heroCards = [
     {
@@ -78,33 +56,6 @@ export default function Home() {
     }
   }
 
-  // Track viewport size to switch between mobile and desktop behavior
-  useEffect(() => {
-    const updateIsDesktop = () => {
-      if (typeof window === 'undefined') return
-      setIsDesktop(window.innerWidth >= 768)
-    }
-    updateIsDesktop()
-    window.addEventListener('resize', updateIsDesktop)
-    return () => window.removeEventListener('resize', updateIsDesktop)
-  }, [])
-
-  // Track scroll (desktop only) to adjust hero layout / hide scroll indicator after first scroll
-  useEffect(() => {
-    if (!isDesktop) {
-      setHasScrolled(false)
-      return
-    }
-
-    const onScroll = () => {
-      // Require a bit more scroll (~200px) before switching layout
-      setHasScrolled(window.scrollY > 200)
-    }
-
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [isDesktop])
-
   return (
     <main className="min-h-screen relative overflow-hidden">
       <motion.div
@@ -116,159 +67,70 @@ export default function Home() {
         {/* Navigation */}
         <Navigation />
 
-        {/* Hero + Explore Section */}
-        <section id="explore">
-          {/* Mobile: simple centered hero with stacked cards, no scroll logic */}
-          {!isDesktop && (
-            <div className="section-padding">
-              <div className="container mx-auto px-4">
-                <div className="min-h-[70vh] flex flex-col items-center justify-center space-y-6">
-                  <h1 className="text-5xl font-bold text-white font-montserrat text-center mb-2">
-                    FREEZING POINT
-                  </h1>
-                  <div className="relative inline-flex">
-                    <div
-                      className="relative px-6 py-2 rounded-full border-2 border-transparent bg-space-gray shadow-lg overflow-hidden"
-                      style={{ minWidth: 180 }}
-                    >
-                      <span className="relative z-10 text-base md:text-lg font-semibold text-white font-montserrat">
-                        Explore Infinitely
-                      </span>
-                    </div>
-                  </div>
-                  <ScrollIndicator variant="new" />
-                </div>
-
-                <div className="space-y-6 mt-4">
-                  {heroCards.map((card) => {
-                    const Icon = card.icon
-                    return (
-                      <button
-                        key={card.title}
-                        type="button"
-                        onClick={() => scrollToSection(card.link.replace('#', ''))}
-                        className="relative w-full text-left glass-morphism rounded-2xl p-6 hover:shadow-xl transition-all duration-300 cursor-pointer"
-                      >
-                        <div className="pr-12">
-                          <h3 className="text-xl font-bold text-white mb-2 font-montserrat">
-                            {card.title}
-                          </h3>
-                          <p className="text-sm text-gray-300 leading-relaxed">
-                            {card.description}
-                          </p>
-                        </div>
-                        <div className="absolute top-4 right-4 flex items-center justify-center">
-                          <Icon className="w-6 h-6 text-white" />
-                        </div>
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Desktop: hero full-center first, then sticky on left with cards on right */}
-          {isDesktop && (
+        {/* Hero Section */}
+        <section className="min-h-screen flex flex-col items-center justify-center px-4">
+          <h1 className="text-5xl md:text-7xl font-bold text-white font-montserrat text-center mb-6">
+            FREEZING POINT
+          </h1>
+          <div className="relative inline-flex mb-8">
             <div
-              className={
-                hasScrolled
-                  ? 'section-padding'
-                  : 'min-h-screen flex items-center justify-center px-4'
-              }
+              className="relative px-6 py-2 rounded-full border-2 border-transparent bg-space-gray shadow-lg overflow-hidden"
+              style={{ minWidth: 180 }}
             >
-              <div className="container mx-auto px-4">
-                <div
-                  className={`max-w-6xl mx-auto items-start ${
-                    hasScrolled
-                      ? 'grid grid-cols-2 gap-10'
-                      : 'flex flex-col items-center'
-                  }`}
-                >
-                  {/* Left: hero, becomes sticky after scroll */}
-                  <div
-                    className={`space-y-6 flex flex-col items-center md:items-start ${
-                      hasScrolled ? 'sticky top-1/2 -translate-y-1/2' : ''
-                    }`}
-                  >
-                    <motion.h1
-                      initial={{ opacity: 0, y: 30 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 1, delay: 0.3 }}
-                      className={`text-6xl md:text-7xl font-bold text-white font-montserrat mb-4 ${
-                        hasScrolled ? 'text-left self-start' : 'text-center'
-                      }`}
-                    >
-                      FREEZING POINT
-                    </motion.h1>
+              <span className="relative z-10 text-base md:text-lg font-semibold text-white font-montserrat">
+                Explore Infinitely
+              </span>
+            </div>
+          </div>
+          <ScrollIndicator variant="new" />
+        </section>
 
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.8, delay: 0.6 }}
-                      className={`relative inline-flex ${
-                        hasScrolled ? 'self-start' : 'self-center'
-                      }`}
-                    >
-                      <div
-                        className="relative px-6 py-2 rounded-full border-2 border-transparent bg-space-gray shadow-lg overflow-hidden"
-                        style={{ minWidth: 180 }}
-                      >
-                        <span className="relative z-10 text-base md:text-lg font-semibold text-white font-montserrat">
-                          Explore Infinitely
-                        </span>
-                      </div>
-                    </motion.div>
-
-                    {!hasScrolled && (
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 1, delay: 1 }}
-                        className="flex flex-col items-center space-y-4 mt-8"
-                      >
-                        <ScrollIndicator variant="new" />
-                      </motion.div>
-                    )}
-                  </div>
-
-                  {/* Right: stacked cards (only appear after some scroll) */}
-                  <div
-                    className={`space-y-6 mt-10 md:mt-0 w-full ${
-                      hasScrolled ? 'block' : 'opacity-0 pointer-events-none'
-                    }`}
-                  >
-                    {heroCards.map((card, index) => {
-                      const Icon = card.icon
-                      return (
-                        <motion.button
-                          key={card.title}
-                          type="button"
-                          onClick={() => scrollToSection(card.link.replace('#', ''))}
-                          initial={{ opacity: 0, y: 20 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.5, delay: index * 0.1 }}
-                          className="relative w-full text-left glass-morphism rounded-2xl p-6 hover:shadow-xl transition-all duration-300 cursor-pointer"
-                        >
-                          <div className="pr-12">
-                            <h3 className="text-xl md:text-2xl font-bold text-white mb-2 font-montserrat">
-                              {card.title}
-                            </h3>
-                            <p className="text-sm md:text-base text-gray-300 leading-relaxed">
-                              {card.description}
-                            </p>
-                          </div>
-                          <div className="absolute top-4 right-4 flex items-center justify-center">
-                            <Icon className="w-6 h-6 md:w-7 md:h-7 text-white" />
-                          </div>
-                        </motion.button>
-                      )
-                    })}
-                  </div>
+        {/* Explore Section: sticky video left, cards right */}
+        <section id="explore" className="section-padding">
+          <div className="container mx-auto px-4">
+            <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
+              {/* Left: sticky video */}
+              <div className="md:sticky md:top-32 md:h-[60vh]">
+                <div className="w-full h-full rounded-2xl overflow-hidden bg-black/40">
+                  <video
+                    src="https://res.cloudinary.com/dik6zsyzz/video/upload/v1764679948/moHITMANoj__--ar_8953_--bs_1_--video_1_--end_loop_af4d8a8f-2c20-4c6f-a7ce-6f476dd24466_0_kciiks.mp4"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="w-full h-full object-cover"
+                  />
                 </div>
               </div>
+
+              {/* Right: stacked cards */}
+              <div className="space-y-6 mt-8 md:mt-0">
+                {heroCards.map((card) => {
+                  const Icon = card.icon
+                  return (
+                    <button
+                      key={card.title}
+                      type="button"
+                      onClick={() => scrollToSection(card.link.replace('#', ''))}
+                      className="relative w-full text-left glass-morphism rounded-2xl p-6 hover:shadow-xl transition-all duration-300 cursor-pointer"
+                    >
+                      <div className="pr-12">
+                        <h3 className="text-xl md:text-2xl font-bold text-white mb-2 font-montserrat">
+                          {card.title}
+                        </h3>
+                        <p className="text-sm md:text-base text-gray-300 leading-relaxed">
+                          {card.description}
+                        </p>
+                      </div>
+                      <div className="absolute top-4 right-4 flex items-center justify-center">
+                        <Icon className="w-6 h-6 md:w-7 md:h-7 text-white" />
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
             </div>
-          )}
+          </div>
         </section>
 
         {/* Research Section */}
