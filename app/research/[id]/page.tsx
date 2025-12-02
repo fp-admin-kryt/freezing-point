@@ -134,9 +134,11 @@ export default function ResearchDetailPage() {
                         href={post.whitepaperUrl}
                         onClick={(e) => {
                           e.preventDefault()
+                          const url = post.whitepaperUrl
+                          if (!url) return
                           // Force download for Cloudinary PDFs
                           const link = document.createElement('a')
-                          link.href = post.whitepaperUrl
+                          link.href = url
                           link.download = `${post.title || 'whitepaper'}.pdf`
                           link.target = '_blank'
                           document.body.appendChild(link)
