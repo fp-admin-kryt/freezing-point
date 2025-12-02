@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type CSSProperties } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Navigation from '@/components/Navigation'
 import InteractiveCard from '@/components/InteractiveCard'
@@ -86,112 +86,26 @@ export default function Home() {
 
   return (
     <main className="min-h-screen relative overflow-hidden">
-      {/* Futuristic Loading Animation */}
+      {/* Strip-based Intro Animation */}
       {!showContent && (
-        <div className="absolute inset-0 flex items-center justify-center z-10 bg-space-black">
-          {/* Animated grid background */}
-          <div className="absolute inset-0 opacity-20">
-            <div 
-              className="w-full h-full"
-              style={{
-                backgroundImage: `
-                  linear-gradient(rgba(19, 111, 215, 0.1) 1px, transparent 1px),
-                  linear-gradient(90deg, rgba(19, 111, 215, 0.1) 1px, transparent 1px)
-                `,
-                backgroundSize: '50px 50px',
-                animation: 'grid-move 20s linear infinite'
-              }}
-            />
-          </div>
-
-          {/* Central orb with pulsing rings */}
-          <div className="relative">
-            {/* Outer rings */}
-            {[0, 1, 2].map((i) => (
-              <motion.div
+        <div className="absolute inset-0 flex items-center justify-center z-50 bg-black">
+          <div className="strip-loader">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <div
+                className="strip"
                 key={i}
-                initial={{ scale: 0, opacity: 0.8 }}
-                animate={{ 
-                  scale: [1, 1.5, 2],
-                  opacity: [0.8, 0.4, 0]
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  delay: i * 0.4,
-                  ease: "easeOut"
-                }}
-                className="absolute inset-0 border-2 border-cobalt-blue rounded-full"
-                style={{
-                  width: '200px',
-                  height: '200px',
-                  margin: '-100px 0 0 -100px'
-                }}
-              />
-            ))}
-
-            {/* Central glowing orb */}
-            <motion.div
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ 
-                scale: [1, 1.1, 1],
-                opacity: [0.6, 1, 0.6]
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-              className="w-32 h-32 rounded-full bg-gradient-to-br from-cobalt-blue via-cobalt-light to-cobalt-blue relative"
-              style={{
-                boxShadow: '0 0 60px rgba(19, 111, 215, 0.8), 0 0 100px rgba(77, 166, 255, 0.4)'
-              }}
-            >
-              {/* Inner core */}
-              <div className="absolute inset-4 rounded-full bg-white opacity-30 blur-sm" />
-            </motion.div>
-
-            {/* Floating particles */}
-            {[...Array(12)].map((_, i) => (
-              <motion.div
-                key={i}
-                initial={{ 
-                  x: 0, 
-                  y: 0,
-                  opacity: 0
-                }}
-                animate={{
-                  x: Math.cos((i * Math.PI * 2) / 12) * 150,
-                  y: Math.sin((i * Math.PI * 2) / 12) * 150,
-                  opacity: [0, 1, 0.5, 0]
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Infinity,
-                  delay: i * 0.1,
-                  ease: "easeInOut"
-                }}
-                className="absolute w-2 h-2 bg-cobalt-light rounded-full"
-                style={{
-                  left: '50%',
-                  top: '50%',
-                  marginLeft: '-4px',
-                  marginTop: '-4px',
-                  boxShadow: '0 0 10px rgba(77, 166, 255, 0.8)'
-                }}
-              />
+                style={{ '--i': i } as CSSProperties}
+              >
+                {Array.from({ length: 3 }).map((_, j) => (
+                  <div
+                    className="layer"
+                    key={j}
+                    style={{ '--j': j } as CSSProperties}
+                  />
+                ))}
+              </div>
             ))}
           </div>
-
-          {/* Loading text */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="absolute bottom-32 text-cobalt-light text-sm font-montserrat tracking-wider"
-          >
-            INITIALIZING...
-          </motion.div>
         </div>
       )}
 

@@ -195,12 +195,13 @@ export default function RadarPage() {
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto"
           >
             {currentPosts.map((post, index) => (
-              <motion.div
+              <motion.a
                 key={post.id || `${activeTab}-${index}`}
+                href={`/radar/${post.id}`}
                 initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
-                className="glass-morphism rounded-2xl p-6 hover:shadow-xl transition-all duration-300 group relative"
+                className="glass-morphism rounded-2xl p-6 hover:shadow-xl transition-all duration-300 group relative block cursor-pointer"
               >
                 {/* Tag image in top right */}
                 {post.tags.length > 0 && (
@@ -257,15 +258,12 @@ export default function RadarPage() {
                   <span className="text-cobalt-light text-sm font-montserrat">
                     {activeTab === 'signals' ? 'Signal' : 'Observer'}
                   </span>
-                  <a
-                    href={`/radar/${post.id}`}
-                    className="flex items-center gap-2 text-cobalt-light hover:text-cobalt-blue transition-colors"
-                  >
+                  <div className="flex items-center gap-2 text-cobalt-light">
                     <span className="text-sm">Read More</span>
                     <ArrowRight className="w-4 h-4" />
-                  </a>
+                  </div>
                 </div>
-              </motion.div>
+              </motion.a>
             ))}
           </motion.div>
 

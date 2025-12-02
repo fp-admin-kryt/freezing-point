@@ -6,6 +6,7 @@ import { Search, Filter, Calendar, Tag, Download, ArrowRight } from 'lucide-reac
 import { getResearchPosts } from '@/lib/firebase'
 import { getTagById } from '@/lib/dataService'
 import Navigation from '@/components/Navigation'
+import Image from 'next/image'
 
 export default function ResearchPage() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -176,18 +177,23 @@ export default function ResearchPage() {
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto"
           >
             {sortedPosts.map((post, index) => (
-              <motion.div
+              <motion.a
                 key={post.id || `research-${index}`}
+                href={`/research/${post.id}`}
                 initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
-                className="glass-morphism rounded-2xl p-6 hover:shadow-xl transition-all duration-300 group"
+                className="glass-morphism rounded-2xl p-6 hover:shadow-xl transition-all duration-300 group block cursor-pointer"
               >
                 {post.imageUrl && (
-                  <div className="w-full h-48 bg-gray-700 rounded-lg mb-4 overflow-hidden">
-                    <div className="w-full h-full bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center">
-                      <span className="text-gray-400">Image Placeholder</span>
-                    </div>
+                  <div className="w-full h-48 rounded-lg mb-4 overflow-hidden relative">
+                    <Image
+                      src={post.imageUrl}
+                      alt={post.title}
+                      fill
+                      className="object-cover"
+                      sizes="400px"
+                    />
                   </div>
                 )}
                 
@@ -220,25 +226,33 @@ export default function ResearchPage() {
                 
                 <div className="flex items-center justify-between">
                   {post.whitepaperUrl && (
-                    <a
-                      href={post.whitepaperUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        e.preventDefault()
+                        const url = post.whitepaperUrl
+                        if (!url) return
+                        const link = document.createElement('a')
+                        link.href = url
+                        link.download = `${post.title || 'whitepaper'}.pdf`
+                        link.target = '_blank'
+                        document.body.appendChild(link)
+                        link.click()
+                        document.body.removeChild(link)
+                      }}
                       className="flex items-center gap-2 text-cobalt-light hover:text-cobalt-blue transition-colors text-sm font-montserrat"
                     >
                       <Download className="w-4 h-4" />
                       Download PDF
-                    </a>
+                    </button>
                   )}
-                  <a
-                    href={`/research/${post.id}`}
-                    className="flex items-center gap-2 text-cobalt-light hover:text-cobalt-blue transition-colors text-sm font-montserrat"
-                  >
+                  <div className="flex items-center gap-2 text-cobalt-light text-sm font-montserrat">
                     <span>Read More</span>
                     <ArrowRight className="w-4 h-4" />
-                  </a>
+                  </div>
                 </div>
-              </motion.div>
+              </motion.a>
             ))}
           </motion.div>
 
