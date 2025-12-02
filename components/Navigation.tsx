@@ -59,32 +59,36 @@ const Navigation = () => {
                 />
               </a>
 
-              {/* Desktop navigation */}
-              <div className="hidden md:flex items-center space-x-8">
-                {menuItems.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => !item.disabled && scrollToSection(item.id)}
-                    disabled={item.disabled}
-                    className={`font-montserrat-alternates transition-colors duration-200 ${
-                      item.disabled
-                        ? 'text-gray-500 cursor-not-allowed'
-                        : 'text-white hover:text-cobalt-light cursor-pointer'
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
+              {/* Center desktop navigation + right spacer */}
+              <div className="hidden md:flex items-center justify-center flex-1">
+                <div className="flex items-center space-x-8">
+                  {menuItems.map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => !item.disabled && scrollToSection(item.id)}
+                      disabled={item.disabled}
+                      className={`font-montserrat-alternates transition-colors duration-200 ${
+                        item.disabled
+                          ? 'text-gray-500 cursor-not-allowed'
+                          : 'text-white hover:text-cobalt-light cursor-pointer'
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              {/* Mobile kebab menu */}
-              <button
-                type="button"
-                className="md:hidden flex items-center justify-center p-2 rounded-full text-white hover:bg-white/10 transition-colors"
-                onClick={() => setMenuOpen(true)}
-              >
-                <MoreVertical className="w-5 h-5" />
-              </button>
+              {/* Right side: kebab on mobile, spacer on desktop */}
+              <div className="flex items-center justify-end w-10 md:w-24">
+                <button
+                  type="button"
+                  className="md:hidden flex items-center justify-center p-2 rounded-full text-white hover:bg-white/10 transition-colors"
+                  onClick={() => setMenuOpen(true)}
+                >
+                  <MoreVertical className="w-5 h-5" />
+                </button>
+              </div>
             </div>
           </div>
         </div>

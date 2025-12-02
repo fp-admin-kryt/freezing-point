@@ -69,19 +69,42 @@ export default function Home() {
 
         {/* Hero Section */}
         <section className="min-h-screen flex flex-col items-center justify-center px-4">
-          <h1 className="text-5xl md:text-7xl font-bold text-white font-montserrat text-center mb-6">
+          <h1 className="text-5xl md:text-7xl font-bold text-white font-montserrat text-center mb-8">
             FREEZING POINT
           </h1>
-          <div className="relative inline-flex mb-8">
-            <div
-              className="relative px-6 py-2 rounded-full border-2 border-transparent bg-space-gray shadow-lg overflow-hidden"
-              style={{ minWidth: 180 }}
-            >
+          {/* Animated Explore Infinitely capsule */}
+          <motion.button
+            type="button"
+            className="relative mb-10"
+            whileHover={{ scale: 1.03 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+          >
+            {/* Glow underneath */}
+            <motion.div
+              className="absolute -inset-1 rounded-full blur-xl opacity-60"
+              style={{ background: 'radial-gradient(circle at 50% 50%, #2b9cff 0%, transparent 60%)' }}
+              animate={{ opacity: [0.4, 0.7, 0.4] }}
+              transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+            />
+            {/* Pill */}
+            <div className="relative px-8 py-2 rounded-full border border-white/20 bg-[radial-gradient(circle_at_0%_0%,#3b82f6,transparent_55%),radial-gradient(circle_at_100%_100%,#22d3ee,transparent_55%)] shadow-lg overflow-hidden">
+              <motion.div
+                className="absolute inset-0 opacity-60"
+                animate={{
+                  backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+                }}
+                style={{
+                  backgroundImage:
+                    'linear-gradient(90deg, rgba(59,130,246,0.3), rgba(56,189,248,0.6), rgba(59,130,246,0.3))',
+                  backgroundSize: '200% 100%',
+                }}
+                transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+              />
               <span className="relative z-10 text-base md:text-lg font-semibold text-white font-montserrat">
                 Explore Infinitely
               </span>
             </div>
-          </div>
+          </motion.button>
           <ScrollIndicator variant="new" />
         </section>
 
