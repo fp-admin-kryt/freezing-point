@@ -15,6 +15,7 @@ export default function Home() {
   const [signalPosts, setSignalPosts] = useState<any[]>([])
   const [observerPosts, setObserverPosts] = useState<any[]>([])
   const [hasScrolled, setHasScrolled] = useState(false)
+  const [isDesktop, setIsDesktop] = useState(false)
 
   // Load data from Firebase
   useEffect(() => {
@@ -77,16 +78,32 @@ export default function Home() {
     }
   }
 
-  // Track scroll to adjust hero layout / hide scroll indicator after first scroll
+  // Track viewport size to switch between mobile and desktop behavior
   useEffect(() => {
-    const onScroll = () => {
-      setHasScrolled(window.scrollY > 10)
+    const updateIsDesktop = () => {
+      if (typeof window === 'undefined') return
+      setIsDesktop(window.innerWidth >= 768)
+    }
+    updateIsDesktop()
+    window.addEventListener('resize', updateIsDesktop)
+    return () => window.removeEventListener('resize', updateIsDesktop)
+  }, [])
+
+  // Track scroll (desktop only) to adjust hero layout / hide scroll indicator after first scroll
+  useEffect(() => {
+    if (!isDesktop) {
+      setHasScrolled(false)
+      return
     }
 
-    onScroll()
+    const onScroll = () => {
+      // Require a bit more scroll (~200px) before switching layout
+      setHasScrolled(window.scrollY > 200)
+    }
+
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
-  }, [])
+  }, [isDesktop])
 
   return (
     <main className="min-h-screen relative overflow-hidden">
@@ -100,129 +117,158 @@ export default function Home() {
         <Navigation />
 
         {/* Hero + Explore Section */}
-        <section
-          id="explore"
-          className={
-            hasScrolled
-              ? 'section-padding'
-              : 'min-h-screen flex items-center justify-center px-4'
-          }
-        >
-          <div className="container mx-auto px-4">
-            <div
-              className={`max-w-6xl mx-auto items-start ${
-                hasScrolled
-                  ? 'grid grid-cols-1 md:grid-cols-2 gap-10'
-                  : 'flex flex-col items-center'
-              }`}
-            >
-              {/* Left: sticky hero */}
-              <div
-                className={`space-y-6 flex flex-col items-center md:items-start ${
-                  hasScrolled ? 'md:sticky md:top-1/2 md:-translate-y-1/2' : ''
-                }`}
-              >
-                <motion.h1
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 1, delay: 0.3 }}
-                  className={`text-5xl md:text-7xl font-bold text-white font-montserrat mb-4 ${
-                    hasScrolled ? 'md:text-left md:self-start text-center' : 'text-center'
-                  }`}
-                >
-                  FREEZING POINT
-                </motion.h1>
-
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.8, delay: 0.6 }}
-                  className={`relative inline-flex ${
-                    hasScrolled ? 'md:self-start self-center' : 'self-center'
-                  }`}
-                >
-                  <div
-                    className="relative px-6 py-2 rounded-full border-2 border-transparent bg-space-gray shadow-lg overflow-hidden"
-                    style={{ minWidth: 180 }}
-                  >
-                    <motion.div
-                      className="absolute inset-0 rounded-full pointer-events-none"
-                      animate={{
-                        background: [
-                          'radial-gradient(circle at 0% 50%, #136fd7 0%, transparent 70%)',
-                          'radial-gradient(circle at 100% 50%, #4da6ff 0%, transparent 70%)',
-                          'radial-gradient(circle at 0% 50%, #136fd7 0%, transparent 70%)'
-                        ]
-                      }}
-                      transition={{ duration: 3, repeat: Infinity }}
-                      style={{ zIndex: 1, opacity: 0.4 }}
-                    />
-                    <span className="relative z-10 text-base md:text-lg font-semibold text-white font-montserrat">
-                      Explore Infinitely
-                    </span>
-                    <motion.div
-                      className="absolute inset-0 rounded-full border-2 border-cobalt-blue pointer-events-none"
-                      animate={{
-                        boxShadow: [
-                          '0 0 8px 2px #136fd7',
-                          '0 0 16px 4px #4da6ff',
-                          '0 0 8px 2px #136fd7'
-                        ]
-                      }}
-                      transition={{ duration: 3, repeat: Infinity }}
-                      style={{ zIndex: 2 }}
-                    />
-                  </div>
-                </motion.div>
-
-                {/* Single scroll indicator: only before first scroll */}
-                {!hasScrolled && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 1, delay: 1 }}
-                    className="flex flex-col items-center md:items-start space-y-4 mt-8"
-                  >
-                    <ScrollIndicator variant="new" />
-                  </motion.div>
-                )}
-              </div>
-
-              {/* Right: stacked cards */}
-              <div
-                className={`space-y-6 mt-10 md:mt-0 w-full ${
-                  hasScrolled ? 'block' : 'hidden md:block opacity-0 pointer-events-none'
-                }`}
-              >
-                {heroCards.map((card, index) => {
-                  const Icon = card.icon
-                  return (
-                    <motion.button
-                      key={card.title}
-                      type="button"
-                      onClick={() => scrollToSection(card.link.replace('#', ''))}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: index * 0.1 }}
-                      className="relative w-full text-left glass-morphism rounded-2xl p-6 hover:shadow-xl transition-all duration-300 cursor-pointer"
+        <section id="explore">
+          {/* Mobile: simple centered hero with stacked cards, no scroll logic */}
+          {!isDesktop && (
+            <div className="section-padding">
+              <div className="container mx-auto px-4">
+                <div className="min-h-[70vh] flex flex-col items-center justify-center space-y-6">
+                  <h1 className="text-5xl font-bold text-white font-montserrat text-center mb-2">
+                    FREEZING POINT
+                  </h1>
+                  <div className="relative inline-flex">
+                    <div
+                      className="relative px-6 py-2 rounded-full border-2 border-transparent bg-space-gray shadow-lg overflow-hidden"
+                      style={{ minWidth: 180 }}
                     >
-                      <div className="pr-12">
-                        <h3 className="text-xl md:text-2xl font-bold text-white mb-2 font-montserrat">
-                          {card.title}
-                        </h3>
-                        <p className="text-sm md:text-base text-gray-300 leading-relaxed">
-                          {card.description}
-                        </p>
-                      </div>
-                      <div className="absolute top-4 right-4 flex items-center justify-center">
-                        <Icon className="w-6 h-6 md:w-7 md:h-7 text-white" />
-                      </div>
-                    </motion.button>
-                  )
-                })}
+                      <span className="relative z-10 text-base md:text-lg font-semibold text-white font-montserrat">
+                        Explore Infinitely
+                      </span>
+                    </div>
+                  </div>
+                  <ScrollIndicator variant="new" />
+                </div>
+
+                <div className="space-y-6 mt-4">
+                  {heroCards.map((card) => {
+                    const Icon = card.icon
+                    return (
+                      <button
+                        key={card.title}
+                        type="button"
+                        onClick={() => scrollToSection(card.link.replace('#', ''))}
+                        className="relative w-full text-left glass-morphism rounded-2xl p-6 hover:shadow-xl transition-all duration-300 cursor-pointer"
+                      >
+                        <div className="pr-12">
+                          <h3 className="text-xl font-bold text-white mb-2 font-montserrat">
+                            {card.title}
+                          </h3>
+                          <p className="text-sm text-gray-300 leading-relaxed">
+                            {card.description}
+                          </p>
+                        </div>
+                        <div className="absolute top-4 right-4 flex items-center justify-center">
+                          <Icon className="w-6 h-6 text-white" />
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
             </div>
-          </div>
+          )}
+
+          {/* Desktop: hero full-center first, then sticky on left with cards on right */}
+          {isDesktop && (
+            <div
+              className={
+                hasScrolled
+                  ? 'section-padding'
+                  : 'min-h-screen flex items-center justify-center px-4'
+              }
+            >
+              <div className="container mx-auto px-4">
+                <div
+                  className={`max-w-6xl mx-auto items-start ${
+                    hasScrolled
+                      ? 'grid grid-cols-2 gap-10'
+                      : 'flex flex-col items-center'
+                  }`}
+                >
+                  {/* Left: hero, becomes sticky after scroll */}
+                  <div
+                    className={`space-y-6 flex flex-col items-center md:items-start ${
+                      hasScrolled ? 'sticky top-1/2 -translate-y-1/2' : ''
+                    }`}
+                  >
+                    <motion.h1
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 1, delay: 0.3 }}
+                      className={`text-6xl md:text-7xl font-bold text-white font-montserrat mb-4 ${
+                        hasScrolled ? 'text-left self-start' : 'text-center'
+                      }`}
+                    >
+                      FREEZING POINT
+                    </motion.h1>
+
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.8, delay: 0.6 }}
+                      className={`relative inline-flex ${
+                        hasScrolled ? 'self-start' : 'self-center'
+                      }`}
+                    >
+                      <div
+                        className="relative px-6 py-2 rounded-full border-2 border-transparent bg-space-gray shadow-lg overflow-hidden"
+                        style={{ minWidth: 180 }}
+                      >
+                        <span className="relative z-10 text-base md:text-lg font-semibold text-white font-montserrat">
+                          Explore Infinitely
+                        </span>
+                      </div>
+                    </motion.div>
+
+                    {!hasScrolled && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 1, delay: 1 }}
+                        className="flex flex-col items-center space-y-4 mt-8"
+                      >
+                        <ScrollIndicator variant="new" />
+                      </motion.div>
+                    )}
+                  </div>
+
+                  {/* Right: stacked cards (only appear after some scroll) */}
+                  <div
+                    className={`space-y-6 mt-10 md:mt-0 w-full ${
+                      hasScrolled ? 'block' : 'opacity-0 pointer-events-none'
+                    }`}
+                  >
+                    {heroCards.map((card, index) => {
+                      const Icon = card.icon
+                      return (
+                        <motion.button
+                          key={card.title}
+                          type="button"
+                          onClick={() => scrollToSection(card.link.replace('#', ''))}
+                          initial={{ opacity: 0, y: 20 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.5, delay: index * 0.1 }}
+                          className="relative w-full text-left glass-morphism rounded-2xl p-6 hover:shadow-xl transition-all duration-300 cursor-pointer"
+                        >
+                          <div className="pr-12">
+                            <h3 className="text-xl md:text-2xl font-bold text-white mb-2 font-montserrat">
+                              {card.title}
+                            </h3>
+                            <p className="text-sm md:text-base text-gray-300 leading-relaxed">
+                              {card.description}
+                            </p>
+                          </div>
+                          <div className="absolute top-4 right-4 flex items-center justify-center">
+                            <Icon className="w-6 h-6 md:w-7 md:h-7 text-white" />
+                          </div>
+                        </motion.button>
+                      )
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </section>
 
         {/* Research Section */}
