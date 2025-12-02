@@ -2,6 +2,7 @@
 
 import { initializeApp, getApps } from 'firebase/app';
 import { initializeFirestore, collection, addDoc, getDocs, getDoc, setDoc, doc, deleteDoc, updateDoc, query, orderBy } from 'firebase/firestore';
+import { deleteFromCloudinary, deleteMultipleFromCloudinary } from './cloudinary';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
@@ -147,6 +148,32 @@ export const getResearchPosts = async (): Promise<ResearchPost[]> => {
 
 export const deleteResearchPost = async (id: string): Promise<void> => {
   try {
+    // First, get the post to extract image URLs
+    const postRef = doc(db, 'research', id);
+    const postSnap = await getDoc(postRef);
+    
+    if (postSnap.exists()) {
+      const postData = postSnap.data() as ResearchPost;
+      const urlsToDelete: string[] = [];
+      
+      // Collect all image URLs
+      if (postData.imageUrl) urlsToDelete.push(postData.imageUrl);
+      if (postData.whitepaperUrl) urlsToDelete.push(postData.whitepaperUrl);
+      
+      // Collect image URLs from blocks if document template
+      if (postData.blocks) {
+        postData.blocks.forEach(block => {
+          if (block.imageUrl) urlsToDelete.push(block.imageUrl);
+        });
+      }
+      
+      // Delete from Cloudinary
+      if (urlsToDelete.length > 0) {
+        await deleteMultipleFromCloudinary(urlsToDelete);
+      }
+    }
+    
+    // Delete from Firebase
     await withRetry(() => deleteDoc(doc(db, 'research', id)));
     console.log('Research post deleted:', id);
   } catch (error) {
@@ -187,6 +214,31 @@ export const getSignalPosts = async (): Promise<SignalPost[]> => {
 
 export const deleteSignalPost = async (id: string): Promise<void> => {
   try {
+    // First, get the post to extract image URLs
+    const postRef = doc(db, 'signals', id);
+    const postSnap = await getDoc(postRef);
+    
+    if (postSnap.exists()) {
+      const postData = postSnap.data() as SignalPost;
+      const urlsToDelete: string[] = [];
+      
+      // Collect all image URLs
+      if (postData.imageUrl) urlsToDelete.push(postData.imageUrl);
+      
+      // Collect image URLs from blocks if document template
+      if (postData.blocks) {
+        postData.blocks.forEach(block => {
+          if (block.imageUrl) urlsToDelete.push(block.imageUrl);
+        });
+      }
+      
+      // Delete from Cloudinary
+      if (urlsToDelete.length > 0) {
+        await deleteMultipleFromCloudinary(urlsToDelete);
+      }
+    }
+    
+    // Delete from Firebase
     await withRetry(() => deleteDoc(doc(db, 'signals', id)));
     console.log('Signal post deleted:', id);
   } catch (error) {
@@ -227,6 +279,31 @@ export const getObserverPosts = async (): Promise<ObserverPost[]> => {
 
 export const deleteObserverPost = async (id: string): Promise<void> => {
   try {
+    // First, get the post to extract image URLs
+    const postRef = doc(db, 'observers', id);
+    const postSnap = await getDoc(postRef);
+    
+    if (postSnap.exists()) {
+      const postData = postSnap.data() as ObserverPost;
+      const urlsToDelete: string[] = [];
+      
+      // Collect all image URLs
+      if (postData.imageUrl) urlsToDelete.push(postData.imageUrl);
+      
+      // Collect image URLs from blocks if document template
+      if (postData.blocks) {
+        postData.blocks.forEach(block => {
+          if (block.imageUrl) urlsToDelete.push(block.imageUrl);
+        });
+      }
+      
+      // Delete from Cloudinary
+      if (urlsToDelete.length > 0) {
+        await deleteMultipleFromCloudinary(urlsToDelete);
+      }
+    }
+    
+    // Delete from Firebase
     await withRetry(() => deleteDoc(doc(db, 'observers', id)));
     console.log('Observer post deleted:', id);
   } catch (error) {
@@ -273,6 +350,20 @@ export const getTags = async (): Promise<Tag[]> => {
 
 export const deleteTag = async (id: string): Promise<void> => {
   try {
+    // First, get the tag to extract image URL
+    const tagRef = doc(db, 'tags', id);
+    const tagSnap = await getDoc(tagRef);
+    
+    if (tagSnap.exists()) {
+      const tagData = tagSnap.data() as Tag;
+      
+      // Delete image from Cloudinary if exists
+      if (tagData.imageUrl) {
+        await deleteFromCloudinary(tagData.imageUrl);
+      }
+    }
+    
+    // Delete from Firebase
     await withRetry(() => deleteDoc(doc(db, 'tags', id)));
     console.log('Tag deleted:', id);
   } catch (error) {

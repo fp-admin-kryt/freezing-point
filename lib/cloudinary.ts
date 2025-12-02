@@ -196,3 +196,84 @@ export const uploadToCloudinaryDirect = async (file: File, folder: string = 'fre
   console.log('Direct upload attempt (delegating to robust uploader) for:', file.name);
   return uploadToCloudinaryRobust(file, folder);
 };
+
+// Extract public_id from Cloudinary URL
+const extractPublicId = (url: string): string | null => {
+  try {
+    // Cloudinary URL format: https://res.cloudinary.com/{cloud_name}/{resource_type}/upload/v{version}/{public_id}.{format}
+    // or: https://res.cloudinary.com/{cloud_name}/{resource_type}/upload/{public_id}.{format}
+    const match = url.match(/\/upload\/v?\d*\/(.+)$/);
+    if (match && match[1]) {
+      // Remove file extension
+      return match[1].replace(/\.[^/.]+$/, '');
+    }
+    return null;
+  } catch (error) {
+    console.error('Error extracting public_id:', error);
+    return null;
+  }
+};
+
+// Delete asset from Cloudinary
+// Note: This requires server-side API secret for security. For now, this will attempt deletion
+// but may fail without a serverless function. Firebase deletion will still proceed.
+export const deleteFromCloudinary = async (url: string, resourceType: 'image' | 'raw' | 'video' | 'auto' = 'auto'): Promise<void> => {
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  
+  if (!cloudName) {
+    console.warn('Cloudinary cloud name not configured, skipping deletion');
+    return;
+  }
+
+  const publicId = extractPublicId(url);
+  if (!publicId) {
+    console.warn('Could not extract public_id from URL:', url);
+    return;
+  }
+
+  // Determine resource type from URL if auto
+  let finalResourceType = resourceType;
+  if (resourceType === 'auto') {
+    if (url.includes('/image/')) {
+      finalResourceType = 'image';
+    } else if (url.includes('/raw/') || url.includes('/pdf')) {
+      finalResourceType = 'raw';
+    } else if (url.includes('/video/')) {
+      finalResourceType = 'video';
+    } else {
+      finalResourceType = 'image'; // default
+    }
+  }
+
+  // Try to delete via API route (serverless function)
+  // If no API route exists, this will fail gracefully
+  try {
+    const response = await fetch('/api/cloudinary/delete', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        publicId,
+        resourceType: finalResourceType,
+      }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      if (data.success) {
+        console.log('Successfully deleted from Cloudinary:', publicId);
+        return;
+      }
+    }
+    console.warn('Cloudinary deletion via API route failed, continuing with Firebase deletion');
+  } catch (error) {
+    console.warn('Error calling Cloudinary delete API:', error);
+    // Continue - Firebase deletion will still happen
+  }
+};
+
+// Delete multiple assets from Cloudinary
+export const deleteMultipleFromCloudinary = async (urls: string[]): Promise<void> => {
+  await Promise.all(urls.map(url => deleteFromCloudinary(url)));
+};

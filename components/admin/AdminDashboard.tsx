@@ -17,7 +17,7 @@ import ResearchForm from './ResearchForm'
 import RadarForm from './RadarForm'
 import TagManager from './TagManager'
 import DomainManager from './DomainManager'
-import { getResearchPosts, getSignalPosts, getObserverPosts, deleteResearchPost, deleteSignalPost, deleteObserverPost } from '@/lib/firebase'
+import { getResearchPosts, getSignalPosts, getObserverPosts, deleteResearchPost, deleteSignalPost, deleteObserverPost, getTags, getDomains } from '@/lib/firebase'
 import toast from 'react-hot-toast'
 
 type TabType = 'research' | 'signals' | 'observer' | 'tags' | 'domains'
@@ -40,19 +40,25 @@ export default function AdminDashboard() {
   const [observerPosts, setObserverPosts] = useState<Post[]>([])
   const [editingPost, setEditingPost] = useState<Post | null>(null)
   const [loading, setLoading] = useState(false)
+  const [tags, setTags] = useState<any[]>([])
+  const [domains, setDomains] = useState<any[]>([])
 
   // Load data from Firebase
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [research, signals, observers] = await Promise.all([
+        const [research, signals, observers, tagsData, domainsData] = await Promise.all([
           getResearchPosts(),
           getSignalPosts(),
-          getObserverPosts()
+          getObserverPosts(),
+          getTags(),
+          getDomains()
         ])
         setResearchPosts(research)
         setSignalPosts(signals)
         setObserverPosts(observers)
+        setTags(tagsData)
+        setDomains(domainsData)
       } catch (error) {
         console.error('Error loading data:', error)
         toast.error('Failed to load data')
@@ -136,6 +142,7 @@ export default function AdminDashboard() {
       } else if (activeTab === 'domains') {
         return <DomainManager />
       }
+      return null
     }
 
     // Manage view
@@ -149,13 +156,13 @@ export default function AdminDashboard() {
                    activeTab === 'observer' ? 'Observer Posts' : 
                    activeTab === 'tags' ? 'Tags' : 'Domains'}
           </h2>
-          {(activeTab === 'research' || activeTab === 'signals' || activeTab === 'observer' || activeTab === 'tags' || activeTab === 'domains') && (
+          {(activeTab === 'research' || activeTab === 'signals' || activeTab === 'observer') && (
             <button
               onClick={() => setView('create')}
               className="px-4 py-2 bg-cobalt-blue text-white rounded-lg hover:bg-cobalt-light transition-colors flex items-center space-x-2"
             >
               <Plus className="h-4 w-4" />
-              <span>{activeTab === 'tags' ? 'Create Tag' : activeTab === 'domains' ? 'Create Domain' : 'Create New'}</span>
+              <span>Create New</span>
             </button>
           )}
         </div>
@@ -245,18 +252,12 @@ export default function AdminDashboard() {
               </div>
             ))}
 
-            {(activeTab === 'tags' || activeTab === 'domains') && (
-              <div className="text-center py-8">
-                <p className="text-gray-400 mb-4">
-                  {activeTab === 'tags' ? 'Open Tag Manager to create or edit tags.' : 'Open Domain Manager to create or edit domains.'}
-                </p>
-                <button
-                  onClick={() => setView('create')}
-                  className="mt-2 px-4 py-2 bg-cobalt-blue text-white rounded-lg hover:bg-cobalt-light transition-colors"
-                >
-                  {activeTab === 'tags' ? 'Open Tag Manager' : 'Open Domain Manager'}
-                </button>
-              </div>
+            {activeTab === 'tags' && (
+              <TagManager />
+            )}
+
+            {activeTab === 'domains' && (
+              <DomainManager />
             )}
 
             {/* Empty state */}
