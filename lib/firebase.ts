@@ -86,6 +86,7 @@ export interface SignalPost {
   templateType?: TemplateType;
   blocks?: ContentBlock[]; // For document template
   richContent?: string; // HTML content for single image template
+  date: string;
   createdAt: Date;
 }
 
@@ -99,6 +100,7 @@ export interface ObserverPost {
   templateType?: TemplateType;
   blocks?: ContentBlock[]; // For document template
   richContent?: string; // HTML content for single image template
+  date: string;
   createdAt: Date;
 }
 

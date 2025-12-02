@@ -241,7 +241,7 @@ export default function RadarPage() {
                 <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
                   <span className="flex items-center gap-1">
                     <Calendar className="w-3 h-3" />
-                    {new Date(post.createdAt).toLocaleDateString()}
+                    {new Date(post.date).toLocaleDateString()}
                   </span>
                   {getDomainById(post.domain) && (
                     <span className="px-2 py-1 rounded-full bg-gray-700 flex items-center gap-1">
