@@ -33,12 +33,12 @@ export default function ResearchPage() {
 
   const filteredPosts = researchPosts.filter(post => {
     const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         post.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         post.excerpt.toLowerCase().includes(searchQuery.toLowerCase())
-    
-    const matchesTags = selectedTags.length === 0 || 
-                       selectedTags.some(tagId => post.tags.includes(tagId))
-    
+      post.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      post.excerpt.toLowerCase().includes(searchQuery.toLowerCase())
+
+    const matchesTags = selectedTags.length === 0 ||
+      selectedTags.some(tagId => post.tags.includes(tagId))
+
     return matchesSearch && matchesTags
   })
 
@@ -56,8 +56,8 @@ export default function ResearchPage() {
   })
 
   const toggleTag = (tagId: string) => {
-    setSelectedTags(prev => 
-      prev.includes(tagId) 
+    setSelectedTags(prev =>
+      prev.includes(tagId)
         ? prev.filter(id => id !== tagId)
         : [...prev, tagId]
     )
@@ -142,11 +142,10 @@ export default function ResearchPage() {
                     <button
                       key={tag.id}
                       onClick={() => toggleTag(tag.id)}
-                      className={`px-3 py-2 rounded-full text-sm font-montserrat transition-all duration-200 ${
-                        selectedTags.includes(tag.id)
+                      className={`px-3 py-2 rounded-full text-sm font-montserrat transition-all duration-200 ${selectedTags.includes(tag.id)
                           ? 'text-white shadow-lg'
                           : 'text-gray-300 hover:text-white'
-                      }`}
+                        }`}
                       style={{
                         backgroundColor: selectedTags.includes(tag.id) ? tag.color : 'transparent',
                         border: `1px solid ${selectedTags.includes(tag.id) ? tag.color : '#374151'}`
@@ -183,73 +182,55 @@ export default function ResearchPage() {
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
-                className="glass-morphism rounded-2xl p-6 hover:shadow-xl transition-all duration-300 group block cursor-pointer"
+                className="glass-morphism rounded-2xl p-4 hover:shadow-xl transition-all duration-300 group block cursor-pointer flex gap-4 items-start"
               >
                 {post.imageUrl && (
-                  <div className="w-full h-48 rounded-lg mb-4 overflow-hidden relative">
+                  <div className="w-24 h-24 md:w-28 md:h-28 flex-shrink-0 rounded-xl overflow-hidden relative">
                     <Image
                       src={post.imageUrl}
                       alt={post.title}
                       fill
                       className="object-cover"
-                      sizes="400px"
+                      sizes="(max-width: 768px) 96px, 112px"
                     />
                   </div>
                 )}
-                
-                <div className="flex items-center gap-2 mb-3">
-                  {post.tags.map((tagId: string) => {
-                    const tag = getTagById(tagId)
-                    return tag ? (
-                      <span
-                        key={tagId}
-                        className="px-2 py-1 text-xs rounded-full text-white"
-                        style={{ backgroundColor: tag.color }}
-                      >
-                        {tag.name}
-                      </span>
-                    ) : null
-                  })}
-                </div>
-                
-                <h3 className="text-xl font-bold text-white mb-2 font-montserrat group-hover:text-cobalt-light transition-colors line-clamp-2">
-                  {post.title}
-                </h3>
-                
-                <p className="text-gray-300 mb-3 text-sm">
-                  By {post.author} • {new Date(post.date).toLocaleDateString()}
-                </p>
-                
-                <p className="text-gray-400 mb-4 text-sm line-clamp-3 leading-relaxed">
-                  {post.excerpt}
-                </p>
-                
-                <div className="flex items-center justify-between">
-                  {post.whitepaperUrl && (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        e.preventDefault()
-                        const url = post.whitepaperUrl
-                        if (!url) return
-                        const link = document.createElement('a')
-                        link.href = url
-                        link.download = `${post.title || 'whitepaper'}.pdf`
-                        link.target = '_blank'
-                        document.body.appendChild(link)
-                        link.click()
-                        document.body.removeChild(link)
-                      }}
-                      className="flex items-center gap-2 text-cobalt-light hover:text-cobalt-blue transition-colors text-sm font-montserrat"
-                    >
-                      <Download className="w-4 h-4" />
-                      Download PDF
-                    </button>
-                  )}
-                  <div className="flex items-center gap-2 text-cobalt-light text-sm font-montserrat">
-                    <span>Read More</span>
-                    <ArrowRight className="w-4 h-4" />
+
+                <div className="flex-1 min-w-0 flex flex-col h-full justify-between">
+                  <div>
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                      {post.tags.map((tagId: string) => {
+                        const tag = getTagById(tagId)
+                        return tag ? (
+                          <span
+                            key={tagId}
+                            className="px-2 py-0.5 text-[10px] rounded-full text-white whitespace-nowrap"
+                            style={{ backgroundColor: tag.color }}
+                          >
+                            {tag.name}
+                          </span>
+                        ) : null
+                      })}
+                    </div>
+
+                    <h3 className="text-lg font-bold text-white mb-1 font-montserrat group-hover:text-cobalt-light transition-colors line-clamp-2 leading-tight">
+                      {post.title}
+                    </h3>
+
+                    <p className="text-gray-400 mb-2 text-xs">
+                      By {post.author} • {new Date(post.date).toLocaleDateString()}
+                    </p>
+
+                    <p className="text-gray-300 text-xs line-clamp-2 mb-2">
+                      {post.excerpt}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-end">
+                    <div className="flex items-center gap-1 text-cobalt-light text-xs font-semibold">
+                      <span>Read More</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </div>
                   </div>
                 </div>
               </motion.a>

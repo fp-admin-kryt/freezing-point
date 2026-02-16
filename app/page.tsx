@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import Navigation from '@/components/Navigation'
 import ScrollIndicator from '@/components/ScrollIndicator'
 import { Target, PlusCircle, Radar, Eye, Download, ArrowRight } from 'lucide-react'
@@ -13,6 +13,23 @@ export default function Home() {
   const [researchPosts, setResearchPosts] = useState<any[]>([])
   const [signalPosts, setSignalPosts] = useState<any[]>([])
   const [observerPosts, setObserverPosts] = useState<any[]>([])
+  const [activeAccordion, setActiveAccordion] = useState<string | null>(null)
+
+  const { scrollY } = useScroll()
+
+  // Transform for the Hero Text (Desktop)
+  // Moves from center of screen (relative to left column) to left align
+  const desktopTitleX = useTransform(scrollY, [0, 500], ['25vw', '0vw'])
+
+  // Transform for the Hero Text (Mobile)
+  // Simple fade and slight move up
+  const mobileTitleOpacity = useTransform(scrollY, [0, 300], [1, 0])
+  const mobileTitleY = useTransform(scrollY, [0, 300], [0, -50])
+
+  // Opacity for the Accordion (Right Side)
+  // Fades in as we scroll
+  const accordionOpacity = useTransform(scrollY, [0, 300], [0, 1])
+  const accordionY = useTransform(scrollY, [0, 300], [50, 0])
 
   // Load data from Firebase for home sections
   useEffect(() => {
@@ -69,7 +86,7 @@ export default function Home() {
     const element = document.getElementById(sectionId)
     if (element) {
       // Direct smooth scroll without delay
-      element.scrollIntoView({ 
+      element.scrollIntoView({
         behavior: 'smooth',
         block: 'start'
       })
@@ -79,100 +96,96 @@ export default function Home() {
   return (
     <main className="min-h-screen relative overflow-hidden">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: 'easeOut' }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
         className="relative z-10"
       >
         {/* Navigation */}
         <Navigation />
 
-        {/* Hero Section */}
-        <section className="min-h-screen flex flex-col items-center justify-center px-4">
-          <h1 className="text-5xl md:text-7xl font-bold text-white font-montserrat text-center mb-8">
-            FREEZING POINT
-          </h1>
-          {/* Animated Explore Infinitely capsule */}
-          <motion.button
-            type="button"
-            className="relative mb-10"
-            whileHover={{ scale: 1.03 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-          >
-            {/* Glow underneath */}
-            <motion.div
-              className="absolute -inset-1 rounded-full blur-xl opacity-60"
-              style={{ background: 'radial-gradient(circle at 50% 50%, #2b9cff 0%, transparent 60%)' }}
-              animate={{ opacity: [0.4, 0.7, 0.4] }}
-              transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-            />
-            {/* Pill */}
-            <div className="relative px-8 py-2 rounded-full border border-white/20 bg-[radial-gradient(circle_at_0%_0%,#3b82f6,transparent_55%),radial-gradient(circle_at_100%_100%,#22d3ee,transparent_55%)] shadow-lg overflow-hidden">
-              <motion.div
-                className="absolute inset-0 opacity-60"
-                animate={{
-                  backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
-                }}
-                style={{
-                  backgroundImage:
-                    'linear-gradient(90deg, rgba(59,130,246,0.3), rgba(56,189,248,0.6), rgba(59,130,246,0.3))',
-                  backgroundSize: '200% 100%',
-                }}
-                transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-              />
-              <span className="relative z-10 text-base md:text-lg font-semibold text-white font-montserrat">
-                Explore Infinitely
-              </span>
+        {/* Spacer to allow scrolling to trigger animation from "Hero" state */}
+        {/* Spacer to allow scrolling to trigger animation from "Hero" state */}
+        <div className="h-[45vh]" />
+
+        {/* Combined Hero & Explore Section */}
+        <section id="explore" className="min-h-[150vh] relative">
+          <div className="container mx-auto px-4 sticky top-0 md:top-24 h-screen flex flex-col md:flex-row items-center justify-center md:items-start md:pt-40">
+            {/* Left: Moveable Title */}
+            <div className="w-full md:w-1/2 flex justify-center md:block mb-8 md:mb-0 relative z-20">
+              {/* Desktop Title: Moves Left */}
+              <motion.h1
+                className="hidden md:block text-5xl md:text-7xl font-bold text-white font-montserrat leading-tight"
+                style={{ x: desktopTitleX, maxWidth: '8ch' }}
+              >
+                FREEZING POINT
+              </motion.h1>
+
+              {/* Mobile Title: Fades/Moves Up */}
+              <motion.h1
+                className="md:hidden text-5xl font-bold text-white font-montserrat text-center"
+                style={{ opacity: mobileTitleOpacity, y: mobileTitleY }}
+              >
+                FREEZING POINT
+              </motion.h1>
             </div>
-          </motion.button>
-          <ScrollIndicator variant="new" />
-        </section>
 
-        {/* Explore Section: sticky media left, cards right */}
-        <section id="explore" className="section-padding">
-          <div className="container mx-auto px-4">
-            <div className="max-w-6xl mx-auto md:flex md:min-h-screen">
-              {/* Left: media (sticky on desktop, regular on mobile) */}
-              <div className="w-full md:w-1/2 md:sticky md:top-24 md:h-screen overflow-hidden mb-8 md:mb-0">
-                <div className="w-full h-full rounded-2xl overflow-hidden bg-black/40">
-                  <video
-                    src="https://res.cloudinary.com/dik6zsyzz/video/upload/v1764679948/moHITMANoj__--ar_8953_--bs_1_--video_1_--end_loop_af4d8a8f-2c20-4c6f-a7ce-6f476dd24466_0_kciiks.mp4"
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              </div>
+            {/* Right: Accordion (Fades in) */}
+            <motion.div
+              className="w-full md:w-1/2 md:px-8 space-y-4"
+              style={{ opacity: accordionOpacity, y: accordionY }}
+            >
+              {heroCards.map((card, index) => {
+                const Icon = card.icon
+                const isOpen = activeAccordion === card.title
 
-              {/* Right: stacked cards */}
-              <div className="w-full md:w-1/2 md:px-8 space-y-6 md:space-y-8">
-                {heroCards.map((card) => {
-                  const Icon = card.icon
-                  return (
+                return (
+                  <div
+                    key={card.title}
+                    className="glass-morphism rounded-2xl overflow-hidden transition-all duration-300"
+                  >
                     <button
-                      key={card.title}
-                      type="button"
-                      onClick={() => scrollToSection(card.link.replace('#', ''))}
-                      className="relative w-full text-left glass-morphism rounded-2xl p-6 hover:shadow-xl transition-all duration-300 cursor-pointer"
+                      onClick={() => setActiveAccordion(isOpen ? null : card.title)}
+                      className="w-full flex items-center justify-between p-6 text-left cursor-pointer"
                     >
-                      <div className="pr-12">
-                        <h3 className="text-xl md:text-2xl font-bold text-white mb-2 font-montserrat">
-                          {card.title}
-                        </h3>
-                        <p className="text-sm md:text-base text-gray-300 leading-relaxed">
-                          {card.description}
-                        </p>
-                      </div>
-                      <div className="absolute top-4 right-4 flex items-center justify-center">
-                        <Icon className="w-6 h-6 md:w-7 md:h-7 text-white" />
+                      <h3 className="text-xl md:text-2xl font-bold text-white font-montserrat">
+                        {card.title}
+                      </h3>
+                      <div className={`p-2 rounded-full bg-white/5 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}>
+                        <Icon className={`w-6 h-6 ${isOpen ? 'text-cobalt-light' : 'text-white'}`} />
                       </div>
                     </button>
-                  )
-                })}
-              </div>
-            </div>
+
+                    <AnimatePresence>
+                      {isOpen && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0, filter: 'blur(10px)' }}
+                          animate={{ height: 'auto', opacity: 1, filter: 'blur(0px)' }}
+                          exit={{ height: 0, opacity: 0, filter: 'blur(10px)' }}
+                          transition={{ duration: 0.4, ease: 'circOut' }}
+                          className="overflow-hidden"
+                        >
+                          <div className="px-6 pb-6">
+                            <p className="text-sm md:text-base text-gray-300 leading-relaxed mb-4">
+                              {card.description}
+                            </p>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                scrollToSection(card.link.replace('#', ''))
+                              }}
+                              className="text-sm text-cobalt-light hover:text-white transition-colors flex items-center gap-2"
+                            >
+                              Explore {card.title} <ArrowRight className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                )
+              })}
+            </motion.div>
           </div>
         </section>
 
@@ -183,12 +196,20 @@ export default function Home() {
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
-              className="text-center mb-16"
+              className="text-left mb-10"
             >
-              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 font-montserrat">
-                Research
-              </h2>
-              <p className="text-xl text-gray-300 max-w-3xl mx-auto font-montserrat">
+              <div className="flex items-baseline gap-6 mb-4">
+                <h2 className="text-4xl md:text-5xl font-bold text-white font-montserrat">
+                  Research
+                </h2>
+                <a
+                  href="/research"
+                  className="text-cobalt-light hover:text-white transition-colors text-sm font-semibold flex items-center gap-1"
+                >
+                  View All <ArrowRight className="w-4 h-4" />
+                </a>
+              </div>
+              <p className="text-xl text-gray-300 max-w-3xl font-montserrat">
                 Cutting-edge research papers and whitepapers from leading AI researchers and
                 institutions
               </p>
@@ -206,69 +227,51 @@ export default function Home() {
                     initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: index * 0.1 }}
-                    className="glass-morphism rounded-2xl p-6 hover:shadow-xl transition-all duration-300 group flex-shrink-0 cursor-pointer block"
-                    style={{ width: '400px', maxWidth: '400px' }}
+                    className="glass-morphism rounded-2xl p-4 hover:shadow-xl transition-all duration-300 group flex-shrink-0 cursor-pointer flex gap-4 items-start"
+                    style={{ width: '500px', maxWidth: '90vw' }}
                   >
                     {post.imageUrl && (
-                      <div className="w-full h-48 rounded-lg mb-4 overflow-hidden relative">
+                      <div className="w-32 h-32 flex-shrink-0 rounded-xl overflow-hidden relative">
                         <Image
                           src={post.imageUrl}
                           alt={post.title}
                           fill
                           className="object-cover"
-                          sizes="400px"
+                          sizes="128px"
                         />
                       </div>
                     )}
-                    <div className="flex items-center gap-2 mb-3">
-                      {post.tags.map((tagId: string) => {
-                        const tag = getTagById(tagId)
-                        return tag ? (
-                          <span
-                            key={tagId}
-                            className="px-2 py-1 text-xs rounded-full text-white"
-                            style={{ backgroundColor: tag.color }}
-                          >
-                            {tag.name}
-                          </span>
-                        ) : null
-                      })}
-                    </div>
-                    <h3 className="text-xl font-bold text-white mb-2 font-montserrat group-hover:text-cobalt-light transition-colors">
-                      {post.title}
-                    </h3>
-                    <p className="text-gray-300 mb-4 text-sm">
-                      By {post.author} • {new Date(post.date).toLocaleDateString()}
-                    </p>
-                    <p className="text-gray-400 mb-4 text-sm line-clamp-3">
-                      {post.excerpt}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      {post.whitepaperUrl && (
-                        <a
-                          href={post.whitepaperUrl}
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            e.preventDefault()
-                            const url = post.whitepaperUrl
-                            if (!url) return
-                            const link = document.createElement('a')
-                            link.href = url
-                            link.download = `${post.title || 'whitepaper'}.pdf`
-                            link.target = '_blank'
-                            document.body.appendChild(link)
-                            link.click()
-                            document.body.removeChild(link)
-                          }}
-                          className="flex items-center gap-2 text-cobalt-light hover:text-cobalt-blue transition-colors text-sm"
-                        >
-                          <Download className="w-4 h-4" />
-                          Download PDF
-                        </a>
-                      )}
-                      <div className="flex items-center gap-2 text-cobalt-light text-sm">
-                        <span>Read More</span>
-                        <ArrowRight className="w-4 h-4" />
+                    <div className="flex-1 min-w-0 flex flex-col h-full justify-between">
+                      <div>
+                        <div className="flex items-center gap-2 mb-2 flex-wrap">
+                          {post.tags.map((tagId: string) => {
+                            const tag = getTagById(tagId)
+                            return tag ? (
+                              <span
+                                key={tagId}
+                                className="px-2 py-0.5 text-[10px] rounded-full text-white whitespace-nowrap"
+                                style={{ backgroundColor: tag.color }}
+                              >
+                                {tag.name}
+                              </span>
+                            ) : null
+                          })}
+                        </div>
+                        <h3 className="text-lg font-bold text-white mb-1 font-montserrat group-hover:text-cobalt-light transition-colors line-clamp-2 leading-tight">
+                          {post.title}
+                        </h3>
+                        <p className="text-gray-400 mb-2 text-xs">
+                          By {post.author} • {new Date(post.date).toLocaleDateString()}
+                        </p>
+                        <p className="text-gray-300 text-xs line-clamp-2">
+                          {post.excerpt}
+                        </p>
+                      </div>
+                      <div className="flex items-center justify-end mt-2">
+                        <div className="flex items-center gap-1 text-cobalt-light text-xs font-semibold">
+                          <span>Read More</span>
+                          <ArrowRight className="w-3 h-3" />
+                        </div>
                       </div>
                     </div>
                   </motion.a>
@@ -276,20 +279,7 @@ export default function Home() {
               </div>
             </div>
 
-            <motion.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.5 }}
-              className="text-center mt-12"
-            >
-              <a
-                href="/research"
-                className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-cobalt-blue to-cobalt-light text-white rounded-full font-semibold hover:shadow-lg hover:shadow-cobalt-blue/25 transition-all duration-300"
-              >
-                View All Research
-                <ArrowRight className="w-5 h-5" />
-              </a>
-            </motion.div>
+
           </div>
         </section>
 
@@ -300,12 +290,20 @@ export default function Home() {
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
-              className="text-center mb-16"
+              className="text-left mb-10"
             >
-              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 font-montserrat">
-                Radar
-              </h2>
-              <p className="text-xl text-gray-300 max-w-3xl mx-auto font-montserrat">
+              <div className="flex items-baseline gap-6 mb-4">
+                <h2 className="text-4xl md:text-5xl font-bold text-white font-montserrat">
+                  Radar
+                </h2>
+                <a
+                  href="/radar"
+                  className="text-cobalt-light hover:text-white transition-colors text-sm font-semibold flex items-center gap-1"
+                >
+                  View All <ArrowRight className="w-4 h-4" />
+                </a>
+              </div>
+              <p className="text-xl text-gray-300 max-w-3xl font-montserrat">
                 Real-time signals and deep insights from the AI frontier
               </p>
             </motion.div>
@@ -317,7 +315,7 @@ export default function Home() {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="mb-16"
             >
-              <h3 className="text-2xl font-bold text-white mb-8 text-center font-montserrat">
+              <h3 className="text-2xl font-bold text-white mb-8 text-left font-montserrat">
                 Signals
               </h3>
               <div
@@ -388,7 +386,7 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
             >
-              <h3 className="text-2xl font-bold text-white mb-8 text-center font-montserrat">
+              <h3 className="text-2xl font-bold text-white mb-8 text-left font-montserrat">
                 The Observer
               </h3>
               <div
@@ -453,20 +451,7 @@ export default function Home() {
               </div>
             </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
-              className="text-center mt-12"
-            >
-              <a
-                href="/radar"
-                className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-cobalt-blue to-cobalt-light text-white rounded-full font-semibold hover:shadow-lg hover:shadow-cobalt-blue/25 transition-all duration-300"
-              >
-                View All Radar
-                <ArrowRight className="w-5 h-5" />
-              </a>
-            </motion.div>
+
           </div>
         </section>
       </motion.div>
