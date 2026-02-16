@@ -5,6 +5,7 @@ import { useDropzone } from 'react-dropzone'
 import { Upload, X, Image as ImageIcon, Plus, Edit, Trash2 } from 'lucide-react'
 import { uploadToCloudinaryDirect } from '@/lib/cloudinary'
 import { saveTag, getTags, deleteTag, updateTag } from '@/lib/firebase'
+import Image from 'next/image'
 import toast from 'react-hot-toast'
 
 interface Tag {
@@ -86,7 +87,7 @@ export default function TagManager() {
           color: newTag.color,
           imageUrl: finalImageUrl || undefined
         })
-        
+
         // Refresh tags from Firebase
         const freshTags = await getTags()
         setTags(freshTags)
@@ -154,7 +155,7 @@ export default function TagManager() {
         <h3 className="text-lg font-semibold text-white mb-4">
           {editingTag ? 'Edit Tag' : 'Create New Tag'}
         </h3>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Tag Name */}
@@ -308,11 +309,13 @@ export default function TagManager() {
                 </div>
               </div>
               {tag.imageUrl && (
-                <div className="w-full h-20 bg-gray-700 rounded overflow-hidden">
-                  <img
+                <div className="relative w-full h-20 bg-gray-700 rounded overflow-hidden">
+                  <Image
                     src={tag.imageUrl}
                     alt={tag.name}
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 300px"
                   />
                 </div>
               )}

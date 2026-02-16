@@ -46,7 +46,7 @@ export default function BlockEditor({ blocks, onChange }: BlockEditorProps) {
     if (newIndex < 0 || newIndex >= blocks.length) return
 
     const newBlocks = [...blocks]
-    ;[newBlocks[index], newBlocks[newIndex]] = [newBlocks[newIndex], newBlocks[index]]
+      ;[newBlocks[index], newBlocks[newIndex]] = [newBlocks[newIndex], newBlocks[index]]
     onChange(newBlocks.map((b, idx) => ({ ...b, order: idx })))
   }
 
@@ -212,6 +212,7 @@ function ImageBlockEditor({
         <input {...getInputProps()} />
         {block.imageUrl ? (
           <div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={block.imageUrl} alt="Block image" className="max-w-full h-auto rounded-lg mb-2" />
             <button
               type="button"
@@ -281,6 +282,7 @@ function ImageTextBlockEditor({
           <input {...getInputProps()} />
           {block.imageUrl ? (
             <div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={block.imageUrl} alt="Block image" className="max-w-full h-auto rounded-lg mb-2" />
               <button
                 type="button"

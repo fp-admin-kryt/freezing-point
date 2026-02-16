@@ -18,30 +18,30 @@ export default function ResearchDetailPage() {
   const [typography, setTypography] = useState<any>(null)
 
   useEffect(() => {
+    const loadPost = async () => {
+      try {
+        const posts = await getResearchPosts()
+        const found = posts.find((p) => p.id === postId)
+        setPost(found || null)
+      } catch (error) {
+        console.error('Error loading post:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    const loadTypography = async () => {
+      try {
+        const typo = await getTypography()
+        setTypography(typo)
+      } catch (error) {
+        console.error('Error loading typography:', error)
+      }
+    }
+
     loadPost()
     loadTypography()
   }, [postId])
-
-  const loadPost = async () => {
-    try {
-      const posts = await getResearchPosts()
-      const found = posts.find((p) => p.id === postId)
-      setPost(found || null)
-    } catch (error) {
-      console.error('Error loading post:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const loadTypography = async () => {
-    try {
-      const typo = await getTypography()
-      setTypography(typo)
-    } catch (error) {
-      console.error('Error loading typography:', error)
-    }
-  }
 
   if (loading) {
     return (
@@ -265,9 +265,8 @@ export default function ResearchDetailPage() {
 
                         {block.type === 'imageText' && (
                           <div
-                            className={`flex flex-col ${
-                              block.align === 'right' ? 'md:flex-row-reverse' : 'md:flex-row'
-                            } gap-6 items-start`}
+                            className={`flex flex-col ${block.align === 'right' ? 'md:flex-row-reverse' : 'md:flex-row'
+                              } gap-6 items-start`}
                           >
                             {block.imageUrl && (
                               <div className="w-full md:w-1/2 flex-shrink-0">
@@ -282,9 +281,8 @@ export default function ResearchDetailPage() {
                             )}
                             {block.content && (
                               <div
-                                className={`w-full md:w-1/2 prose prose-invert max-w-none ${
-                                  block.align === 'right' ? 'md:text-right' : ''
-                                }`}
+                                className={`w-full md:w-1/2 prose prose-invert max-w-none ${block.align === 'right' ? 'md:text-right' : ''
+                                  }`}
                                 dangerouslySetInnerHTML={{ __html: block.content }}
                                 style={typography?.body ? {
                                   fontSize: typography.body.fontSize.desktop,

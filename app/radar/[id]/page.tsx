@@ -19,44 +19,44 @@ export default function RadarDetailPage() {
   const [typography, setTypography] = useState<any>(null)
 
   useEffect(() => {
+    const loadPost = async () => {
+      try {
+        const [signals, observers] = await Promise.all([
+          getSignalPosts(),
+          getObserverPosts()
+        ])
+
+        const signalPost = signals.find((p) => p.id === postId)
+        const observerPost = observers.find((p) => p.id === postId)
+
+        if (signalPost) {
+          setPost(signalPost)
+          setPostType('signal')
+        } else if (observerPost) {
+          setPost(observerPost)
+          setPostType('observer')
+        } else {
+          setPost(null)
+        }
+      } catch (error) {
+        console.error('Error loading post:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    const loadTypography = async () => {
+      try {
+        const typo = await getTypography()
+        setTypography(typo)
+      } catch (error) {
+        console.error('Error loading typography:', error)
+      }
+    }
+
     loadPost()
     loadTypography()
   }, [postId])
-
-  const loadPost = async () => {
-    try {
-      const [signals, observers] = await Promise.all([
-        getSignalPosts(),
-        getObserverPosts()
-      ])
-      
-      const signalPost = signals.find((p) => p.id === postId)
-      const observerPost = observers.find((p) => p.id === postId)
-      
-      if (signalPost) {
-        setPost(signalPost)
-        setPostType('signal')
-      } else if (observerPost) {
-        setPost(observerPost)
-        setPostType('observer')
-      } else {
-        setPost(null)
-      }
-    } catch (error) {
-      console.error('Error loading post:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const loadTypography = async () => {
-    try {
-      const typo = await getTypography()
-      setTypography(typo)
-    } catch (error) {
-      console.error('Error loading typography:', error)
-    }
-  }
 
   if (loading) {
     return (
@@ -149,7 +149,7 @@ export default function RadarDetailPage() {
                     {post.heading}
                   </h1>
                   <p className="text-gray-400 mb-4">
-                    {new Date(post.createdAt).toLocaleDateString()}
+                    {new Date(post.date).toLocaleDateString()}
                   </p>
                 </div>
 
@@ -212,7 +212,7 @@ export default function RadarDetailPage() {
                   {post.heading}
                 </h1>
                 <p className="text-gray-400 mb-4">
-                  {new Date(post.createdAt).toLocaleDateString()}
+                  {new Date(post.date).toLocaleDateString()}
                 </p>
               </div>
 
@@ -250,9 +250,8 @@ export default function RadarDetailPage() {
 
                         {block.type === 'imageText' && (
                           <div
-                            className={`flex flex-col ${
-                              block.align === 'right' ? 'md:flex-row-reverse' : 'md:flex-row'
-                            } gap-6 items-start`}
+                            className={`flex flex-col ${block.align === 'right' ? 'md:flex-row-reverse' : 'md:flex-row'
+                              } gap-6 items-start`}
                           >
                             {block.imageUrl && (
                               <div className="w-full md:w-1/2 flex-shrink-0">
@@ -267,9 +266,8 @@ export default function RadarDetailPage() {
                             )}
                             {block.content && (
                               <div
-                                className={`w-full md:w-1/2 prose prose-invert max-w-none ${
-                                  block.align === 'right' ? 'md:text-right' : ''
-                                }`}
+                                className={`w-full md:w-1/2 prose prose-invert max-w-none ${block.align === 'right' ? 'md:text-right' : ''
+                                  }`}
                                 dangerouslySetInnerHTML={{ __html: block.content }}
                                 style={typography?.body ? {
                                   fontSize: typography.body.fontSize.desktop,
@@ -321,7 +319,7 @@ export default function RadarDetailPage() {
                   {post.heading}
                 </h1>
                 <p className="text-gray-400 mb-4">
-                  {new Date(post.createdAt).toLocaleDateString()}
+                  {new Date(post.date).toLocaleDateString()}
                 </p>
               </div>
               {post.content && (

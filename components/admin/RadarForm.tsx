@@ -30,7 +30,7 @@ export default function RadarForm({ onBack, type, editPost }: RadarFormProps) {
     domain: editPost?.domain || '',
     date: editPost?.date || new Date().toISOString().split('T')[0]
   })
-  
+
   // Single Image Template State
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imageUrl, setImageUrl] = useState(editPost?.imageUrl || '')
@@ -56,7 +56,7 @@ export default function RadarForm({ onBack, type, editPost }: RadarFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!templateType) {
       toast.error('Please select a template type')
       return
@@ -190,11 +190,10 @@ export default function RadarForm({ onBack, type, editPost }: RadarFormProps) {
               <button
                 type="button"
                 onClick={() => setTemplateType('singleImage')}
-                className={`p-6 border-2 rounded-lg transition-all ${
-                  templateType === 'singleImage'
+                className={`p-6 border-2 rounded-lg transition-all ${templateType === 'singleImage'
                     ? 'border-cobalt-blue bg-cobalt-blue/10'
                     : 'border-gray-600 hover:border-gray-500'
-                }`}
+                  }`}
               >
                 <div className="flex flex-col items-center text-center">
                   <FileImage className="w-12 h-12 text-cobalt-light mb-3" />
@@ -208,11 +207,10 @@ export default function RadarForm({ onBack, type, editPost }: RadarFormProps) {
               <button
                 type="button"
                 onClick={() => setTemplateType('document')}
-                className={`p-6 border-2 rounded-lg transition-all ${
-                  templateType === 'document'
+                className={`p-6 border-2 rounded-lg transition-all ${templateType === 'document'
                     ? 'border-cobalt-blue bg-cobalt-blue/10'
                     : 'border-gray-600 hover:border-gray-500'
-                }`}
+                  }`}
               >
                 <div className="flex flex-col items-center text-center">
                   <Layout className="w-12 h-12 text-cobalt-light mb-3" />
@@ -230,7 +228,7 @@ export default function RadarForm({ onBack, type, editPost }: RadarFormProps) {
         {templateType === 'singleImage' && (
           <div className="space-y-4 p-6 bg-gray-900 rounded-lg border border-gray-700">
             <h3 className="text-lg font-semibold text-white mb-4">Single Image Template</h3>
-            
+
             <div>
               <label className="block text-sm font-medium text-white mb-2">
                 Sticky Image (Left Side) *
@@ -257,6 +255,7 @@ export default function RadarForm({ onBack, type, editPost }: RadarFormProps) {
                   </div>
                 ) : imageUrl ? (
                   <div>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={imageUrl} alt="Preview" className="max-w-full h-auto rounded-lg mb-2" />
                     <button
                       type="button"
