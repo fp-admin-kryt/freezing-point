@@ -23,6 +23,7 @@ export default function RichTextEditor({ value, onChange, placeholder, className
   const [showFontPicker, setShowFontPicker] = useState(false)
 
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit.configure({
         heading: false, // We'll use custom heading

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { GradientButton } from '@/components/ui/gradient-button'
 
 interface AdminLoginProps {
   onLogin: () => void
@@ -17,64 +18,64 @@ const AdminLogin = ({ onLogin }: AdminLoginProps) => {
     setIsLoading(true)
     setError('')
 
-    // Simple password check (in production, use proper authentication)
     if (password === 'freezingpoint2024') {
       localStorage.setItem('admin-token', 'authenticated')
       onLogin()
     } else {
       setError('Invalid password')
     }
-    
+
     setIsLoading(false)
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-space-black">
+    <div className="min-h-screen flex items-center justify-center bg-[#050508]">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
+        transition={{ duration: 0.6 }}
+        className="w-full max-w-sm px-4"
       >
-        <div className="glass-morphism rounded-2xl p-8">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-white font-montserrat mb-2">
-              Admin Access
+        <div className="border border-white/8 rounded-2xl p-8">
+          <div className="mb-8">
+            <p className="font-sans text-[10px] tracking-[0.5em] uppercase text-cobalt-light mb-4">
+              Admin
+            </p>
+            <h1 className="font-sans font-light text-3xl text-white mb-2">
+              Access Panel
             </h1>
-            <p className="text-gray-400 font-montserrat">
-              Enter password to access admin panel
+            <p className="font-body text-gray-500 text-sm">
+              Enter your password to continue
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter password"
-                className="w-full px-4 py-3 bg-space-gray border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cobalt-blue transition-colors font-montserrat"
-                required
-              />
-            </div>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              className="w-full px-4 py-3 bg-transparent border border-white/8 rounded-lg text-white placeholder-gray-700 font-sans text-sm focus:outline-none focus:border-cobalt-blue/50 transition-colors"
+              required
+            />
 
             {error && (
-              <motion.div
+              <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="text-red-400 text-sm font-montserrat"
+                className="font-sans text-xs text-red-400"
               >
                 {error}
-              </motion.div>
+              </motion.p>
             )}
 
-            <button
+            <GradientButton
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-cobalt-blue to-cobalt-light text-white py-3 rounded-lg font-semibold font-montserrat hover:opacity-90 transition-opacity disabled:opacity-50"
+              className="w-full !min-w-0 !px-6 !py-3 !text-sm !rounded-lg !font-light"
             >
-              {isLoading ? 'Authenticating...' : 'Login'}
-            </button>
+              {isLoading ? 'Authenticating…' : 'Login'}
+            </GradientButton>
           </form>
         </div>
       </motion.div>
@@ -82,4 +83,4 @@ const AdminLogin = ({ onLogin }: AdminLoginProps) => {
   )
 }
 
-export default AdminLogin 
+export default AdminLogin

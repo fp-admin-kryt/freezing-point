@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Edit, Trash2 } from 'lucide-react'
+import { Edit, Trash2 } from 'lucide-react'
 import { getDomains, saveDomain, updateDomain, deleteDomain } from '@/lib/firebase'
+import { GradientButton } from '@/components/ui/gradient-button'
 import toast from 'react-hot-toast'
 
 interface Domain {
@@ -13,18 +14,16 @@ interface Domain {
   postCount: number
 }
 
+const inputCls = "w-full px-4 py-2.5 bg-transparent border border-white/8 rounded-lg text-white placeholder-gray-700 font-sans text-sm focus:outline-none focus:border-cobalt-blue/50 transition-colors"
+const labelCls = "block font-sans text-[10px] tracking-widest uppercase text-gray-600 mb-2"
+const secBtnCls = "px-4 py-2.5 border border-white/8 rounded-lg text-gray-400 hover:text-white hover:border-white/20 transition-colors font-sans text-sm"
+
 export default function DomainManager() {
   const [domains, setDomains] = useState<Domain[]>([])
   const [newDomain, setNewDomain] = useState({ name: '', description: '', color: '#136fd7' })
   const [editingDomain, setEditingDomain] = useState<Domain | null>(null)
   const [loading, setLoading] = useState(false)
-  const scrollToTop = () => {
-    if (typeof window !== 'undefined') {
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    }
-  }
 
-  // Load from Firebase
   useEffect(() => {
     let mounted = true
     const load = async () => {
@@ -45,29 +44,18 @@ export default function DomainManager() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-
     try {
       if (editingDomain && editingDomain.id) {
-        await updateDomain(editingDomain.id, {
-          name: newDomain.name,
-          description: newDomain.description,
-          color: newDomain.color
-        })
+        await updateDomain(editingDomain.id, { name: newDomain.name, description: newDomain.description, color: newDomain.color })
         const refreshed = await getDomains()
         setDomains(refreshed.map(d => ({ postCount: 0, description: d.description || '', color: d.color || '#136fd7', ...d })))
-        toast.success('Domain updated successfully!')
+        toast.success('Domain updated!')
       } else {
-        await saveDomain({
-          name: newDomain.name,
-          description: newDomain.description,
-          color: newDomain.color
-        })
+        await saveDomain({ name: newDomain.name, description: newDomain.description, color: newDomain.color })
         const refreshed = await getDomains()
         setDomains(refreshed.map(d => ({ postCount: 0, description: d.description || '', color: d.color || '#136fd7', ...d })))
-        toast.success('Domain created successfully!')
+        toast.success('Domain created!')
       }
-
-      // Reset form
       setNewDomain({ name: '', description: '', color: '#136fd7' })
       setEditingDomain(null)
     } catch (error) {
@@ -80,19 +68,15 @@ export default function DomainManager() {
 
   const handleEdit = (domain: Domain) => {
     setEditingDomain(domain)
-    setNewDomain({
-      name: domain.name,
-      description: domain.description ?? '',
-      color: domain.color ?? '#136fd7'
-    })
+    setNewDomain({ name: domain.name, description: domain.description ?? '', color: domain.color ?? '#136fd7' })
   }
 
   const handleDelete = async (domainId: string) => {
-    if (window.confirm('Are you sure you want to delete this domain?')) {
+    if (window.confirm('Delete this domain?')) {
       try {
         await deleteDomain(domainId)
-        setDomains(prev => prev.filter(domain => domain.id !== domainId))
-        toast.success('Domain deleted successfully!')
+        setDomains(prev => prev.filter(d => d.id !== domainId))
+        toast.success('Domain deleted!')
       } catch (error) {
         console.error('Error deleting domain:', error)
         toast.error('Failed to delete domain')
@@ -106,155 +90,88 @@ export default function DomainManager() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-white">Domain Management</h2>
-        <button
-          type="button"
-          onClick={() => { setEditingDomain(null); setNewDomain({ name: '', description: '', color: '#136fd7' }); scrollToTop(); }}
-          className="px-4 py-2 rounded-full bg-white/10 border border-white/20 text-white hover:bg-white/15 transition-colors"
-        >
-          Create Domain
-        </button>
-      </div>
-
-      {/* Create/Edit Form */}
-      <div className="bg-space-gray rounded-lg p-6 mb-6">
-        <h3 className="text-lg font-semibold text-white mb-4">
-          {editingDomain ? 'Edit Domain' : 'Create New Domain'}
-        </h3>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="max-w-4xl space-y-6">
+      {/* Form */}
+      <div className="border border-white/8 rounded-xl p-6">
+        <p className="font-sans text-[10px] tracking-widest uppercase text-gray-600 mb-5">
+          {editingDomain ? 'Edit Domain' : 'New Domain'}
+        </p>
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Domain Name */}
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
-                Domain Name *
-              </label>
-              <input
-                type="text"
-                required
-                value={newDomain.name}
+              <label className={labelCls}>Domain Name *</label>
+              <input type="text" required value={newDomain.name}
                 onChange={(e) => setNewDomain({ ...newDomain, name: e.target.value })}
-                className="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cobalt-blue"
-                placeholder="Enter domain name"
-              />
+                className={inputCls} placeholder="Domain name" />
             </div>
-
-            {/* Domain Color */}
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
-                Domain Color *
-              </label>
-              <input
-                type="color"
-                value={newDomain.color}
-                onChange={(e) => setNewDomain({ ...newDomain, color: e.target.value })}
-                className="w-full h-10 bg-gray-800 border border-gray-600 rounded-lg cursor-pointer"
-              />
+              <label className={labelCls}>Color *</label>
+              <div className="flex items-center gap-2">
+                <input type="color" value={newDomain.color}
+                  onChange={(e) => setNewDomain({ ...newDomain, color: e.target.value })}
+                  className="w-10 h-10 rounded-lg cursor-pointer border border-white/8 bg-transparent p-0.5" />
+                <input type="text" value={newDomain.color}
+                  onChange={(e) => setNewDomain({ ...newDomain, color: e.target.value })}
+                  className={`${inputCls} flex-1`} placeholder="#136fd7" />
+              </div>
             </div>
           </div>
-
-          {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-white mb-2">
-              Description *
-            </label>
-            <textarea
-              required
-              value={newDomain.description}
+            <label className={labelCls}>Description *</label>
+            <textarea required value={newDomain.description}
               onChange={(e) => setNewDomain({ ...newDomain, description: e.target.value })}
-              rows={3}
-              className="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cobalt-blue"
-              placeholder="Enter domain description"
-            />
+              rows={3} className={inputCls} placeholder="Domain description" />
           </div>
-
-          {/* Submit Buttons */}
-          <div className="flex justify-end space-x-4">
+          <div className="flex justify-end items-center gap-3">
             {editingDomain && (
-              <button
-                type="button"
-                onClick={handleCancel}
-                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-              >
-                Cancel
-              </button>
+              <button type="button" onClick={handleCancel} className={secBtnCls}>Cancel</button>
             )}
-            <button
+            <GradientButton
               type="submit"
               disabled={loading}
-              className="px-4 py-2 bg-cobalt-blue text-white rounded-lg hover:bg-cobalt-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+              className="!min-w-0 !px-6 !py-2.5 !text-sm !rounded-lg !font-light"
             >
-              {loading ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  <span>Saving...</span>
-                </>
-              ) : (
-                <>
-                  {editingDomain ? <Edit className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                  <span>{editingDomain ? 'Update Domain' : 'Create Domain'}</span>
-                </>
-              )}
-            </button>
+              {loading ? 'Saving…' : editingDomain ? 'Update Domain' : 'Create Domain'}
+            </GradientButton>
           </div>
         </form>
       </div>
 
-      {/* Domains List */}
-      <div className="bg-space-gray rounded-lg p-6">
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-white">Existing Domains</h3>
-          <button
-            type="button"
-            onClick={() => { setEditingDomain(null); setNewDomain({ name: '', description: '', color: '#136fd7' }); scrollToTop(); }}
-            className="px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-white text-sm hover:bg-white/15 transition-colors"
-          >
-            + Create Domain
-          </button>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {domains.map((domain, index) => (
-            <div
-              key={domain.id || `domain-${index}`}
-              className="bg-gray-800 rounded-lg p-4 border border-gray-700 hover:border-gray-600 transition-colors"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center space-x-2">
-                  <div
-                    className="w-4 h-4 rounded-full"
-                    style={{ backgroundColor: domain.color }}
-                  ></div>
-                  <span className="text-white font-medium">{domain.name}</span>
+      {/* Domains list */}
+      <div className="border border-white/8 rounded-xl p-6">
+        <p className="font-sans text-[10px] tracking-widest uppercase text-gray-600 mb-5">Existing Domains</p>
+        {domains.length === 0 ? (
+          <p className="font-body text-gray-600 text-sm text-center py-8">No domains yet.</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {domains.map((domain, index) => (
+              <div key={domain.id || `domain-${index}`}
+                className="border border-white/8 rounded-xl p-4 hover:border-white/15 transition-colors">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: domain.color }} />
+                    <span className="font-sans text-sm text-white">{domain.name}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => handleEdit(domain)}
+                      className="p-1.5 text-gray-600 hover:text-cobalt-light transition-colors">
+                      <Edit className="h-3.5 w-3.5" />
+                    </button>
+                    <button onClick={() => domain.id && handleDelete(domain.id)}
+                      className="p-1.5 text-gray-600 hover:text-red-400 transition-colors"
+                      disabled={!domain.id}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                 </div>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => handleEdit(domain)}
-                    className="p-1 text-gray-400 hover:text-blue-400 transition-colors"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => domain.id && handleDelete(domain.id)}
-                    className="p-1 text-gray-400 hover:text-red-400 transition-colors"
-                    disabled={!domain.id}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
+                {domain.description && (
+                  <p className="font-body text-xs text-gray-600 mt-1">{domain.description}</p>
+                )}
               </div>
-              <p className="text-gray-300 text-sm mb-2">{domain.description}</p>
-              <div className="flex items-center justify-between text-xs text-gray-400">
-                <span>Posts: {domain.postCount}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-        {domains.length === 0 && (
-          <p className="text-gray-400 text-center py-8">No domains created yet.</p>
+            ))}
+          </div>
         )}
       </div>
     </div>
   )
-} 
+}

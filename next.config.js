@@ -46,7 +46,7 @@ const nextConfig = {
   experimental: {
     esmExternals: 'loose',
   },
-  transpilePackages: ['firebase', 'undici'],
+  transpilePackages: ['firebase', 'undici', 'three', '@react-three/fiber'],
 }
 
 module.exports = nextConfig 

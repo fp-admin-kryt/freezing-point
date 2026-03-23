@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import { useDropzone } from 'react-dropzone'
-import { Upload, X, Image as ImageIcon, Plus, Edit, Trash2 } from 'lucide-react'
+import { Upload, Edit, Trash2, Plus } from 'lucide-react'
+import { Image as ImageIcon } from 'lucide-react'
 import { uploadToCloudinaryDirect } from '@/lib/cloudinary'
 import { saveTag, getTags, deleteTag, updateTag } from '@/lib/firebase'
 import Image from 'next/image'
+import { GradientButton } from '@/components/ui/gradient-button'
 import toast from 'react-hot-toast'
 
 interface Tag {
@@ -15,30 +17,26 @@ interface Tag {
   imageUrl?: string
 }
 
+const inputCls = "w-full px-4 py-2.5 bg-transparent border border-white/8 rounded-lg text-white placeholder-gray-700 font-sans text-sm focus:outline-none focus:border-cobalt-blue/50 transition-colors"
+const labelCls = "block font-sans text-[10px] tracking-widest uppercase text-gray-600 mb-2"
+const secBtnCls = "px-4 py-2.5 border border-white/8 rounded-lg text-gray-400 hover:text-white hover:border-white/20 transition-colors font-sans text-sm"
+
 export default function TagManager() {
   const [tags, setTags] = useState<Tag[]>([])
   const [newTag, setNewTag] = useState({ name: '', color: '#136fd7', imageUrl: '' })
   const [editingTag, setEditingTag] = useState<Tag | null>(null)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
-  const scrollToTop = () => {
-    if (typeof window !== 'undefined') {
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    }
-  }
 
-  // Load tags from Firebase
   useEffect(() => {
     const loadTags = async () => {
       try {
-        const tags = await getTags()
-        setTags(tags)
+        setTags(await getTags())
       } catch (error) {
         console.error('Error loading tags:', error)
-        // Fallback to mock data
         setTags([
-          { id: '1', name: 'Machine Learning', color: '#136fd7', imageUrl: '' },
-          { id: '2', name: 'AI Ethics', color: '#ff6b6b', imageUrl: '' }
+          { id: '1', name: 'Machine Learning', color: '#136fd7' },
+          { id: '2', name: 'AI Ethics', color: '#ff6b6b' }
         ])
       }
     }
@@ -46,55 +44,31 @@ export default function TagManager() {
   }, [])
 
   const { getRootProps, getInputProps } = useDropzone({
-    accept: {
-      'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp']
-    },
+    accept: { 'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp'] },
     maxFiles: 1,
-    onDrop: (acceptedFiles) => {
-      setImageFile(acceptedFiles[0])
-    }
+    onDrop: (files) => setImageFile(files[0]),
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-
     try {
       let finalImageUrl = editingTag?.imageUrl || newTag.imageUrl
-
-      // Upload image if new file selected
       if (imageFile) {
-        toast.loading('Uploading image...')
+        toast.loading('Uploading image…')
         finalImageUrl = await uploadToCloudinaryDirect(imageFile)
         toast.dismiss()
-        toast.success('Image uploaded successfully!')
+        toast.success('Image uploaded!')
       }
-
       if (editingTag && editingTag.id) {
-        // Persist update to Firebase, then refresh
-        await updateTag(editingTag.id, {
-          name: newTag.name,
-          color: newTag.color,
-          imageUrl: finalImageUrl || undefined
-        })
-        const fresh = await getTags()
-        setTags(fresh)
-        toast.success('Tag updated successfully!')
+        await updateTag(editingTag.id, { name: newTag.name, color: newTag.color, imageUrl: finalImageUrl || undefined })
+        setTags(await getTags())
+        toast.success('Tag updated!')
       } else {
-        // Save new tag to Firebase
-        await saveTag({
-          name: newTag.name,
-          color: newTag.color,
-          imageUrl: finalImageUrl || undefined
-        })
-
-        // Refresh tags from Firebase
-        const freshTags = await getTags()
-        setTags(freshTags)
-        toast.success('Tag created successfully!')
+        await saveTag({ name: newTag.name, color: newTag.color, imageUrl: finalImageUrl || undefined })
+        setTags(await getTags())
+        toast.success('Tag created!')
       }
-
-      // Reset form
       setNewTag({ name: '', color: '#136fd7', imageUrl: '' })
       setEditingTag(null)
       setImageFile(null)
@@ -108,22 +82,16 @@ export default function TagManager() {
 
   const handleEdit = (tag: Tag) => {
     setEditingTag(tag)
-    setNewTag({
-      name: tag.name,
-      color: tag.color,
-      imageUrl: tag.imageUrl || ''
-    })
+    setNewTag({ name: tag.name, color: tag.color, imageUrl: tag.imageUrl || '' })
     setImageFile(null)
   }
 
   const handleDelete = async (tagId: string) => {
-    if (window.confirm('Are you sure you want to delete this tag?')) {
+    if (window.confirm('Delete this tag?')) {
       try {
-        if (tagId) {
-          await deleteTag(tagId)
-          setTags(prev => prev.filter(tag => tag.id !== tagId))
-          toast.success('Tag deleted successfully!')
-        }
+        await deleteTag(tagId)
+        setTags(prev => prev.filter(t => t.id !== tagId))
+        toast.success('Tag deleted!')
       } catch (error) {
         console.error('Error deleting tag:', error)
         toast.error('Failed to delete tag')
@@ -138,194 +106,112 @@ export default function TagManager() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-white">Tag Management</h2>
-        <button
-          type="button"
-          onClick={() => { setEditingTag(null); setNewTag({ name: '', color: '#136fd7', imageUrl: '' }); setImageFile(null); scrollToTop(); }}
-          className="px-4 py-2 rounded-full bg-white/10 border border-white/20 text-white hover:bg-white/15 transition-colors"
-        >
-          Create Tag
-        </button>
-      </div>
-
-      {/* Create/Edit Form */}
-      <div className="bg-space-gray rounded-lg p-6 mb-6">
-        <h3 className="text-lg font-semibold text-white mb-4">
-          {editingTag ? 'Edit Tag' : 'Create New Tag'}
-        </h3>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="max-w-4xl space-y-6">
+      {/* Form */}
+      <div className="border border-white/8 rounded-xl p-6">
+        <p className="font-sans text-[10px] tracking-widest uppercase text-gray-600 mb-5">
+          {editingTag ? 'Edit Tag' : 'New Tag'}
+        </p>
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Tag Name */}
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
-                Tag Name *
-              </label>
-              <input
-                type="text"
-                required
-                value={newTag.name}
+              <label className={labelCls}>Tag Name *</label>
+              <input type="text" required value={newTag.name}
                 onChange={(e) => setNewTag({ ...newTag, name: e.target.value })}
-                className="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cobalt-blue"
-                placeholder="Enter tag name"
-              />
+                className={inputCls} placeholder="Tag name" />
             </div>
-
-            {/* Tag Color */}
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
-                Tag Color *
-              </label>
-              <input
-                type="color"
-                value={newTag.color}
-                onChange={(e) => setNewTag({ ...newTag, color: e.target.value })}
-                className="w-full h-10 bg-gray-800 border border-gray-600 rounded-lg cursor-pointer"
-              />
+              <label className={labelCls}>Color *</label>
+              <div className="flex items-center gap-2">
+                <input type="color" value={newTag.color}
+                  onChange={(e) => setNewTag({ ...newTag, color: e.target.value })}
+                  className="w-10 h-10 rounded-lg cursor-pointer border border-white/8 bg-transparent p-0.5" />
+                <input type="text" value={newTag.color}
+                  onChange={(e) => setNewTag({ ...newTag, color: e.target.value })}
+                  className={`${inputCls} flex-1`} placeholder="#136fd7" />
+              </div>
             </div>
           </div>
 
-          {/* Image Upload */}
           <div>
-            <label className="block text-sm font-medium text-white mb-2">
-              Tag Image (Optional)
-            </label>
-            <div
-              {...getRootProps()}
-              className="border-2 border-dashed border-gray-600 rounded-lg p-4 text-center cursor-pointer hover:border-cobalt-blue transition-colors"
-            >
+            <label className={labelCls}>Tag Image (optional)</label>
+            <div {...getRootProps()}
+              className="border border-dashed border-white/10 rounded-xl p-5 text-center cursor-pointer hover:border-cobalt-blue/40 transition-colors">
               <input {...getInputProps()} />
-              <ImageIcon className="mx-auto h-8 w-8 text-gray-400 mb-2" />
               {imageFile ? (
-                <div className="text-white">
-                  <p>Selected: {imageFile.name}</p>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setImageFile(null)
-                    }}
-                    className="mt-1 text-red-400 hover:text-red-300 text-sm"
-                  >
-                    Remove
-                  </button>
+                <div>
+                  <p className="font-sans text-sm text-white">{imageFile.name}</p>
+                  <button type="button" onClick={(e) => { e.stopPropagation(); setImageFile(null) }}
+                    className="mt-2 font-sans text-xs text-red-400 hover:text-red-300">Remove</button>
                 </div>
               ) : (editingTag?.imageUrl || newTag.imageUrl) ? (
-                <div className="text-white">
-                  <p>Current image uploaded</p>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setNewTag({ ...newTag, imageUrl: '' })
-                    }}
-                    className="mt-1 text-red-400 hover:text-red-300 text-sm"
-                  >
-                    Remove
-                  </button>
+                <div>
+                  <p className="font-sans text-sm text-gray-400 mb-1">Image attached</p>
+                  <button type="button" onClick={(e) => { e.stopPropagation(); setNewTag({ ...newTag, imageUrl: '' }) }}
+                    className="font-sans text-xs text-red-400 hover:text-red-300">Remove</button>
                 </div>
               ) : (
                 <div>
-                  <p className="text-gray-400 text-sm">Drag & drop an image here, or click to select</p>
+                  <Upload className="mx-auto h-6 w-6 text-gray-700 mb-2" />
+                  <p className="font-body text-sm text-gray-600">Drag & drop or click to upload</p>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Submit Buttons */}
-          <div className="flex justify-end space-x-4">
+          <div className="flex justify-end items-center gap-3">
             {editingTag && (
-              <button
-                type="button"
-                onClick={handleCancel}
-                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-              >
-                Cancel
-              </button>
+              <button type="button" onClick={handleCancel} className={secBtnCls}>Cancel</button>
             )}
-            <button
+            <GradientButton
               type="submit"
               disabled={loading}
-              className="px-4 py-2 bg-cobalt-blue text-white rounded-lg hover:bg-cobalt-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+              className="!min-w-0 !px-6 !py-2.5 !text-sm !rounded-lg !font-light"
             >
-              {loading ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  <span>Saving...</span>
-                </>
-              ) : (
-                <>
-                  {editingTag ? <Edit className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                  <span>{editingTag ? 'Update Tag' : 'Create Tag'}</span>
-                </>
-              )}
-            </button>
+              {loading ? 'Saving…' : editingTag ? 'Update Tag' : 'Create Tag'}
+            </GradientButton>
           </div>
         </form>
       </div>
 
-      {/* Tags List */}
-      <div className="bg-space-gray rounded-lg p-6">
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-white">Existing Tags</h3>
-          <button
-            type="button"
-            onClick={() => { setEditingTag(null); setNewTag({ name: '', color: '#136fd7', imageUrl: '' }); setImageFile(null); scrollToTop(); }}
-            className="px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-white text-sm hover:bg-white/15 transition-colors"
-          >
-            + Create Tag
-          </button>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {tags.map((tag, index) => (
-            <div
-              key={tag.id || `tag-${index}`}
-              className="bg-gray-800 rounded-lg p-4 border border-gray-700 hover:border-gray-600 transition-colors"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center space-x-2">
-                  <div
-                    className="w-4 h-4 rounded-full"
-                    style={{ backgroundColor: tag.color }}
-                  ></div>
-                  <span className="text-white font-medium">{tag.name}</span>
+      {/* Tags list */}
+      <div className="border border-white/8 rounded-xl p-6">
+        <p className="font-sans text-[10px] tracking-widest uppercase text-gray-600 mb-5">Existing Tags</p>
+        {tags.length === 0 ? (
+          <p className="font-body text-gray-600 text-sm text-center py-8">No tags yet.</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {tags.map((tag, index) => (
+              <div key={tag.id || `tag-${index}`}
+                className="border border-white/8 rounded-xl p-4 hover:border-white/15 transition-colors">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: tag.color }} />
+                    <span className="font-sans text-sm text-white">{tag.name}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => handleEdit(tag)}
+                      className="p-1.5 text-gray-600 hover:text-cobalt-light transition-colors">
+                      <Edit className="h-3.5 w-3.5" />
+                    </button>
+                    <button onClick={() => tag.id && handleDelete(tag.id)}
+                      className="p-1.5 text-gray-600 hover:text-red-400 transition-colors"
+                      disabled={!tag.id}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                 </div>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => handleEdit(tag)}
-                    className="p-1 text-gray-400 hover:text-blue-400 transition-colors"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => tag.id && handleDelete(tag.id)}
-                    className="p-1 text-gray-400 hover:text-red-400 transition-colors"
-                    disabled={!tag.id}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
+                {tag.imageUrl && (
+                  <div className="relative w-full h-16 rounded-lg overflow-hidden mt-2">
+                    <Image src={tag.imageUrl} alt={tag.name} fill className="object-cover"
+                      sizes="(max-width: 768px) 100vw, 300px" />
+                  </div>
+                )}
               </div>
-              {tag.imageUrl && (
-                <div className="relative w-full h-20 bg-gray-700 rounded overflow-hidden">
-                  <Image
-                    src={tag.imageUrl}
-                    alt={tag.name}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, 300px"
-                  />
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-        {tags.length === 0 && (
-          <p className="text-gray-400 text-center py-8">No tags created yet.</p>
+            ))}
+          </div>
         )}
       </div>
     </div>
   )
-} 
+}

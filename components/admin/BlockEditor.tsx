@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { ContentBlock } from '@/lib/firebase'
-import { GripVertical, X, Image as ImageIcon, FileText, ImageIcon as ImageTextIcon, ArrowUp, ArrowDown } from 'lucide-react'
+import { GripVertical, X, Image as ImageIcon, FileText, ImageIcon as ImageTextIcon, ArrowUp, ArrowDown, Upload } from 'lucide-react'
 import RichTextEditor from './RichTextEditor'
 import { useDropzone } from 'react-dropzone'
 import { uploadToCloudinaryDirect } from '@/lib/cloudinary'
@@ -12,6 +12,9 @@ interface BlockEditorProps {
   blocks: ContentBlock[]
   onChange: (blocks: ContentBlock[]) => void
 }
+
+const labelCls = "block font-sans text-[10px] tracking-widest uppercase text-gray-600 mb-2"
+const inputCls = "w-full px-4 py-2.5 bg-transparent border border-white/8 rounded-lg text-white placeholder-gray-700 font-sans text-sm focus:outline-none focus:border-cobalt-blue/50 transition-colors"
 
 export default function BlockEditor({ blocks, onChange }: BlockEditorProps) {
   const [uploadingImage, setUploadingImage] = useState<string | null>(null)
@@ -33,35 +36,30 @@ export default function BlockEditor({ blocks, onChange }: BlockEditorProps) {
   }
 
   const updateBlock = (id: string, updates: Partial<ContentBlock>) => {
-    onChange(
-      blocks.map((b) => (b.id === id ? { ...b, ...updates } : b))
-    )
+    onChange(blocks.map((b) => (b.id === id ? { ...b, ...updates } : b)))
   }
 
   const moveBlock = (id: string, direction: 'up' | 'down') => {
     const index = blocks.findIndex((b) => b.id === id)
     if (index === -1) return
-
     const newIndex = direction === 'up' ? index - 1 : index + 1
     if (newIndex < 0 || newIndex >= blocks.length) return
-
     const newBlocks = [...blocks]
-      ;[newBlocks[index], newBlocks[newIndex]] = [newBlocks[newIndex], newBlocks[index]]
+    ;[newBlocks[index], newBlocks[newIndex]] = [newBlocks[newIndex], newBlocks[index]]
     onChange(newBlocks.map((b, idx) => ({ ...b, order: idx })))
   }
 
   const handleImageUpload = async (blockId: string, file: File) => {
     setUploadingImage(blockId)
     try {
-      toast.loading('Uploading image...')
+      toast.loading('Uploading image…')
       const url = await uploadToCloudinaryDirect(file)
       updateBlock(blockId, { imageUrl: url })
       toast.dismiss()
-      toast.success('Image uploaded successfully!')
+      toast.success('Image uploaded!')
     } catch (error) {
       toast.dismiss()
       toast.error('Failed to upload image')
-      console.error('Upload error:', error)
     } finally {
       setUploadingImage(null)
     }
@@ -69,87 +67,59 @@ export default function BlockEditor({ blocks, onChange }: BlockEditorProps) {
 
   return (
     <div className="space-y-4">
-      {/* Add Block Buttons */}
-      <div className="flex flex-wrap gap-2 p-4 bg-gray-800 rounded-lg border border-gray-700">
-        <button
-          type="button"
-          onClick={() => addBlock('text')}
-          className="flex items-center gap-2 px-4 py-2 bg-space-gray border border-gray-600 rounded-lg text-white hover:border-cobalt-blue transition-colors"
-        >
-          <FileText className="w-4 h-4" />
-          <span>Add Text Block</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => addBlock('image')}
-          className="flex items-center gap-2 px-4 py-2 bg-space-gray border border-gray-600 rounded-lg text-white hover:border-cobalt-blue transition-colors"
-        >
-          <ImageIcon className="w-4 h-4" />
-          <span>Add Image Block</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => addBlock('imageText')}
-          className="flex items-center gap-2 px-4 py-2 bg-space-gray border border-gray-600 rounded-lg text-white hover:border-cobalt-blue transition-colors"
-        >
-          <ImageTextIcon className="w-4 h-4" />
-          <span>Add Image + Text Block</span>
-        </button>
+      {/* Add block toolbar */}
+      <div className="flex flex-wrap gap-2 p-4 border border-white/8 rounded-xl">
+        <p className="w-full font-sans text-[10px] tracking-widest uppercase text-gray-600 mb-1">Add Block</p>
+        {[
+          { type: 'text' as const, icon: FileText, label: 'Text' },
+          { type: 'image' as const, icon: ImageIcon, label: 'Image' },
+          { type: 'imageText' as const, icon: ImageTextIcon, label: 'Image + Text' },
+        ].map(({ type, icon: Icon, label }) => (
+          <button key={type} type="button" onClick={() => addBlock(type)}
+            className="flex items-center gap-2 px-4 py-2 border border-white/8 rounded-lg text-gray-400 hover:text-white hover:border-white/20 transition-colors font-sans text-sm">
+            <Icon className="w-4 h-4" />
+            {label}
+          </button>
+        ))}
       </div>
 
-      {/* Blocks List */}
-      <div className="space-y-4">
+      {/* Blocks */}
+      <div className="space-y-3">
         {blocks.map((block, index) => (
-          <div
-            key={block.id}
-            className="bg-space-gray rounded-lg border border-gray-700 p-4"
-          >
-            {/* Block Header */}
+          <div key={block.id} className="border border-white/8 rounded-xl p-4">
+            {/* Block header */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <GripVertical className="w-5 h-5 text-gray-400" />
-                <span className="text-white font-semibold">
+                <GripVertical className="w-4 h-4 text-gray-700" />
+                <span className="font-sans text-xs tracking-wider uppercase text-gray-500">
                   {block.type === 'text' && 'Text Block'}
                   {block.type === 'image' && 'Image Block'}
                   {block.type === 'imageText' && 'Image + Text Block'}
                 </span>
               </div>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => moveBlock(block.id, 'up')}
+              <div className="flex items-center gap-1">
+                <button type="button" onClick={() => moveBlock(block.id, 'up')}
                   disabled={index === 0}
-                  className="p-1 text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
-                  title="Move Up"
-                >
-                  <ArrowUp className="w-4 h-4" />
+                  className="p-1.5 text-gray-600 hover:text-white disabled:opacity-25 transition-colors">
+                  <ArrowUp className="w-3.5 h-3.5" />
                 </button>
-                <button
-                  type="button"
-                  onClick={() => moveBlock(block.id, 'down')}
+                <button type="button" onClick={() => moveBlock(block.id, 'down')}
                   disabled={index === blocks.length - 1}
-                  className="p-1 text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
-                  title="Move Down"
-                >
-                  <ArrowDown className="w-4 h-4" />
+                  className="p-1.5 text-gray-600 hover:text-white disabled:opacity-25 transition-colors">
+                  <ArrowDown className="w-3.5 h-3.5" />
                 </button>
-                <button
-                  type="button"
-                  onClick={() => removeBlock(block.id)}
-                  className="p-1 text-red-400 hover:text-red-300"
-                  title="Remove Block"
-                >
-                  <X className="w-4 h-4" />
+                <button type="button" onClick={() => removeBlock(block.id)}
+                  className="p-1.5 text-gray-600 hover:text-red-400 transition-colors ml-1">
+                  <X className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
 
-            {/* Block Content */}
             {block.type === 'text' && (
               <RichTextEditor
                 value={block.content || ''}
                 onChange={(html) => updateBlock(block.id, { content: html })}
-                placeholder="Enter text content..."
+                placeholder="Enter text content…"
               />
             )}
 
@@ -174,8 +144,8 @@ export default function BlockEditor({ blocks, onChange }: BlockEditorProps) {
         ))}
 
         {blocks.length === 0 && (
-          <div className="text-center py-12 text-gray-400">
-            <p>No blocks yet. Add a block to get started.</p>
+          <div className="text-center py-10">
+            <p className="font-body text-gray-700 text-sm">No blocks yet. Add one above.</p>
           </div>
         )}
       </div>
@@ -183,13 +153,7 @@ export default function BlockEditor({ blocks, onChange }: BlockEditorProps) {
   )
 }
 
-// Image Block Component
-function ImageBlockEditor({
-  block,
-  onUpdate,
-  onImageUpload,
-  uploading,
-}: {
+function ImageBlockEditor({ block, onUpdate, onImageUpload, uploading }: {
   block: ContentBlock
   onUpdate: (updates: Partial<ContentBlock>) => void
   onImageUpload: (file: File) => void
@@ -198,52 +162,32 @@ function ImageBlockEditor({
   const { getRootProps, getInputProps } = useDropzone({
     accept: { 'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp'] },
     maxFiles: 1,
-    onDrop: (files) => {
-      if (files[0]) onImageUpload(files[0])
-    },
+    onDrop: (files) => { if (files[0]) onImageUpload(files[0]) },
   })
 
   return (
-    <div>
-      <div
-        {...getRootProps()}
-        className="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center cursor-pointer hover:border-cobalt-blue transition-colors"
-      >
-        <input {...getInputProps()} />
-        {block.imageUrl ? (
-          <div>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={block.imageUrl} alt="Block image" className="max-w-full h-auto rounded-lg mb-2" />
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation()
-                onUpdate({ imageUrl: '' })
-              }}
-              className="mt-2 text-red-400 hover:text-red-300 text-sm"
-            >
-              Remove Image
-            </button>
-          </div>
-        ) : (
-          <div>
-            <ImageIcon className="mx-auto h-12 w-12 text-gray-400 mb-2" />
-            <p className="text-gray-400">Click or drag to upload image</p>
-            {uploading && <p className="text-cobalt-light mt-2">Uploading...</p>}
-          </div>
-        )}
-      </div>
+    <div {...getRootProps()}
+      className="border border-dashed border-white/10 rounded-xl p-6 text-center cursor-pointer hover:border-cobalt-blue/40 transition-colors">
+      <input {...getInputProps()} />
+      {block.imageUrl ? (
+        <div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={block.imageUrl} alt="Block" className="max-h-48 mx-auto rounded-lg mb-3" />
+          <button type="button" onClick={(e) => { e.stopPropagation(); onUpdate({ imageUrl: '' }) }}
+            className="font-sans text-xs text-red-400 hover:text-red-300">Remove</button>
+        </div>
+      ) : (
+        <div>
+          <Upload className="mx-auto h-7 w-7 text-gray-700 mb-2" />
+          <p className="font-body text-sm text-gray-600">Click or drag to upload</p>
+          {uploading && <p className="font-sans text-xs text-cobalt-light mt-2">Uploading…</p>}
+        </div>
+      )}
     </div>
   )
 }
 
-// Image + Text Block Component
-function ImageTextBlockEditor({
-  block,
-  onUpdate,
-  onImageUpload,
-  uploading,
-}: {
+function ImageTextBlockEditor({ block, onUpdate, onImageUpload, uploading }: {
   block: ContentBlock
   onUpdate: (updates: Partial<ContentBlock>) => void
   onImageUpload: (file: File) => void
@@ -252,69 +196,44 @@ function ImageTextBlockEditor({
   const { getRootProps, getInputProps } = useDropzone({
     accept: { 'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp'] },
     maxFiles: 1,
-    onDrop: (files) => {
-      if (files[0]) onImageUpload(files[0])
-    },
+    onDrop: (files) => { if (files[0]) onImageUpload(files[0]) },
   })
 
   return (
     <div className="space-y-4">
-      {/* Alignment Selector */}
       <div>
-        <label className="block text-sm font-medium text-white mb-2">Image Position</label>
-        <select
-          value={block.align || 'left'}
-          onChange={(e) => onUpdate({ align: e.target.value as 'left' | 'right' })}
-          className="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-cobalt-blue"
-        >
-          <option value="left">Image Left, Text Right</option>
-          <option value="right">Image Right, Text Left</option>
+        <label className={labelCls}>Image Position</label>
+        <select value={block.align || 'left'} onChange={(e) => onUpdate({ align: e.target.value as 'left' | 'right' })}
+          className={inputCls}>
+          <option value="left" className="bg-[#0e0e12]">Image Left, Text Right</option>
+          <option value="right" className="bg-[#0e0e12]">Image Right, Text Left</option>
         </select>
       </div>
-
-      {/* Image Upload */}
       <div>
-        <label className="block text-sm font-medium text-white mb-2">Image</label>
-        <div
-          {...getRootProps()}
-          className="border-2 border-dashed border-gray-600 rounded-lg p-4 text-center cursor-pointer hover:border-cobalt-blue transition-colors"
-        >
+        <label className={labelCls}>Image</label>
+        <div {...getRootProps()}
+          className="border border-dashed border-white/10 rounded-xl p-5 text-center cursor-pointer hover:border-cobalt-blue/40 transition-colors">
           <input {...getInputProps()} />
           {block.imageUrl ? (
             <div>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={block.imageUrl} alt="Block image" className="max-w-full h-auto rounded-lg mb-2" />
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onUpdate({ imageUrl: '' })
-                }}
-                className="mt-2 text-red-400 hover:text-red-300 text-sm"
-              >
-                Remove Image
-              </button>
+              <img src={block.imageUrl} alt="Block" className="max-h-32 mx-auto rounded-lg mb-2" />
+              <button type="button" onClick={(e) => { e.stopPropagation(); onUpdate({ imageUrl: '' }) }}
+                className="font-sans text-xs text-red-400 hover:text-red-300">Remove</button>
             </div>
           ) : (
             <div>
-              <ImageIcon className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-              <p className="text-gray-400 text-sm">Click or drag to upload image</p>
-              {uploading && <p className="text-cobalt-light mt-2 text-sm">Uploading...</p>}
+              <Upload className="mx-auto h-6 w-6 text-gray-700 mb-2" />
+              <p className="font-body text-sm text-gray-600">Click or drag to upload</p>
+              {uploading && <p className="font-sans text-xs text-cobalt-light mt-1">Uploading…</p>}
             </div>
           )}
         </div>
       </div>
-
-      {/* Text Content */}
       <div>
-        <label className="block text-sm font-medium text-white mb-2">Text Content</label>
-        <RichTextEditor
-          value={block.content || ''}
-          onChange={(html) => onUpdate({ content: html })}
-          placeholder="Enter text content..."
-        />
+        <label className={labelCls}>Text Content</label>
+        <RichTextEditor value={block.content || ''} onChange={(html) => onUpdate({ content: html })} placeholder="Enter text…" />
       </div>
     </div>
   )
 }
-

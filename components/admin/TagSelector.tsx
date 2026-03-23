@@ -7,7 +7,6 @@ interface Tag {
   id?: string
   name: string
   color: string
-  imageUrl?: string
 }
 
 interface TagSelectorProps {
@@ -16,71 +15,64 @@ interface TagSelectorProps {
   placeholder?: string
 }
 
-export default function TagSelector({ selectedTags, onChange, placeholder = "Select tags..." }: TagSelectorProps) {
+export default function TagSelector({ selectedTags, onChange, placeholder = 'Select tags…' }: TagSelectorProps) {
   const [tags, setTags] = useState<Tag[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const loadTags = async () => {
-      try {
-        const fetchedTags = await getTags()
-        setTags(fetchedTags)
-      } catch (error) {
-        console.error('Error loading tags:', error)
-        setTags([])
-      } finally {
-        setLoading(false)
-      }
-    }
-    loadTags()
+    getTags()
+      .then(setTags)
+      .catch(() => setTags([]))
+      .finally(() => setLoading(false))
   }, [])
 
-  const handleTagToggle = (tagId: string) => {
-    if (selectedTags.includes(tagId)) {
-      onChange(selectedTags.filter(id => id !== tagId))
-    } else {
-      onChange([...selectedTags, tagId])
-    }
+  const toggle = (tagId: string) => {
+    onChange(selectedTags.includes(tagId)
+      ? selectedTags.filter(id => id !== tagId)
+      : [...selectedTags, tagId])
   }
 
   if (loading) {
     return (
-      <div className="w-full px-4 py-2 bg-space-gray border border-gray-600 rounded-lg text-gray-400">
-        Loading tags...
+      <div className="w-full px-4 py-2.5 border border-white/8 rounded-lg font-sans text-sm text-gray-700">
+        Loading tags…
       </div>
     )
   }
 
   if (tags.length === 0) {
     return (
-      <div className="w-full px-4 py-2 bg-space-gray border border-gray-600 rounded-lg text-gray-400">
-        No tags available. Create some tags first.
+      <div className="w-full px-4 py-2.5 border border-white/8 rounded-lg font-sans text-sm text-gray-700">
+        No tags — create some first.
       </div>
     )
   }
 
   return (
     <div className="space-y-2">
-      <div className="text-sm text-gray-300 mb-2">
-        {selectedTags.length > 0 ? `${selectedTags.length} tag(s) selected` : placeholder}
+      <div className="font-sans text-[10px] text-gray-700">
+        {selectedTags.length > 0 ? `${selectedTags.length} selected` : placeholder}
       </div>
-      <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
-        {tags.map((tag, index) => (
-          <button
-            key={tag.id || `tag-${index}`}
-            type="button"
-            onClick={() => tag.id && handleTagToggle(tag.id)}
-            className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
-              tag.id && selectedTags.includes(tag.id)
-                ? 'ring-2 ring-cobalt-blue'
-                : 'hover:opacity-80'
-            }`}
-            style={{ backgroundColor: tag.color, color: 'white' }}
-            disabled={!tag.id}
-          >
-            {tag.name}
-          </button>
-        ))}
+      <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto">
+        {tags.map((tag, index) => {
+          const isSelected = !!(tag.id && selectedTags.includes(tag.id))
+          return (
+            <button
+              key={tag.id || `tag-${index}`}
+              type="button"
+              onClick={() => tag.id && toggle(tag.id)}
+              className="px-2.5 py-1 rounded-full font-sans text-xs transition-all"
+              style={{
+                backgroundColor: isSelected ? tag.color + '33' : 'transparent',
+                border: `1px solid ${isSelected ? tag.color + '88' : 'rgba(255,255,255,0.08)'}`,
+                color: isSelected ? tag.color : '#6b7280',
+              }}
+              disabled={!tag.id}
+            >
+              {tag.name}
+            </button>
+          )
+        })}
       </div>
     </div>
   )

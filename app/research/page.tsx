@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Search, Filter, Calendar, Tag, Download, ArrowRight } from 'lucide-react'
+import { Search, ArrowRight, Filter, ChevronDown } from 'lucide-react'
 import { getResearchPosts } from '@/lib/firebase'
 import { getTagById } from '@/lib/dataService'
-import Navigation from '@/components/Navigation'
 import Image from 'next/image'
 
 export default function ResearchPage() {
@@ -13,253 +12,262 @@ export default function ResearchPage() {
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [sortBy, setSortBy] = useState<'date' | 'title' | 'author'>('date')
   const [showFilters, setShowFilters] = useState(false)
-
   const [researchPosts, setResearchPosts] = useState<any[]>([])
-  const [tags, setTags] = useState<any[]>([])
+  const [allTags, setAllTags] = useState<{ id: string; name: string; color: string }[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const loadData = async () => {
       try {
         const posts = await getResearchPosts()
         setResearchPosts(posts)
-        // For now, we'll get tags from the dataService
-        // In a real app, you might want to load them separately
+        // Derive unique tags from posts
+        const tagMap = new Map<string, { id: string; name: string; color: string }>()
+        posts.forEach((post) => {
+          post.tags.forEach((tagId: string) => {
+            const tag = getTagById(tagId)
+            if (tag && !tagMap.has(tagId)) tagMap.set(tagId, { id: tagId, ...tag })
+          })
+        })
+        setAllTags(Array.from(tagMap.values()))
       } catch (error) {
         console.error('Error loading research posts:', error)
+      } finally {
+        setLoading(false)
       }
     }
     loadData()
   }, [])
 
-  const filteredPosts = researchPosts.filter(post => {
-    const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.excerpt.toLowerCase().includes(searchQuery.toLowerCase())
-
-    const matchesTags = selectedTags.length === 0 ||
-      selectedTags.some(tagId => post.tags.includes(tagId))
-
+  const filteredPosts = researchPosts.filter((post) => {
+    const q = searchQuery.toLowerCase()
+    const matchesSearch =
+      post.title.toLowerCase().includes(q) ||
+      post.author.toLowerCase().includes(q) ||
+      post.excerpt?.toLowerCase().includes(q)
+    const matchesTags =
+      selectedTags.length === 0 || selectedTags.some((id) => post.tags.includes(id))
     return matchesSearch && matchesTags
   })
 
   const sortedPosts = [...filteredPosts].sort((a, b) => {
-    switch (sortBy) {
-      case 'date':
-        return new Date(b.date).getTime() - new Date(a.date).getTime()
-      case 'title':
-        return a.title.localeCompare(b.title)
-      case 'author':
-        return a.author.localeCompare(b.author)
-      default:
-        return 0
-    }
+    if (sortBy === 'date') return new Date(b.date).getTime() - new Date(a.date).getTime()
+    if (sortBy === 'title') return a.title.localeCompare(b.title)
+    if (sortBy === 'author') return a.author.localeCompare(b.author)
+    return 0
   })
 
-  const toggleTag = (tagId: string) => {
-    setSelectedTags(prev =>
-      prev.includes(tagId)
-        ? prev.filter(id => id !== tagId)
-        : [...prev, tagId]
-    )
-  }
+  const toggleTag = (id: string) =>
+    setSelectedTags((prev) => (prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]))
 
   return (
-    <div className="min-h-screen bg-space-black text-white">
-      <Navigation />
-      <div className="pt-24">
-        <div className="container mx-auto px-4">
+    <div className="min-h-screen bg-[#050508] text-white">
+      <div className="pt-24 pb-24">
+        <div className="container mx-auto px-4 max-w-7xl">
+
           {/* Header */}
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-16"
+            transition={{ duration: 0.8 }}
+            className="mb-16"
           >
-            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 font-montserrat">
+            <p className="font-sans text-[10px] tracking-[0.5em] uppercase text-cobalt-light mb-5">
+              Publications
+            </p>
+            <h1 className="font-sans font-light text-5xl md:text-7xl text-white leading-none tracking-tight mb-4">
               Research
             </h1>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto font-montserrat">
+            <p className="font-body text-gray-500 max-w-xl text-sm">
               Cutting-edge research papers and whitepapers from leading AI researchers and institutions
             </p>
           </motion.div>
 
-          {/* Search and Filters */}
+          {/* Search + Sort */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="max-w-6xl mx-auto mb-12"
+            transition={{ duration: 0.6, delay: 0.15 }}
+            className="mb-8 flex flex-col sm:flex-row gap-3"
           >
-            {/* Search Bar */}
-            <div className="relative mb-6">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            {/* Search */}
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 w-4 h-4" />
               <input
                 type="text"
-                placeholder="Search research papers, authors, or topics..."
+                placeholder="Search papers, authors, topics…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 bg-space-gray border border-gray-700 rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:border-cobalt-blue focus:ring-2 focus:ring-cobalt-blue/20 transition-all duration-300 font-montserrat"
+                className="w-full pl-11 pr-4 py-3 bg-transparent border border-white/8 rounded-xl text-white placeholder-gray-700 font-sans text-sm focus:outline-none focus:border-cobalt-blue/50 transition-colors"
               />
             </div>
 
-            {/* Filters */}
-            <div className="flex flex-wrap gap-4 items-center justify-center mb-6">
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center gap-2 px-6 py-3 bg-space-gray border border-gray-700 rounded-full text-white hover:border-cobalt-blue transition-all duration-300 font-montserrat"
-              >
-                <Filter className="w-4 h-4" />
-                <span>Filters</span>
-              </button>
-
-              {/* Sort */}
+            {/* Sort */}
+            <div className="relative">
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as 'date' | 'title' | 'author')}
-                className="px-6 py-3 bg-space-gray border border-gray-700 rounded-full text-white focus:outline-none focus:border-cobalt-blue transition-all duration-300 font-montserrat"
+                className="appearance-none pl-4 pr-9 py-3 bg-transparent border border-white/8 rounded-xl text-gray-400 font-sans text-sm focus:outline-none focus:border-cobalt-blue/50 transition-colors cursor-pointer"
               >
-                <option value="date">Sort by Date</option>
-                <option value="title">Sort by Title</option>
-                <option value="author">Sort by Author</option>
+                <option value="date" className="bg-[#0e0e12]">Sort: Date</option>
+                <option value="title" className="bg-[#0e0e12]">Sort: Title</option>
+                <option value="author" className="bg-[#0e0e12]">Sort: Author</option>
               </select>
-
-              {/* Results Count */}
-              <div className="text-gray-400 font-montserrat">
-                {sortedPosts.length} {sortedPosts.length === 1 ? 'paper' : 'papers'}
-              </div>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-600 pointer-events-none" />
             </div>
 
-            {/* Tag Filters */}
-            {showFilters && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="glass-morphism rounded-2xl p-6 mb-6"
-              >
-                <h3 className="text-lg font-semibold text-white mb-4 font-montserrat">Filter by Tags</h3>
-                <div className="flex flex-wrap gap-2">
-                  {tags.map((tag) => (
-                    <button
-                      key={tag.id}
-                      onClick={() => toggleTag(tag.id)}
-                      className={`px-3 py-2 rounded-full text-sm font-montserrat transition-all duration-200 ${selectedTags.includes(tag.id)
-                          ? 'text-white shadow-lg'
-                          : 'text-gray-300 hover:text-white'
-                        }`}
-                      style={{
-                        backgroundColor: selectedTags.includes(tag.id) ? tag.color : 'transparent',
-                        border: `1px solid ${selectedTags.includes(tag.id) ? tag.color : '#374151'}`
-                      }}
-                    >
-                      {tag.name}
-                    </button>
-                  ))}
-                </div>
-                {selectedTags.length > 0 && (
-                  <button
-                    onClick={() => setSelectedTags([])}
-                    className="mt-4 text-cobalt-light hover:text-cobalt-blue transition-colors font-montserrat text-sm"
-                  >
-                    Clear all tags
-                  </button>
-                )}
-              </motion.div>
-            )}
+            {/* Filter toggle */}
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`flex items-center gap-2 px-4 py-3 border rounded-xl font-sans text-sm transition-colors ${
+                showFilters || selectedTags.length > 0
+                  ? 'border-cobalt-blue/50 text-cobalt-light'
+                  : 'border-white/8 text-gray-500 hover:border-white/15 hover:text-gray-300'
+              }`}
+            >
+              <Filter className="w-4 h-4" />
+              <span>Filter{selectedTags.length > 0 ? ` (${selectedTags.length})` : ''}</span>
+            </button>
           </motion.div>
 
-          {/* Research Papers Grid */}
+          {/* Tag filter pills */}
+          {showFilters && allTags.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mb-8 flex flex-wrap gap-2"
+            >
+              {allTags.map((tag) => (
+                <button
+                  key={tag.id}
+                  onClick={() => toggleTag(tag.id)}
+                  className="px-3 py-1.5 rounded-full font-sans text-xs transition-all duration-200"
+                  style={{
+                    backgroundColor: selectedTags.includes(tag.id) ? tag.color + '33' : 'transparent',
+                    border: `1px solid ${selectedTags.includes(tag.id) ? tag.color + '88' : 'rgba(255,255,255,0.08)'}`,
+                    color: selectedTags.includes(tag.id) ? tag.color : '#6b7280',
+                  }}
+                >
+                  {tag.name}
+                </button>
+              ))}
+              {selectedTags.length > 0 && (
+                <button
+                  onClick={() => setSelectedTags([])}
+                  className="px-3 py-1.5 rounded-full font-sans text-xs text-gray-600 border border-white/8 hover:text-gray-400 transition-colors"
+                >
+                  Clear all
+                </button>
+              )}
+            </motion.div>
+          )}
+
+          {/* Results count */}
+          {!loading && (
+            <div className="mb-6 font-sans text-[11px] tracking-widest uppercase text-gray-700">
+              {sortedPosts.length} {sortedPosts.length === 1 ? 'paper' : 'papers'}
+            </div>
+          )}
+
+          {/* Skeleton grid */}
+          {loading && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="border border-white/8 rounded-xl overflow-hidden flex flex-col">
+                  <div className="w-full animate-pulse bg-white/6" style={{ height: '160px' }} />
+                  <div className="p-4 flex flex-col gap-3">
+                    <div className="flex gap-1.5">
+                      <div className="h-4 w-14 rounded-full animate-pulse bg-white/6" />
+                      <div className="h-4 w-10 rounded-full animate-pulse bg-white/6" />
+                    </div>
+                    <div className="h-4 w-full animate-pulse bg-white/6 rounded" />
+                    <div className="h-4 w-4/5 animate-pulse bg-white/6 rounded" />
+                    <div className="h-3 w-28 animate-pulse bg-white/6 rounded mt-1" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Grid */}
+          {!loading && (
           <motion.div
             key={`${searchQuery}-${selectedTags.join(',')}-${sortBy}`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto"
+            transition={{ duration: 0.4 }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
           >
             {sortedPosts.map((post, index) => (
               <motion.a
                 key={post.id || `research-${index}`}
                 href={`/research/${post.id}`}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                className="glass-morphism rounded-2xl p-4 hover:shadow-xl transition-all duration-300 group block cursor-pointer flex gap-4 items-start"
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.04 }}
+                className="group border border-white/8 rounded-xl overflow-hidden hover:border-cobalt-blue/40 transition-all duration-300 flex flex-col cursor-pointer"
               >
                 {post.imageUrl && (
-                  <div className="w-24 h-24 md:w-28 md:h-28 flex-shrink-0 rounded-xl overflow-hidden relative">
+                  <div className="relative w-full overflow-hidden" style={{ height: '160px' }}>
                     <Image
                       src={post.imageUrl}
                       alt={post.title}
                       fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 96px, 112px"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                     />
                   </div>
                 )}
-
-                <div className="flex-1 min-w-0 flex flex-col h-full justify-between">
-                  <div>
-                    <div className="flex items-center gap-2 mb-2 flex-wrap">
-                      {post.tags.map((tagId: string) => {
-                        const tag = getTagById(tagId)
-                        return tag ? (
-                          <span
-                            key={tagId}
-                            className="px-2 py-0.5 text-[10px] rounded-full text-white whitespace-nowrap"
-                            style={{ backgroundColor: tag.color }}
-                          >
-                            {tag.name}
-                          </span>
-                        ) : null
-                      })}
-                    </div>
-
-                    <h3 className="text-lg font-bold text-white mb-1 font-montserrat group-hover:text-cobalt-light transition-colors line-clamp-2 leading-tight">
-                      {post.title}
-                    </h3>
-
-                    <p className="text-gray-400 mb-2 text-xs">
-                      By {post.author} • {new Date(post.date).toLocaleDateString()}
-                    </p>
-
-                    <p className="text-gray-300 text-xs line-clamp-2 mb-2">
-                      {post.excerpt}
-                    </p>
+                <div className="flex flex-col flex-1 p-4">
+                  <div className="flex flex-wrap gap-1.5 mb-2">
+                    {post.tags.map((tagId: string) => {
+                      const tag = getTagById(tagId)
+                      return tag ? (
+                        <span key={tagId} className="px-2 py-0.5 font-sans text-[9px] tracking-wider rounded-full"
+                          style={{ backgroundColor: tag.color + '22', border: `1px solid ${tag.color}44`, color: tag.color }}>
+                          {tag.name}
+                        </span>
+                      ) : null
+                    })}
                   </div>
-
-                  <div className="flex items-center justify-end">
-                    <div className="flex items-center gap-1 text-cobalt-light text-xs font-semibold">
-                      <span>Read More</span>
-                      <ArrowRight className="w-3 h-3" />
-                    </div>
+                  <h3 className="font-sans text-sm font-medium text-white mb-1.5 group-hover:text-cobalt-light transition-colors line-clamp-2 leading-snug flex-1">
+                    {post.title}
+                  </h3>
+                  <p className="font-body text-gray-600 text-[11px] mb-3">
+                    {post.author} &middot; {new Date(post.date).toLocaleDateString()}
+                  </p>
+                  <div className="flex justify-end">
+                    <span className="font-sans text-[10px] tracking-widest uppercase text-cobalt-light/50 group-hover:text-cobalt-light transition-colors flex items-center gap-1.5">
+                      Read <ArrowRight className="w-3 h-3" />
+                    </span>
                   </div>
                 </div>
               </motion.a>
             ))}
           </motion.div>
+          )}
 
-          {/* No Results */}
-          {sortedPosts.length === 0 && (
+          {/* Empty state */}
+          {!loading && sortedPosts.length === 0 && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-center py-16"
+              className="text-center py-24"
             >
-              <div className="text-gray-400 text-lg font-montserrat mb-4">
-                No research papers found matching your criteria
-              </div>
+              <p className="font-sans text-gray-600 text-sm mb-4">No papers found matching your criteria</p>
               <button
-                onClick={() => {
-                  setSearchQuery('')
-                  setSelectedTags([])
-                }}
-                className="text-cobalt-light hover:text-cobalt-blue transition-colors font-montserrat"
+                onClick={() => { setSearchQuery(''); setSelectedTags([]) }}
+                className="font-sans text-[10px] tracking-[0.4em] uppercase text-cobalt-light hover:text-white transition-colors"
               >
                 Clear filters
               </button>
             </motion.div>
           )}
+
         </div>
       </div>
     </div>
   )
-} 
+}

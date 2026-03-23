@@ -1,10 +1,23 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Space_Grotesk, Inter } from 'next/font/google'
 import './globals.css'
 import Image from 'next/image'
 import PageTransition from '@/components/PageTransition'
+import { AppNavBar } from '@/components/AppNavBar'
 
-const inter = Inter({ subsets: ['latin'] })
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-sans',
+  display: 'swap',
+})
+
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-body',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: 'Freezing Point AI',
@@ -18,27 +31,30 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${spaceGrotesk.variable} ${inter.variable}`}>
       <head>
         <link rel="icon" type="image/svg+xml" href="/assets/logos/fp-logo.svg" />
       </head>
-      <body className={inter.className}>
-        <div className="min-h-screen bg-gradient-to-br from-space-black to-space-gray flex flex-col">
+      <body>
+        <AppNavBar />
+        <div className="min-h-screen bg-[#050508] flex flex-col">
           <div className="flex-1">
             <PageTransition>{children}</PageTransition>
           </div>
-          <footer className="bg-space-black py-8 px-4 border-t border-gray-800 flex flex-col items-center">
+          <footer className="bg-[#050508] py-8 px-4 border-t border-white/5 flex flex-col items-center mb-16 sm:mb-0">
             <Image
               src="/assets/logos/fp-logo.png"
               alt="Freezing Point AI"
-              width={36}
-              height={36}
-              className="mb-2"
+              width={32}
+              height={32}
+              className="mb-3 opacity-60"
             />
-            <span className="text-gray-400 font-montserrat text-sm">© 2025 Freezing Point AI. All rights reserved.</span>
+            <span className="text-gray-600 font-sans text-xs tracking-widest uppercase">
+              © 2026 Freezing Point AI
+            </span>
           </footer>
         </div>
       </body>
     </html>
   )
-} 
+}

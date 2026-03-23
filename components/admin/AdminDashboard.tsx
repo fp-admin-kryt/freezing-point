@@ -2,25 +2,17 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { 
-  FileText, 
-  Radio, 
-  Eye, 
-  Tag, 
-  Globe, 
-  Plus, 
-  Edit, 
-  Trash2,
-  ArrowLeft 
-} from 'lucide-react'
+import { FileText, Radio, Tag, Globe, Plus, Edit, Trash2 } from 'lucide-react'
 import ResearchForm from './ResearchForm'
 import RadarForm from './RadarForm'
 import TagManager from './TagManager'
 import DomainManager from './DomainManager'
+import { GradientButton } from '@/components/ui/gradient-button'
 import { getResearchPosts, getSignalPosts, getObserverPosts, deleteResearchPost, deleteSignalPost, deleteObserverPost, getTags, getDomains } from '@/lib/firebase'
 import toast from 'react-hot-toast'
 
-type TabType = 'research' | 'signals' | 'observer' | 'tags' | 'domains'
+type TabType = 'research' | 'radar' | 'tags' | 'domains'
+type RadarCreateType = 'signal' | 'observer' | null
 type ViewType = 'manage' | 'create' | 'edit'
 
 interface Post {
@@ -32,8 +24,12 @@ interface Post {
   type?: 'research' | 'signal' | 'observer'
 }
 
+const inputCls = "w-full px-4 py-2.5 bg-transparent border border-white/8 rounded-lg text-white placeholder-gray-700 font-sans text-sm focus:outline-none focus:border-cobalt-blue/50 transition-colors"
+const secBtnCls = "px-4 py-2 border border-white/8 rounded-lg text-gray-400 hover:text-white hover:border-white/20 transition-colors font-sans text-sm"
+
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<TabType>('research')
+  const [radarCreateType, setRadarCreateType] = useState<RadarCreateType>(null)
   const [view, setView] = useState<ViewType>('manage')
   const [researchPosts, setResearchPosts] = useState<Post[]>([])
   const [signalPosts, setSignalPosts] = useState<Post[]>([])
@@ -43,7 +39,6 @@ export default function AdminDashboard() {
   const [tags, setTags] = useState<any[]>([])
   const [domains, setDomains] = useState<any[]>([])
 
-  // Load data from Firebase
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -102,38 +97,28 @@ export default function AdminDashboard() {
 
   const tabs = [
     { id: 'research', label: 'Research', icon: FileText },
-    { id: 'signals', label: 'Signals', icon: Radio },
-    { id: 'observer', label: 'Observer', icon: Eye },
+    { id: 'radar', label: 'Radar', icon: Radio },
     { id: 'tags', label: 'Tags', icon: Tag },
     { id: 'domains', label: 'Domains', icon: Globe },
   ]
-
-  const handleTypographyClick = () => {
-    window.location.href = '/admin/styles'
-  }
 
   const renderContent = () => {
     if (view === 'create' || view === 'edit') {
       if (activeTab === 'research') {
         return (
-          <ResearchForm 
+          <ResearchForm
             onBack={handleBack}
             editPost={view === 'edit' ? editingPost : undefined}
           />
         )
-      } else if (activeTab === 'signals') {
+      } else if (activeTab === 'radar') {
+        const type = view === 'edit'
+          ? (editingPost?.type === 'observer' ? 'observer' : 'signal')
+          : (radarCreateType || 'signal')
         return (
-          <RadarForm 
-            onBack={handleBack}
-            type="signal"
-            editPost={view === 'edit' ? editingPost : undefined}
-          />
-        )
-      } else if (activeTab === 'observer') {
-        return (
-          <RadarForm 
-            onBack={handleBack}
-            type="observer"
+          <RadarForm
+            onBack={() => { handleBack(); setRadarCreateType(null) }}
+            type={type}
             editPost={view === 'edit' ? editingPost : undefined}
           />
         )
@@ -145,52 +130,74 @@ export default function AdminDashboard() {
       return null
     }
 
-    // Manage view
     return (
       <div className="space-y-6">
         {/* Header with Create Button */}
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-white">
-            Manage {activeTab === 'research' ? 'Research Posts' : 
-                   activeTab === 'signals' ? 'Signal Posts' : 
-                   activeTab === 'observer' ? 'Observer Posts' : 
-                   activeTab === 'tags' ? 'Tags' : 'Domains'}
-          </h2>
-          {(activeTab === 'research' || activeTab === 'signals' || activeTab === 'observer') && (
-            <button
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <p className="font-sans text-[10px] tracking-[0.5em] uppercase text-cobalt-light mb-1">
+              {activeTab === 'research' ? 'Publications' : activeTab === 'radar' ? 'Intelligence' : activeTab === 'tags' ? 'Taxonomy' : 'Categorisation'}
+            </p>
+            <h2 className="font-sans font-light text-2xl text-white">
+              {activeTab === 'research' ? 'Research Posts' : activeTab === 'radar' ? 'Radar Posts' : activeTab === 'tags' ? 'Tags' : 'Domains'}
+            </h2>
+          </div>
+
+          {activeTab === 'research' && (
+            <GradientButton
               onClick={() => setView('create')}
-              className="px-4 py-2 bg-cobalt-blue text-white rounded-lg hover:bg-cobalt-light transition-colors flex items-center space-x-2"
+              className="!min-w-0 !px-5 !py-2.5 !text-sm !rounded-lg !font-light"
             >
-              <Plus className="h-4 w-4" />
-              <span>Create New</span>
-            </button>
+              <Plus className="h-4 w-4 mr-2" />
+              New Research
+            </GradientButton>
+          )}
+          {activeTab === 'radar' && (
+            <div className="flex gap-2">
+              <GradientButton
+                onClick={() => { setRadarCreateType('signal'); setView('create') }}
+                className="!min-w-0 !px-5 !py-2.5 !text-sm !rounded-lg !font-light"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                New Signal
+              </GradientButton>
+              <button
+                onClick={() => { setRadarCreateType('observer'); setView('create') }}
+                className="flex items-center gap-2 px-5 py-2.5 border border-white/8 rounded-lg text-gray-300 hover:text-white hover:border-white/20 transition-colors font-sans text-sm"
+              >
+                <Plus className="h-4 w-4" />
+                New Observer
+              </button>
+            </div>
           )}
         </div>
 
         {/* Posts List */}
         {loading ? (
-          <div className="flex justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cobalt-blue"></div>
+          <div className="flex justify-center py-12">
+            <div className="animate-spin rounded-full h-6 w-6 border-b border-cobalt-blue" />
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-2">
             {activeTab === 'research' && researchPosts.map((post, index) => (
-              <div key={post.id || `research-${index}`} className="bg-space-gray rounded-lg p-4 border border-gray-700">
+              <div key={post.id || `research-${index}`} className="border border-white/8 rounded-xl px-5 py-4 hover:border-white/12 transition-colors">
                 <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <h3 className="text-white font-semibold">{post.title}</h3>
-                    <p className="text-gray-400 text-sm">By {post.author} • {post.date}</p>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-sans text-sm font-medium text-white truncate">{post.title}</h3>
+                    <p className="font-body text-gray-600 text-xs mt-0.5">
+                      {post.author} &middot; {post.date}
+                    </p>
                   </div>
-                  <div className="flex space-x-2 ml-4">
+                  <div className="flex items-center gap-1 ml-4">
                     <button
                       onClick={() => handleEdit({ ...post, type: 'research' })}
-                      className="p-2 text-gray-400 hover:text-blue-400 transition-colors"
+                      className="p-2 text-gray-600 hover:text-cobalt-light transition-colors"
                     >
                       <Edit className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => post.id && handleDelete(post.id, 'research')}
-                      className="p-2 text-gray-400 hover:text-red-400 transition-colors"
+                      className="p-2 text-gray-600 hover:text-red-400 transition-colors"
                       disabled={!post.id}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -200,23 +207,35 @@ export default function AdminDashboard() {
               </div>
             ))}
 
-            {activeTab === 'signals' && signalPosts.map((post, index) => (
-              <div key={post.id || `signal-${index}`} className="bg-space-gray rounded-lg p-4 border border-gray-700">
+            {activeTab === 'radar' && [
+              ...signalPosts.map(p => ({ ...p, _radarType: 'Signal' as const, _deleteType: 'signal' as const })),
+              ...observerPosts.map(p => ({ ...p, _radarType: 'Observer' as const, _deleteType: 'observer' as const })),
+            ].map((post, index) => (
+              <div key={post.id || `radar-${index}`} className="border border-white/8 rounded-xl px-5 py-4 hover:border-white/12 transition-colors">
                 <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <h3 className="text-white font-semibold">{post.heading}</h3>
-                    <p className="text-gray-400 text-sm">{post.date}</p>
+                  <div className="flex-1 min-w-0 flex items-center gap-3">
+                    <span className={`flex-shrink-0 px-2 py-0.5 font-sans text-[9px] tracking-widest uppercase rounded-full ${
+                      post._radarType === 'Signal'
+                        ? 'bg-cobalt-blue/15 text-cobalt-light border border-cobalt-blue/25'
+                        : 'bg-purple-700/15 text-purple-400 border border-purple-700/25'
+                    }`}>
+                      {post._radarType}
+                    </span>
+                    <div className="min-w-0">
+                      <h3 className="font-sans text-sm font-medium text-white truncate">{post.heading}</h3>
+                      <p className="font-body text-gray-600 text-xs mt-0.5">{post.date}</p>
+                    </div>
                   </div>
-                  <div className="flex space-x-2 ml-4">
+                  <div className="flex items-center gap-1 ml-4">
                     <button
-                      onClick={() => handleEdit({ ...post, type: 'signal' })}
-                      className="p-2 text-gray-400 hover:text-blue-400 transition-colors"
+                      onClick={() => handleEdit({ ...post, type: post._deleteType })}
+                      className="p-2 text-gray-600 hover:text-cobalt-light transition-colors"
                     >
                       <Edit className="h-4 w-4" />
                     </button>
                     <button
-                      onClick={() => post.id && handleDelete(post.id, 'signal')}
-                      className="p-2 text-gray-400 hover:text-red-400 transition-colors"
+                      onClick={() => post.id && handleDelete(post.id, post._deleteType)}
+                      className="p-2 text-gray-600 hover:text-red-400 transition-colors"
                       disabled={!post.id}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -226,52 +245,21 @@ export default function AdminDashboard() {
               </div>
             ))}
 
-            {activeTab === 'observer' && observerPosts.map((post, index) => (
-              <div key={post.id || `observer-${index}`} className="bg-space-gray rounded-lg p-4 border border-gray-700">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <h3 className="text-white font-semibold">{post.heading}</h3>
-                    <p className="text-gray-400 text-sm">{post.date}</p>
-                  </div>
-                  <div className="flex space-x-2 ml-4">
-                    <button
-                      onClick={() => handleEdit({ ...post, type: 'observer' })}
-                      className="p-2 text-gray-400 hover:text-blue-400 transition-colors"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => post.id && handleDelete(post.id, 'observer')}
-                      className="p-2 text-gray-400 hover:text-red-400 transition-colors"
-                      disabled={!post.id}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
+            {activeTab === 'tags' && <TagManager />}
+            {activeTab === 'domains' && <DomainManager />}
 
-            {activeTab === 'tags' && (
-              <TagManager />
-            )}
-
-            {activeTab === 'domains' && (
-              <DomainManager />
-            )}
-
-            {/* Empty state */}
             {((activeTab === 'research' && researchPosts.length === 0) ||
-              (activeTab === 'signals' && signalPosts.length === 0) ||
-              (activeTab === 'observer' && observerPosts.length === 0)) && (
-              <div className="text-center py-8">
-                <p className="text-gray-400">No {activeTab} posts found.</p>
-                <button
+              (activeTab === 'radar' && signalPosts.length === 0 && observerPosts.length === 0)) && (
+              <div className="text-center py-16">
+                <p className="font-body text-gray-600 text-sm mb-6">
+                  No {activeTab} posts yet.
+                </p>
+                <GradientButton
                   onClick={() => setView('create')}
-                  className="mt-4 px-4 py-2 bg-cobalt-blue text-white rounded-lg hover:bg-cobalt-light transition-colors"
+                  className="!min-w-0 !px-6 !py-2.5 !text-sm !rounded-lg !font-light"
                 >
-                  Create your first post
-                </button>
+                  Create first post
+                </GradientButton>
               </div>
             )}
           </div>
@@ -281,18 +269,20 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-space-black">
+    <div className="min-h-screen bg-[#050508]">
       <div className="max-w-7xl mx-auto p-6">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-10">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-white mb-2">Admin Dashboard</h1>
-              <p className="text-gray-400">Manage your content, tags, and domains</p>
+              <p className="font-sans text-[10px] tracking-[0.5em] uppercase text-cobalt-light mb-3">
+                Content Management
+              </p>
+              <h1 className="font-sans font-light text-3xl text-white">Admin Dashboard</h1>
             </div>
             <button
-              onClick={handleTypographyClick}
-              className="px-4 py-2 bg-cobalt-blue text-white rounded-lg hover:bg-cobalt-light transition-colors"
+              onClick={() => { window.location.href = '/admin/styles' }}
+              className={secBtnCls}
             >
               Typography Settings
             </button>
@@ -300,7 +290,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Tabs */}
-        <div className="flex space-x-1 bg-space-gray rounded-lg p-1 mb-8">
+        <div className="flex gap-1 bg-[#0a0a0f] border border-white/8 rounded-xl p-1 mb-8 w-fit">
           {tabs.map((tab) => {
             const Icon = tab.icon
             return (
@@ -310,11 +300,12 @@ export default function AdminDashboard() {
                   setActiveTab(tab.id as TabType)
                   setView('manage')
                   setEditingPost(null)
+                  setRadarCreateType(null)
                 }}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors font-sans text-sm ${
                   activeTab === tab.id
-                    ? 'bg-cobalt-blue text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                    ? 'bg-cobalt-blue/20 text-cobalt-light border border-cobalt-blue/30'
+                    : 'text-gray-600 hover:text-gray-300'
                 }`}
               >
                 <Icon className="h-4 w-4" />
@@ -327,7 +318,7 @@ export default function AdminDashboard() {
         {/* Content */}
         <motion.div
           key={`${activeTab}-${view}`}
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
@@ -336,4 +327,4 @@ export default function AdminDashboard() {
       </div>
     </div>
   )
-} 
+}

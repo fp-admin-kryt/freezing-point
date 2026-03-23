@@ -1,13 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
-import Navigation from '@/components/Navigation'
-import ScrollIndicator from '@/components/ScrollIndicator'
-import { Target, PlusCircle, Radar, Eye, Download, ArrowRight } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Target, PlusCircle, Radar, Eye, ArrowRight, ChevronDown, Plus } from 'lucide-react'
 import { getResearchPosts, getSignalPosts, getObserverPosts } from '@/lib/firebase'
-import { getTagById, getDomainById } from '@/lib/dataService'
+import { getTagById } from '@/lib/dataService'
 import Image from 'next/image'
+import { SparklesCore } from '@/components/ui/sparkles'
 
 export default function Home() {
   const [researchPosts, setResearchPosts] = useState<any[]>([])
@@ -15,23 +14,6 @@ export default function Home() {
   const [observerPosts, setObserverPosts] = useState<any[]>([])
   const [activeAccordion, setActiveAccordion] = useState<string | null>(null)
 
-  const { scrollY } = useScroll()
-
-  // Transform for the Hero Text (Desktop)
-  // Moves from center of screen (relative to left column) to left align
-  const desktopTitleX = useTransform(scrollY, [0, 500], ['25vw', '0vw'])
-
-  // Transform for the Hero Text (Mobile)
-  // Simple fade and slight move up
-  const mobileTitleOpacity = useTransform(scrollY, [0, 300], [1, 0])
-  const mobileTitleY = useTransform(scrollY, [0, 300], [0, -50])
-
-  // Opacity for the Accordion (Right Side)
-  // Fades in as we scroll
-  const accordionOpacity = useTransform(scrollY, [0, 300], [0, 1])
-  const accordionY = useTransform(scrollY, [0, 300], [50, 0])
-
-  // Load data from Firebase for home sections
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -47,7 +29,6 @@ export default function Home() {
         console.error('Error loading home data:', error)
       }
     }
-
     loadData()
   }, [])
 
@@ -55,406 +36,480 @@ export default function Home() {
     {
       icon: Target,
       title: 'Impact',
-      description: 'At FreezingPoint.Ai, every breakthrough begins as an idea in a fluid state, shaped by research, exploration and raw data. The freezing point marks the critical moment when abstract insights solidify into real solutions. The mission is to crystallize innovation, transforming research into tangible outcomes that shape the future of healthcare. This begins with publishing white papers and conceptual frameworks that will evolve into real-word applications and products.',
-      link: '#research',
-      color: 'from-cobalt-blue to-cobalt-light'
+      description: 'At FreezingPoint.Ai, every breakthrough begins as an idea in a fluid state, shaped by research, exploration and raw data. The freezing point marks the critical moment when abstract insights solidify into real solutions. The mission is to crystallize innovation, transforming research into tangible outcomes that shape the future of healthcare. This begins with publishing white papers and conceptual frameworks that will evolve into real-world applications and products.',
+      link: '/research',
+      accent: '#136fd7',
     },
     {
       icon: PlusCircle,
       title: 'Health',
       description: 'Positioned at the crossroads of medicine and machine learning, Health at FreezingPoint.Ai delves into how artificial intelligence, systems thinking, and data-driven approaches are reshaping care delivery. From predictive diagnostics to patient-centered innovations, this section showcases cutting-edge research, actionable methodologies, and forward-looking solutions aimed at improving outcomes and fundamentally redefining healthcare.',
-      link: '#research',
-      color: 'from-green-500 to-emerald-400'
+      link: '/research',
+      accent: '#10b981',
     },
     {
       icon: Radar,
       title: 'Signals',
       description: 'A curated stream of early indicators, emerging patterns, and subtle shifts shaping the future of healthcare and artificial intelligence. Signals highlight emerging patterns and weak signals that often go unnoticed but hold the potential to redefine the landscape. This section invites curiosity and foresight, providing a front-row seat to innovation before it reaches the mainstream.',
-      link: '#radar',
-      color: 'from-purple-500 to-pink-400'
+      link: '/radar',
+      accent: '#a855f7',
     },
     {
       icon: Eye,
       title: 'The Observer',
       description: 'The Observer offers a curated lens on the evolving landscape of AI, systems innovation, and healthcare transformation. Expect in-depth analysis, ideas, critical commentary, and comprehensive trend reviews that cut through the noise. Whether it\'s a deep dive into policy shifts or reflections on paradigm-changing research, this space invites critical thought and continuous learning.',
-      link: '#radar',
-      color: 'from-orange-500 to-red-400'
-    }
+      link: '/radar',
+      accent: '#f97316',
+    },
   ]
 
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId)
-    if (element) {
-      // Direct smooth scroll without delay
-      element.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      })
-    }
-  }
-
   return (
-    <main className="min-h-screen relative overflow-hidden">
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.8 }}
-        className="relative z-10"
-      >
-        {/* Navigation */}
-        <Navigation />
+    <main className="min-h-screen bg-[#050508] text-white">
 
-        {/* Spacer to allow scrolling to trigger animation from "Hero" state */}
-        {/* Spacer to allow scrolling to trigger animation from "Hero" state */}
-        <div className="h-[45vh]" />
+      {/* ── Hero ── */}
+      <section className="relative h-screen flex flex-col items-center justify-center overflow-hidden">
+        {/* Sparkles layer */}
+        <div className="absolute inset-0 w-full h-full">
+          <SparklesCore
+            background="transparent"
+            minSize={0.3}
+            maxSize={1.1}
+            particleDensity={65}
+            className="w-full h-full"
+            particleColor="#FFFFFF"
+            speed={0.5}
+          />
+        </div>
 
-        {/* Combined Hero & Explore Section */}
-        <section id="explore" className="min-h-[150vh] relative">
-          <div className="container mx-auto px-4 sticky top-0 md:top-24 h-screen flex flex-col md:flex-row items-center justify-center md:items-start md:pt-40">
-            {/* Left: Moveable Title */}
-            <div className="w-full md:w-1/2 flex justify-center md:block mb-8 md:mb-0 relative z-20">
-              {/* Desktop Title: Moves Left */}
-              <motion.h1
-                className="hidden md:block text-5xl md:text-7xl font-bold text-white font-montserrat leading-tight"
-                style={{ x: desktopTitleX, maxWidth: '8ch' }}
-              >
-                FREEZING POINT
-              </motion.h1>
+        {/* Vignette — darkens perimeter, keeps center readable */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_70%_at_50%_50%,transparent_20%,#050508_90%)]" />
 
-              {/* Mobile Title: Fades/Moves Up */}
-              <motion.h1
-                className="md:hidden text-5xl font-bold text-white font-montserrat text-center"
-                style={{ opacity: mobileTitleOpacity, y: mobileTitleY }}
-              >
-                FREEZING POINT
-              </motion.h1>
-            </div>
+        {/* Content */}
+        <div className="relative z-10 text-center px-4">
+          <motion.h1
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.3, ease: [0.22, 1, 0.36, 1] }}
+            className="font-sans font-light text-white leading-none tracking-tight"
+            style={{ fontSize: 'clamp(3.5rem, 12vw, 11rem)' }}
+          >
+            Freezing Point
+          </motion.h1>
 
-            {/* Right: Accordion (Fades in) */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 0.9 }}
+            className="mt-6 flex items-center justify-center gap-5"
+          >
+            <div className="h-px w-14 bg-gradient-to-r from-transparent to-cobalt-light/50" />
+            <p className="font-sans text-[10px] tracking-[0.65em] uppercase text-gray-500">
+              AI &nbsp;&middot;&nbsp; Research &nbsp;&middot;&nbsp; Health
+            </p>
+            <div className="h-px w-14 bg-gradient-to-l from-transparent to-cobalt-light/50" />
+          </motion.div>
+
+          {/* Gradient accent lines */}
+          <motion.div
+            initial={{ opacity: 0, scaleX: 0 }}
+            animate={{ opacity: 1, scaleX: 1 }}
+            transition={{ duration: 1.2, delay: 1.1, ease: [0.22, 1, 0.36, 1] }}
+            className="relative mt-10 mx-auto"
+            style={{ width: 'min(38rem, 88vw)', height: '6px' }}
+          >
+            {/* Wide cobalt base — gentle opacity pulse */}
             <motion.div
-              className="w-full md:w-1/2 md:px-8 space-y-4"
-              style={{ opacity: accordionOpacity, y: accordionY }}
+              className="absolute inset-x-16 top-0 w-3/4"
+              animate={{ opacity: [0.6, 1, 0.6] }}
+              transition={{ repeat: Infinity, duration: 3.5, ease: 'easeInOut' }}
             >
-              {heroCards.map((card, index) => {
-                const Icon = card.icon
-                const isOpen = activeAccordion === card.title
-
-                return (
-                  <div
-                    key={card.title}
-                    className="glass-morphism rounded-2xl overflow-hidden transition-all duration-300"
-                  >
-                    <button
-                      onClick={() => setActiveAccordion(isOpen ? null : card.title)}
-                      className="w-full flex items-center justify-between p-6 text-left cursor-pointer"
-                    >
-                      <h3 className="text-xl md:text-2xl font-bold text-white font-montserrat">
-                        {card.title}
-                      </h3>
-                      <div className={`p-2 rounded-full bg-white/5 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}>
-                        <Icon className={`w-6 h-6 ${isOpen ? 'text-cobalt-light' : 'text-white'}`} />
-                      </div>
-                    </button>
-
-                    <AnimatePresence>
-                      {isOpen && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0, filter: 'blur(10px)' }}
-                          animate={{ height: 'auto', opacity: 1, filter: 'blur(0px)' }}
-                          exit={{ height: 0, opacity: 0, filter: 'blur(10px)' }}
-                          transition={{ duration: 0.4, ease: 'circOut' }}
-                          className="overflow-hidden"
-                        >
-                          <div className="px-6 pb-6">
-                            <p className="text-sm md:text-base text-gray-300 leading-relaxed mb-4">
-                              {card.description}
-                            </p>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                scrollToSection(card.link.replace('#', ''))
-                              }}
-                              className="text-sm text-cobalt-light hover:text-white transition-colors flex items-center gap-2"
-                            >
-                              Explore {card.title} <ArrowRight className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                )
-              })}
+              <div className="bg-gradient-to-r from-transparent via-cobalt-blue to-transparent h-[2px] blur-sm" />
+              <div className="bg-gradient-to-r from-transparent via-cobalt-blue to-transparent h-px" />
             </motion.div>
-          </div>
-        </section>
 
-        {/* Research Section */}
-        <section id="research" className="section-padding">
-          <div className="container mx-auto px-4">
+            {/* Bright core — drifts left / right */}
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="text-left mb-10"
+              className="absolute top-0 w-1/4"
+              style={{ left: '50%', x: '-50%' }}
+              animate={{ x: ['-60%', '-40%', '-60%'] }}
+              transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
             >
-              <div className="flex items-baseline gap-6 mb-4">
-                <h2 className="text-4xl md:text-5xl font-bold text-white font-montserrat">
-                  Research
-                </h2>
-                <a
-                  href="/research"
-                  className="text-cobalt-light hover:text-white transition-colors text-sm font-semibold flex items-center gap-1"
+              <div className="bg-gradient-to-r from-transparent via-cobalt-light to-transparent h-[5px] blur-md" />
+              <div className="bg-gradient-to-r from-transparent via-cobalt-light to-transparent h-px" />
+            </motion.div>
+
+            <div className="absolute inset-0 [mask-image:radial-gradient(280px_30px_at_center,transparent_40%,white)]" style={{ background: '#050508' }} />
+          </motion.div>
+        </div>
+
+        {/* Scroll indicator */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 2 }}
+          className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+        >
+          <span className="font-sans text-[9px] tracking-[0.5em] uppercase text-gray-600">Scroll</span>
+          <motion.div
+            animate={{ y: [0, 7, 0] }}
+            transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
+          >
+            <ChevronDown className="w-4 h-4 text-gray-700" />
+          </motion.div>
+        </motion.div>
+      </section>
+
+      {/* ── Mission / Pillars ── */}
+      <section id="explore" className="py-28 px-4 border-t border-white/5">
+        <div className="container mx-auto max-w-4xl">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="mb-16"
+          >
+            <p className="font-sans text-[10px] tracking-[0.5em] uppercase text-cobalt-light mb-5">
+              Our Pillars
+            </p>
+            <h2 className="font-display text-5xl md:text-6xl font-bold text-white leading-tight">
+              What We Do
+            </h2>
+          </motion.div>
+
+          <div>
+            {heroCards.map((card, index) => {
+              const Icon = card.icon
+              const isOpen = activeAccordion === card.title
+
+              return (
+                <motion.div
+                  key={card.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: index * 0.08 }}
+                  className="border-b border-white/8 last:border-0"
                 >
-                  View All <ArrowRight className="w-4 h-4" />
-                </a>
-              </div>
-              <p className="text-xl text-gray-300 max-w-3xl font-montserrat">
-                Cutting-edge research papers and whitepapers from leading AI researchers and
-                institutions
-              </p>
-            </motion.div>
+                  <button
+                    onClick={() => setActiveAccordion(isOpen ? null : card.title)}
+                    className="w-full flex items-center justify-between py-8 text-left group"
+                  >
+                    <div className="flex items-center gap-5">
+                      <div
+                        className="w-0.5 h-9 rounded-full flex-shrink-0 transition-opacity duration-300"
+                        style={{
+                          background: `linear-gradient(to bottom, ${card.accent}, transparent)`,
+                          opacity: isOpen ? 1 : 0.4,
+                        }}
+                      />
+                      <span
+                        className="font-sans text-3xl md:text-4xl font-light text-white/80 group-hover:text-white transition-colors duration-300"
+                        style={{ color: isOpen ? 'white' : undefined }}
+                      >
+                        {card.title}
+                      </span>
+                    </div>
+                    <div
+                      className={`w-8 h-8 rounded-full border flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
+                        isOpen
+                          ? 'border-white/20 rotate-45'
+                          : 'border-white/10 group-hover:border-white/20'
+                      }`}
+                    >
+                      <Plus className="w-3.5 h-3.5 text-white/40" />
+                    </div>
+                  </button>
 
+                  <AnimatePresence>
+                    {isOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                        className="overflow-hidden"
+                      >
+                        <div className="pb-10 pl-7">
+                          <p className="font-body text-gray-400 leading-relaxed mb-6 max-w-2xl text-sm md:text-base">
+                            {card.description}
+                          </p>
+                          <a
+                            href={card.link}
+                            className="inline-flex items-center gap-2 font-sans text-[10px] tracking-[0.4em] uppercase text-cobalt-light hover:text-white transition-colors duration-200"
+                          >
+                            Explore <ArrowRight className="w-3 h-3" />
+                          </a>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Research ── */}
+      <section id="research" className="py-28 px-4 border-t border-white/5">
+        <div className="container mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="mb-12"
+          >
+            <p className="font-sans text-[10px] tracking-[0.5em] uppercase text-cobalt-light mb-5">
+              Publications
+            </p>
+            <div className="flex items-baseline gap-6 mb-4">
+              <h2 className="font-display text-5xl md:text-6xl font-bold text-white">Research</h2>
+              <a
+                href="/research"
+                className="font-sans text-[10px] tracking-[0.4em] uppercase text-gray-500 hover:text-cobalt-light transition-colors flex items-center gap-2"
+              >
+                View All <ArrowRight className="w-3 h-3" />
+              </a>
+            </div>
+            <p className="font-body text-gray-500 max-w-xl text-sm">
+              Cutting-edge research papers and whitepapers from leading AI researchers and institutions
+            </p>
+          </motion.div>
+
+          <div
+            className="overflow-x-auto horizontal-scroll"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            <div className="flex gap-4 pb-4 items-stretch" style={{ minWidth: 'max-content' }}>
+              {(() => {
+                const sorted = [...researchPosts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                return sorted.slice(0, 6).map((post, index) => {
+                  const isFeatured = index === 0
+
+                  if (isFeatured) {
+                    return (
+                      <motion.a
+                        key={post.id || 'featured'}
+                        href={`/research/${post.id}`}
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.5 }}
+                        className="group flex-shrink-0 relative overflow-hidden rounded-2xl cursor-pointer"
+                        style={{ width: '520px', height: '340px', maxWidth: '85vw' }}
+                      >
+                        {post.imageUrl ? (
+                          <Image
+                            src={post.imageUrl}
+                            alt={post.title}
+                            fill
+                            className="object-cover transition-transform duration-700 group-hover:scale-105"
+                            sizes="520px"
+                            priority
+                          />
+                        ) : (
+                          <div className="absolute inset-0 bg-cobalt-blue/20" />
+                        )}
+                        {/* gradient overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
+                        {/* content */}
+                        <div className="absolute inset-0 flex flex-col justify-end p-6">
+                          <div className="flex flex-wrap gap-1.5 mb-3">
+                            {post.tags.map((tagId: string) => {
+                              const tag = getTagById(tagId)
+                              return tag ? (
+                                <span key={tagId} className="px-2 py-0.5 font-sans text-[9px] tracking-wider rounded-full"
+                                  style={{ backgroundColor: tag.color + '33', border: `1px solid ${tag.color}55`, color: tag.color }}>
+                                  {tag.name}
+                                </span>
+                              ) : null
+                            })}
+                          </div>
+                          <h3 className="font-sans text-base font-medium text-white mb-2 group-hover:text-cobalt-light transition-colors line-clamp-2 leading-snug">
+                            {post.title}
+                          </h3>
+                          <div className="flex items-center justify-between">
+                            <p className="font-body text-gray-400 text-xs">
+                              {post.author} &middot; {new Date(post.date).toLocaleDateString()}
+                            </p>
+                            <span className="font-sans text-[10px] tracking-widest uppercase text-cobalt-light/70 group-hover:text-cobalt-light transition-colors flex items-center gap-1.5">
+                              Read <ArrowRight className="w-3 h-3" />
+                            </span>
+                          </div>
+                        </div>
+                      </motion.a>
+                    )
+                  }
+
+                  // Regular cards — vertical, borderless image
+                  return (
+                    <motion.a
+                      key={post.id || `research-${index}`}
+                      href={`/research/${post.id}`}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.5, delay: index * 0.06 }}
+                      className="group flex-shrink-0 border border-white/8 rounded-xl overflow-hidden hover:border-cobalt-blue/40 transition-all duration-300 flex flex-col cursor-pointer"
+                      style={{ width: '240px', maxWidth: '80vw' }}
+                    >
+                      {post.imageUrl && (
+                        <div className="relative w-full overflow-hidden" style={{ height: '140px' }}>
+                          <Image
+                            src={post.imageUrl}
+                            alt={post.title}
+                            fill
+                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                            sizes="240px"
+                          />
+                        </div>
+                      )}
+                      <div className="flex flex-col flex-1 p-4">
+                        <div className="flex flex-wrap gap-1.5 mb-2">
+                          {post.tags.map((tagId: string) => {
+                            const tag = getTagById(tagId)
+                            return tag ? (
+                              <span key={tagId} className="px-2 py-0.5 font-sans text-[9px] tracking-wider rounded-full"
+                                style={{ backgroundColor: tag.color + '22', border: `1px solid ${tag.color}44`, color: tag.color }}>
+                                {tag.name}
+                              </span>
+                            ) : null
+                          })}
+                        </div>
+                        <h3 className="font-sans text-sm font-medium text-white mb-1.5 group-hover:text-cobalt-light transition-colors line-clamp-2 leading-snug flex-1">
+                          {post.title}
+                        </h3>
+                        <p className="font-body text-gray-600 text-[10px] mb-3">
+                          {post.author} &middot; {new Date(post.date).toLocaleDateString()}
+                        </p>
+                        <div className="flex justify-end">
+                          <span className="font-sans text-[10px] tracking-widest uppercase text-cobalt-light/50 group-hover:text-cobalt-light transition-colors flex items-center gap-1">
+                            Read <ArrowRight className="w-3 h-3" />
+                          </span>
+                        </div>
+                      </div>
+                    </motion.a>
+                  )
+                })
+              })()}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Radar ── */}
+      <section id="radar" className="relative py-28 px-4 border-t border-white/5 overflow-hidden">
+        {/* CSS dot-grid background */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: 'radial-gradient(circle, rgba(19,111,215,0.35) 1px, transparent 1px)',
+            backgroundSize: '28px 28px',
+            maskImage: 'radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%)',
+            WebkitMaskImage: 'radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%)',
+          }}
+        />
+
+        <div className="relative z-10 container mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="mb-12"
+          >
+            <p className="font-sans text-[10px] tracking-[0.5em] uppercase text-cobalt-light mb-5">
+              Intelligence
+            </p>
+            <div className="flex items-baseline gap-6 mb-4">
+              <h2 className="font-display text-5xl md:text-6xl font-bold text-white">Radar</h2>
+              <a
+                href="/radar"
+                className="font-sans text-[10px] tracking-[0.4em] uppercase text-gray-500 hover:text-cobalt-light transition-colors flex items-center gap-2"
+              >
+                View All <ArrowRight className="w-3 h-3" />
+              </a>
+            </div>
+            <p className="font-body text-gray-500 max-w-xl text-sm">
+              Real-time signals and deep insights from the AI frontier
+            </p>
+          </motion.div>
+
+          {/* Combined signals + observer */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
             <div
               className="overflow-x-auto horizontal-scroll"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
-              <div className="flex gap-8 pb-4" style={{ minWidth: 'max-content' }}>
-                {researchPosts.slice(0, 6).map((post, index) => (
-                  <motion.a
-                    key={post.id || `research-${index}`}
-                    href={`/research/${post.id}`}
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: index * 0.1 }}
-                    className="glass-morphism rounded-2xl p-4 hover:shadow-xl transition-all duration-300 group flex-shrink-0 cursor-pointer flex gap-4 items-start"
-                    style={{ width: '500px', maxWidth: '90vw' }}
-                  >
-                    {post.imageUrl && (
-                      <div className="w-32 h-32 flex-shrink-0 rounded-xl overflow-hidden relative">
-                        <Image
-                          src={post.imageUrl}
-                          alt={post.title}
-                          fill
-                          className="object-cover"
-                          sizes="128px"
-                        />
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0 flex flex-col h-full justify-between">
-                      <div>
-                        <div className="flex items-center gap-2 mb-2 flex-wrap">
+              <div className="flex gap-5 pb-4" style={{ minWidth: 'max-content' }}>
+                {[
+                  ...signalPosts.map((p) => ({ ...p, _type: 'Signal' as const })),
+                  ...observerPosts.map((p) => ({ ...p, _type: 'Observer' as const })),
+                ]
+                  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                  .slice(0, 10)
+                  .map((post, index) => (
+                    <motion.a
+                      key={post.id || `radar-${index}`}
+                      href={`/radar/${post.id}`}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.5, delay: index * 0.06 }}
+                      className="group flex-shrink-0 border border-white/8 rounded-xl p-6 hover:border-cobalt-blue/40 hover:bg-cobalt-blue/[0.04] transition-all duration-300 cursor-pointer"
+                      style={{ width: '360px', maxWidth: '90vw' }}
+                    >
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2 flex-wrap">
                           {post.tags.map((tagId: string) => {
                             const tag = getTagById(tagId)
                             return tag ? (
                               <span
                                 key={tagId}
-                                className="px-2 py-0.5 text-[10px] rounded-full text-white whitespace-nowrap"
-                                style={{ backgroundColor: tag.color }}
+                                className="px-2 py-0.5 font-sans text-[9px] tracking-wider rounded-full"
+                                style={{
+                                  backgroundColor: tag.color + '22',
+                                  border: `1px solid ${tag.color}44`,
+                                  color: tag.color,
+                                }}
                               >
                                 {tag.name}
                               </span>
                             ) : null
                           })}
                         </div>
-                        <h3 className="text-lg font-bold text-white mb-1 font-montserrat group-hover:text-cobalt-light transition-colors line-clamp-2 leading-tight">
-                          {post.title}
-                        </h3>
-                        <p className="text-gray-400 mb-2 text-xs">
-                          By {post.author} • {new Date(post.date).toLocaleDateString()}
-                        </p>
-                        <p className="text-gray-300 text-xs line-clamp-2">
-                          {post.excerpt}
-                        </p>
+                        <span className="font-sans text-[9px] tracking-widest uppercase text-gray-700 flex-shrink-0 ml-2">
+                          {post._type}
+                        </span>
                       </div>
-                      <div className="flex items-center justify-end mt-2">
-                        <div className="flex items-center gap-1 text-cobalt-light text-xs font-semibold">
-                          <span>Read More</span>
-                          <ArrowRight className="w-3 h-3" />
-                        </div>
+                      <h4 className="font-sans text-sm font-semibold text-white mb-3 group-hover:text-cobalt-light transition-colors leading-snug">
+                        {post.heading}
+                      </h4>
+                      <p className="font-body text-gray-500 text-xs line-clamp-4 mb-4 leading-relaxed">
+                        {post.content}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <span className="font-body text-[11px] text-gray-700">
+                          {new Date(post.date).toLocaleDateString()}
+                        </span>
+                        <span className="font-sans text-[10px] tracking-widest uppercase text-cobalt-light/60 group-hover:text-cobalt-light transition-colors flex items-center gap-1.5">
+                          Read <ArrowRight className="w-3 h-3" />
+                        </span>
                       </div>
-                    </div>
-                  </motion.a>
-                ))}
+                    </motion.a>
+                  ))}
               </div>
             </div>
-
-
-          </div>
-        </section>
-
-        {/* Radar Section */}
-        <section id="radar" className="section-padding">
-          <div className="container mx-auto px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="text-left mb-10"
-            >
-              <div className="flex items-baseline gap-6 mb-4">
-                <h2 className="text-4xl md:text-5xl font-bold text-white font-montserrat">
-                  Radar
-                </h2>
-                <a
-                  href="/radar"
-                  className="text-cobalt-light hover:text-white transition-colors text-sm font-semibold flex items-center gap-1"
-                >
-                  View All <ArrowRight className="w-4 h-4" />
-                </a>
-              </div>
-              <p className="text-xl text-gray-300 max-w-3xl font-montserrat">
-                Real-time signals and deep insights from the AI frontier
-              </p>
-            </motion.div>
-
-            {/* Signals */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="mb-16"
-            >
-              <h3 className="text-2xl font-bold text-white mb-8 text-left font-montserrat">
-                Signals
-              </h3>
-              <div
-                className="overflow-x-auto horizontal-scroll"
-                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-              >
-                <div className="flex gap-6 pb-4" style={{ minWidth: 'max-content' }}>
-                  {signalPosts.slice(0, 6).map((post, index) => (
-                    <motion.a
-                      key={post.id || `signal-${index}`}
-                      href={`/radar/${post.id}`}
-                      initial={{ opacity: 0, y: 30 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.6, delay: index * 0.1 }}
-                      className="glass-morphism rounded-2xl p-6 hover:shadow-xl transition-all duration-300 group relative flex-shrink-0 cursor-pointer block"
-                      style={{ width: '380px', maxWidth: '380px' }}
-                    >
-                      {post.tags.length > 0 && (
-                        <div className="absolute top-4 right-4 w-8 h-8 rounded-lg overflow-hidden">
-                          <div
-                            className="w-full h-full flex items-center justify-center text-xs text-white font-bold"
-                            style={{
-                              backgroundColor:
-                                getTagById(post.tags[0])?.color || '#136fd7'
-                            }}
-                          >
-                            {getTagById(post.tags[0])?.name.charAt(0) || 'T'}
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="flex items-center gap-2 mb-3">
-                        {post.tags.map((tagId: string) => {
-                          const tag = getTagById(tagId)
-                          return tag ? (
-                            <span
-                              key={tagId}
-                              className="px-2 py-1 text-xs rounded-full text-white"
-                              style={{ backgroundColor: tag.color }}
-                            >
-                              {tag.name}
-                            </span>
-                          ) : null
-                        })}
-                      </div>
-                      <h4 className="text-lg font-bold text-white mb-3 font-montserrat group-hover:text-cobalt-light transition-colors">
-                        {post.heading}
-                      </h4>
-                      <p className="text-gray-400 text-sm line-clamp-4 mb-4">
-                        {post.content}
-                      </p>
-                      <div className="flex items-center justify-between text-xs text-gray-500">
-                        <span>{new Date(post.date).toLocaleDateString()}</span>
-                        <div className="flex items-center gap-1 text-cobalt-light">
-                          <span>Read More</span>
-                          <ArrowRight className="w-3 h-3" />
-                        </div>
-                      </div>
-                    </motion.a>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-
-            {/* The Observer */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-            >
-              <h3 className="text-2xl font-bold text-white mb-8 text-left font-montserrat">
-                The Observer
-              </h3>
-              <div
-                className="overflow-x-auto horizontal-scroll"
-                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-              >
-                <div className="flex gap-6 pb-4" style={{ minWidth: 'max-content' }}>
-                  {observerPosts.slice(0, 6).map((post, index) => (
-                    <motion.a
-                      key={post.id || `observer-${index}`}
-                      href={`/radar/${post.id}`}
-                      initial={{ opacity: 0, y: 30 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.6, delay: index * 0.1 }}
-                      className="glass-morphism rounded-2xl p-6 hover:shadow-xl transition-all duration-300 group relative flex-shrink-0 cursor-pointer block"
-                      style={{ width: '380px', maxWidth: '380px' }}
-                    >
-                      {post.tags.length > 0 && (
-                        <div className="absolute top-4 right-4 w-8 h-8 rounded-lg overflow-hidden">
-                          <div
-                            className="w-full h-full flex items-center justify-center text-xs text-white font-bold"
-                            style={{
-                              backgroundColor:
-                                getTagById(post.tags[0])?.color || '#136fd7'
-                            }}
-                          >
-                            {getTagById(post.tags[0])?.name.charAt(0) || 'T'}
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="flex items-center gap-2 mb-3">
-                        {post.tags.map((tagId: string) => {
-                          const tag = getTagById(tagId)
-                          return tag ? (
-                            <span
-                              key={tagId}
-                              className="px-2 py-1 text-xs rounded-full text-white"
-                              style={{ backgroundColor: tag.color }}
-                            >
-                              {tag.name}
-                            </span>
-                          ) : null
-                        })}
-                      </div>
-                      <h4 className="text-lg font-bold text-white mb-3 font-montserrat group-hover:text-cobalt-light transition-colors">
-                        {post.heading}
-                      </h4>
-                      <p className="text-gray-400 text-sm line-clamp-4 mb-4">
-                        {post.content}
-                      </p>
-                      <div className="flex items-center justify-between text-xs text-gray-500">
-                        <span>{new Date(post.date).toLocaleDateString()}</span>
-                        <div className="flex items-center gap-1 text-cobalt-light">
-                          <span>Read More</span>
-                          <ArrowRight className="w-3 h-3" />
-                        </div>
-                      </div>
-                    </motion.a>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-
-
-          </div>
-        </section>
-      </motion.div>
+          </motion.div>
+        </div>
+      </section>
     </main>
   )
 }

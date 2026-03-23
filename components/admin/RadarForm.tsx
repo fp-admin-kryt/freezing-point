@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useDropzone } from 'react-dropzone'
-import { Image as ImageIcon, Layout, FileImage } from 'lucide-react'
+import { Layout, FileImage, Eye, ArrowLeft, Upload } from 'lucide-react'
+import { Image as ImageIcon } from 'lucide-react'
 import { uploadToCloudinaryDirect } from '@/lib/cloudinary'
 import { saveSignalPost, saveObserverPost, TemplateType, ContentBlock } from '@/lib/firebase'
 import TagSelector from './TagSelector'
@@ -10,7 +11,7 @@ import DomainSelector from './DomainSelector'
 import RichTextEditor from './RichTextEditor'
 import BlockEditor from './BlockEditor'
 import PostPreview from './PostPreview'
-import { Eye } from 'lucide-react'
+import { GradientButton } from '@/components/ui/gradient-button'
 import toast from 'react-hot-toast'
 
 interface RadarFormProps {
@@ -19,10 +20,12 @@ interface RadarFormProps {
   editPost?: any
 }
 
+const inputCls = "w-full px-4 py-2.5 bg-transparent border border-white/8 rounded-lg text-white placeholder-gray-700 font-sans text-sm focus:outline-none focus:border-cobalt-blue/50 transition-colors"
+const labelCls = "block font-sans text-[10px] tracking-widest uppercase text-gray-600 mb-2"
+const secBtnCls = "px-4 py-2.5 border border-white/8 rounded-lg text-gray-400 hover:text-white hover:border-white/20 transition-colors font-sans text-sm"
+
 export default function RadarForm({ onBack, type, editPost }: RadarFormProps) {
-  const [templateType, setTemplateType] = useState<TemplateType | ''>(
-    editPost?.templateType || ''
-  )
+  const [templateType, setTemplateType] = useState<TemplateType | ''>(editPost?.templateType || '')
   const [formData, setFormData] = useState({
     heading: editPost?.heading || '',
     content: editPost?.content || '',
@@ -30,78 +33,36 @@ export default function RadarForm({ onBack, type, editPost }: RadarFormProps) {
     domain: editPost?.domain || '',
     date: editPost?.date || new Date().toISOString().split('T')[0]
   })
-
-  // Single Image Template State
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imageUrl, setImageUrl] = useState(editPost?.imageUrl || '')
   const [richContent, setRichContent] = useState(editPost?.richContent || '')
-
-  // Document Template State
-  const [blocks, setBlocks] = useState<ContentBlock[]>(
-    editPost?.blocks || []
-  )
-
+  const [blocks, setBlocks] = useState<ContentBlock[]>(editPost?.blocks || [])
   const [loading, setLoading] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
 
   const { getRootProps, getInputProps } = useDropzone({
-    accept: {
-      'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp']
-    },
+    accept: { 'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp'] },
     maxFiles: 1,
-    onDrop: (acceptedFiles) => {
-      setImageFile(acceptedFiles[0])
-    }
+    onDrop: (files) => setImageFile(files[0]),
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
-    if (!templateType) {
-      toast.error('Please select a template type')
-      return
-    }
-
+    if (!templateType) { toast.error('Please select a template type'); return }
     setLoading(true)
-
     try {
       let finalImageUrl = imageUrl
-
-      // Upload image if new file selected (for single image template)
       if (imageFile && templateType === 'singleImage') {
-        toast.loading('Uploading image...')
-        try {
-          finalImageUrl = await uploadToCloudinaryDirect(imageFile)
-          toast.dismiss()
-          toast.success('Image uploaded successfully!')
-        } catch (error) {
-          toast.dismiss()
-          toast.error('Failed to upload image')
-          throw error
-        }
+        toast.loading('Uploading image…')
+        try { finalImageUrl = await uploadToCloudinaryDirect(imageFile); toast.dismiss(); toast.success('Image uploaded!') }
+        catch (err) { toast.dismiss(); toast.error('Failed to upload image'); throw err }
       }
-
-      const postData: any = {
-        ...formData,
-        templateType,
-      }
-
-      // Add template-specific data
-      if (templateType === 'singleImage') {
-        postData.imageUrl = finalImageUrl || undefined
-        postData.richContent = richContent || undefined
-      } else if (templateType === 'document') {
-        postData.blocks = blocks.length > 0 ? blocks : undefined
-      }
-
-      // Save to Firebase
-      if (type === 'signal') {
-        await saveSignalPost(postData)
-      } else {
-        await saveObserverPost(postData)
-      }
-      toast.success(`${type === 'signal' ? 'Signal' : 'Observer'} post saved successfully!`)
-
+      const postData: any = { ...formData, templateType }
+      if (templateType === 'singleImage') { postData.imageUrl = finalImageUrl || undefined; postData.richContent = richContent || undefined }
+      else if (templateType === 'document') { postData.blocks = blocks.length > 0 ? blocks : undefined }
+      if (type === 'signal') await saveSignalPost(postData)
+      else await saveObserverPost(postData)
+      toast.success(`${type === 'signal' ? 'Signal' : 'Observer'} post saved!`)
       onBack()
     } catch (error) {
       console.error('Error saving post:', error)
@@ -111,234 +72,182 @@ export default function RadarForm({ onBack, type, editPost }: RadarFormProps) {
     }
   }
 
+  const typeLabel = type === 'signal' ? 'Signal' : 'Observer'
+  const typeBadgeCls = type === 'signal'
+    ? 'bg-cobalt-blue/15 text-cobalt-light border border-cobalt-blue/25'
+    : 'bg-purple-700/15 text-purple-400 border border-purple-700/25'
+
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-white">
-          {editPost ? `Edit ${type === 'signal' ? 'Signal' : 'Observer'} Post` : `Create ${type === 'signal' ? 'Signal' : 'Observer'} Post`}
-        </h2>
-        <button
-          onClick={onBack}
-          className="px-4 py-2 bg-space-gray text-white rounded-lg hover:bg-gray-700 transition-colors"
-        >
-          Back
+    <div className="max-w-5xl mx-auto">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-4">
+          <div>
+            <p className="font-sans text-[10px] tracking-[0.5em] uppercase text-cobalt-light mb-2">
+              {editPost ? 'Edit' : 'Create'}
+            </p>
+            <div className="flex items-center gap-3">
+              <h2 className="font-sans font-light text-2xl text-white">Radar Post</h2>
+              <span className={`px-2 py-0.5 font-sans text-[9px] tracking-widest uppercase rounded-full ${typeBadgeCls}`}>
+                {typeLabel}
+              </span>
+            </div>
+          </div>
+        </div>
+        <button onClick={onBack} className={`flex items-center gap-2 ${secBtnCls}`}>
+          <ArrowLeft className="w-4 h-4" /> Back
         </button>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Basic Fields */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-white mb-2">
-              Heading *
-            </label>
-            <input
-              type="text"
-              required
-              value={formData.heading}
-              onChange={(e) => setFormData({ ...formData, heading: e.target.value })}
-              className="w-full px-4 py-2 bg-space-gray border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cobalt-blue"
-              placeholder={`Enter ${type === 'signal' ? 'signal' : 'observer'} heading`}
-            />
+        {/* Basic fields */}
+        <div className="border border-white/8 rounded-xl p-6 space-y-5">
+          <p className="font-sans text-[10px] tracking-widest uppercase text-gray-600">Details</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className={labelCls}>Heading *</label>
+              <input type="text" required value={formData.heading}
+                onChange={(e) => setFormData({ ...formData, heading: e.target.value })}
+                className={inputCls} placeholder={`${typeLabel} heading`} />
+            </div>
+            <div>
+              <label className={labelCls}>Date *</label>
+              <input type="date" required value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                className={inputCls} />
+            </div>
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-white mb-2">
-              Date *
-            </label>
-            <input
-              type="date"
-              required
-              value={formData.date}
-              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-              className="w-full px-4 py-2 bg-space-gray border border-gray-600 rounded-lg text-white focus:outline-none focus:border-cobalt-blue"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className={labelCls}>Domain *</label>
+              <DomainSelector
+                selectedDomain={formData.domain}
+                onChange={(domain) => setFormData({ ...formData, domain })}
+                placeholder="Select domain"
+              />
+            </div>
+            <div>
+              <label className={labelCls}>Tags</label>
+              <TagSelector
+                selectedTags={formData.tags}
+                onChange={(tags) => setFormData({ ...formData, tags })}
+                placeholder="Select tags"
+              />
+            </div>
           </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-white mb-2">
-              Domain *
-            </label>
-            <DomainSelector
-              selectedDomain={formData.domain}
-              onChange={(domain) => setFormData({ ...formData, domain })}
-              placeholder="Select domain for this post"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-white mb-2">
-              Tags
-            </label>
-            <TagSelector
-              selectedTags={formData.tags}
-              onChange={(tags) => setFormData({ ...formData, tags })}
-              placeholder="Select tags for this post"
-            />
+            <label className={labelCls}>Summary</label>
+            <textarea value={formData.content}
+              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+              rows={3} className={inputCls} placeholder="Short preview text shown on cards" />
           </div>
         </div>
 
-        {/* Template Type Selection */}
+        {/* Template selection */}
         {!editPost && (
-          <div>
-            <label className="block text-sm font-medium text-white mb-4">
-              Select Template Type *
-            </label>
+          <div className="border border-white/8 rounded-xl p-6">
+            <p className="font-sans text-[10px] tracking-widest uppercase text-gray-600 mb-4">Template *</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <button
-                type="button"
-                onClick={() => setTemplateType('singleImage')}
-                className={`p-6 border-2 rounded-lg transition-all ${templateType === 'singleImage'
-                    ? 'border-cobalt-blue bg-cobalt-blue/10'
-                    : 'border-gray-600 hover:border-gray-500'
-                  }`}
-              >
-                <div className="flex flex-col items-center text-center">
-                  <FileImage className="w-12 h-12 text-cobalt-light mb-3" />
-                  <h3 className="text-lg font-semibold text-white mb-2">Single Image Template</h3>
-                  <p className="text-sm text-gray-400">
-                    Sticky image on left, scrollable rich text content on right
-                  </p>
-                </div>
+              <button type="button" onClick={() => setTemplateType('singleImage')}
+                className={`p-5 border rounded-xl transition-all text-left ${
+                  templateType === 'singleImage'
+                    ? 'border-cobalt-blue/60 bg-cobalt-blue/8'
+                    : 'border-white/8 hover:border-white/20'
+                }`}>
+                <FileImage className="w-8 h-8 text-cobalt-light mb-3" />
+                <h3 className="font-sans text-sm font-medium text-white mb-1">Single Image</h3>
+                <p className="font-body text-xs text-gray-600">Sticky image left, rich text right</p>
               </button>
-
-              <button
-                type="button"
-                onClick={() => setTemplateType('document')}
-                className={`p-6 border-2 rounded-lg transition-all ${templateType === 'document'
-                    ? 'border-cobalt-blue bg-cobalt-blue/10'
-                    : 'border-gray-600 hover:border-gray-500'
-                  }`}
-              >
-                <div className="flex flex-col items-center text-center">
-                  <Layout className="w-12 h-12 text-cobalt-light mb-3" />
-                  <h3 className="text-lg font-semibold text-white mb-2">Document Template</h3>
-                  <p className="text-sm text-gray-400">
-                    Flexible block-based layout with text and image blocks
-                  </p>
-                </div>
+              <button type="button" onClick={() => setTemplateType('document')}
+                className={`p-5 border rounded-xl transition-all text-left ${
+                  templateType === 'document'
+                    ? 'border-cobalt-blue/60 bg-cobalt-blue/8'
+                    : 'border-white/8 hover:border-white/20'
+                }`}>
+                <Layout className="w-8 h-8 text-cobalt-light mb-3" />
+                <h3 className="font-sans text-sm font-medium text-white mb-1">Document</h3>
+                <p className="font-body text-xs text-gray-600">Flexible block-based layout</p>
               </button>
             </div>
           </div>
         )}
 
-        {/* Single Image Template Editor */}
+        {/* Single Image editor */}
         {templateType === 'singleImage' && (
-          <div className="space-y-4 p-6 bg-gray-900 rounded-lg border border-gray-700">
-            <h3 className="text-lg font-semibold text-white mb-4">Single Image Template</h3>
-
+          <div className="border border-white/8 rounded-xl p-6 space-y-5">
+            <p className="font-sans text-[10px] tracking-widest uppercase text-gray-600">Single Image Template</p>
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
-                Sticky Image (Left Side) *
-              </label>
-              <div
-                {...getRootProps()}
-                className="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center cursor-pointer hover:border-cobalt-blue transition-colors"
-              >
+              <label className={labelCls}>Sticky Image (left side) *</label>
+              <div {...getRootProps()}
+                className="border border-dashed border-white/10 rounded-xl p-6 text-center cursor-pointer hover:border-cobalt-blue/40 transition-colors">
                 <input {...getInputProps()} />
-                <ImageIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                 {imageFile ? (
                   <div className="text-white">
-                    <p>Selected: {imageFile.name}</p>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setImageFile(null)
-                      }}
-                      className="mt-2 text-red-400 hover:text-red-300"
-                    >
-                      Remove
-                    </button>
+                    <p className="font-sans text-sm">{imageFile.name}</p>
+                    <button type="button" onClick={(e) => { e.stopPropagation(); setImageFile(null) }}
+                      className="mt-2 font-sans text-xs text-red-400 hover:text-red-300">Remove</button>
                   </div>
                 ) : imageUrl ? (
                   <div>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={imageUrl} alt="Preview" className="max-w-full h-auto rounded-lg mb-2" />
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setImageUrl('')
-                      }}
-                      className="mt-2 text-red-400 hover:text-red-300"
-                    >
-                      Remove
-                    </button>
+                    <img src={imageUrl} alt="Preview" className="max-h-40 mx-auto rounded-lg mb-3" />
+                    <button type="button" onClick={(e) => { e.stopPropagation(); setImageUrl('') }}
+                      className="font-sans text-xs text-red-400 hover:text-red-300">Remove</button>
                   </div>
                 ) : (
                   <div>
-                    <p className="text-gray-400">Drag & drop an image here, or click to select</p>
-                    <p className="text-gray-500 text-sm mt-1">PNG, JPG, GIF up to 10MB</p>
+                    <Upload className="mx-auto h-8 w-8 text-gray-700 mb-3" />
+                    <p className="font-body text-sm text-gray-600">Drag & drop or click to upload</p>
+                    <p className="font-body text-xs text-gray-700 mt-1">PNG, JPG up to 10MB</p>
                   </div>
                 )}
               </div>
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
-                Rich Text Content (Right Side) *
-              </label>
-              <RichTextEditor
-                value={richContent}
-                onChange={setRichContent}
-                placeholder="Enter your formatted content here..."
-              />
+              <label className={labelCls}>Rich Text Content (right side) *</label>
+              <RichTextEditor value={richContent} onChange={setRichContent} placeholder="Enter formatted content…" />
             </div>
           </div>
         )}
 
-        {/* Document Template Editor */}
+        {/* Document editor */}
         {templateType === 'document' && (
-          <div className="space-y-4 p-6 bg-gray-900 rounded-lg border border-gray-700">
-            <h3 className="text-lg font-semibold text-white mb-4">Document Template</h3>
+          <div className="border border-white/8 rounded-xl p-6 space-y-4">
+            <p className="font-sans text-[10px] tracking-widest uppercase text-gray-600">Document Template</p>
             <BlockEditor blocks={blocks} onChange={setBlocks} />
           </div>
         )}
 
-        {/* Submit Button */}
-        <div className="flex justify-end space-x-4">
-          <button
-            type="button"
-            onClick={onBack}
-            className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-          >
-            Cancel
-          </button>
+        {/* Actions */}
+        <div className="flex justify-end items-center gap-3 pt-2">
+          <button type="button" onClick={onBack} className={secBtnCls}>Cancel</button>
           {templateType && (
-            <button
-              type="button"
-              onClick={() => setShowPreview(true)}
-              className="px-6 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors flex items-center gap-2"
-            >
-              <Eye className="w-4 h-4" />
-              Preview
+            <button type="button" onClick={() => setShowPreview(true)}
+              className={`flex items-center gap-2 ${secBtnCls}`}>
+              <Eye className="w-4 h-4" /> Preview
             </button>
           )}
-          <button
+          <GradientButton
             type="submit"
             disabled={loading || !templateType}
-            className="px-6 py-2 bg-cobalt-blue text-white rounded-lg hover:bg-cobalt-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="!min-w-0 !px-6 !py-2.5 !text-sm !rounded-lg !font-light"
           >
-            {loading ? 'Saving...' : (editPost ? 'Update Post' : 'Create Post')}
-          </button>
+            {loading ? 'Saving…' : editPost ? 'Update Post' : 'Publish Post'}
+          </GradientButton>
         </div>
-
-        {/* Preview Modal */}
-        {showPreview && templateType && (
-          <PostPreview
-            templateType={templateType}
-            imageUrl={imageUrl}
-            richContent={richContent}
-            blocks={blocks}
-            heading={formData.heading}
-            date={formData.date}
-            onClose={() => setShowPreview(false)}
-          />
-        )}
       </form>
+
+      {showPreview && templateType && (
+        <PostPreview
+          templateType={templateType}
+          imageUrl={imageUrl}
+          richContent={richContent}
+          blocks={blocks}
+          heading={formData.heading}
+          date={formData.date}
+          onClose={() => setShowPreview(false)}
+        />
+      )}
     </div>
   )
 }
