@@ -49,7 +49,7 @@ export function NavBar({ items, className }: NavBarProps) {
   return (
     <div
       className={cn(
-        "fixed bottom-0 sm:top-0 left-1/2 -translate-x-1/2 z-50 mb-6 sm:pt-6",
+        "fixed bottom-0 sm:top-0 left-1/2 -translate-x-1/2 z-50 mb-6 sm:pt-6 w-fit h-fit",
         className,
       )}
     >
@@ -59,8 +59,8 @@ export function NavBar({ items, className }: NavBarProps) {
           <Image
             src="/assets/logos/fp-logo.png"
             alt="Freezing Point"
-            width={22}
-            height={22}
+            width={28}
+            height={28}
             className="object-contain"
           />
         </Link>
@@ -100,10 +100,9 @@ export function NavBar({ items, className }: NavBarProps) {
                     damping: 30,
                   }}
                 >
-                  <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-8 h-1 bg-cobalt-light rounded-t-full">
-                    <div className="absolute w-12 h-6 bg-cobalt-light/20 rounded-full blur-md -top-2 -left-2" />
-                    <div className="absolute w-8 h-6 bg-cobalt-light/20 rounded-full blur-md -top-1" />
-                    <div className="absolute w-4 h-4 bg-cobalt-light/30 rounded-full blur-sm top-0 left-2" />
+                  <div className="absolute -top-px left-1/2 -translate-x-1/2 w-6 h-px bg-cobalt-light/40 rounded-full">
+                    <div className="absolute w-10 h-4 bg-cobalt-light/10 rounded-full blur-md -top-2 -left-2" />
+                    <div className="absolute w-6 h-3 bg-cobalt-light/15 rounded-full blur-sm -top-1" />
                   </div>
                 </motion.div>
               )}

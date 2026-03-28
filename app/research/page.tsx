@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Search, ArrowRight, Filter, ChevronDown } from 'lucide-react'
+import { ArrowRight, Filter, ChevronDown } from 'lucide-react'
+import { ExpandingSearchDock } from '@/components/ui/expanding-search-dock'
 import { getResearchPosts } from '@/lib/firebase'
 import { getTagById } from '@/lib/dataService'
 import Image from 'next/image'
+import { DottedSurface } from '@/components/ui/dotted-surface'
 
 export default function ResearchPage() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -61,8 +63,9 @@ export default function ResearchPage() {
     setSelectedTags((prev) => (prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]))
 
   return (
-    <div className="min-h-screen bg-[#050508] text-white">
-      <div className="pt-24 pb-24">
+    <div className="relative min-h-screen bg-[#050508] text-white overflow-hidden">
+      <DottedSurface className="absolute inset-0 z-0 opacity-35" />
+      <div className="relative z-10 pt-24 pb-24">
         <div className="container mx-auto px-4 max-w-7xl">
 
           {/* Header */}
@@ -83,31 +86,26 @@ export default function ResearchPage() {
             </p>
           </motion.div>
 
-          {/* Search + Sort */}
+          {/* Search + Sort + Filter */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.15 }}
-            className="mb-8 flex flex-col sm:flex-row gap-3"
+            className="mb-8 flex items-center justify-center gap-3 flex-wrap"
           >
-            {/* Search */}
-            <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 w-4 h-4" />
-              <input
-                type="text"
-                placeholder="Search papers, authors, topics…"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-11 pr-4 py-3 bg-transparent border border-white/8 rounded-xl text-white placeholder-gray-700 font-sans text-sm focus:outline-none focus:border-cobalt-blue/50 transition-colors"
-              />
-            </div>
+            {/* Expanding search */}
+            <ExpandingSearchDock
+              placeholder="Search papers, authors, topics…"
+              value={searchQuery}
+              onChange={setSearchQuery}
+            />
 
             {/* Sort */}
             <div className="relative">
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as 'date' | 'title' | 'author')}
-                className="appearance-none pl-4 pr-9 py-3 bg-transparent border border-white/8 rounded-xl text-gray-400 font-sans text-sm focus:outline-none focus:border-cobalt-blue/50 transition-colors cursor-pointer"
+                className="appearance-none pl-4 pr-9 py-3 bg-white/5 border border-white/10 rounded-full text-gray-400 font-sans text-sm focus:outline-none focus:border-cobalt-blue/50 transition-colors cursor-pointer h-12"
               >
                 <option value="date" className="bg-[#0e0e12]">Sort: Date</option>
                 <option value="title" className="bg-[#0e0e12]">Sort: Title</option>
@@ -119,10 +117,10 @@ export default function ResearchPage() {
             {/* Filter toggle */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 px-4 py-3 border rounded-xl font-sans text-sm transition-colors ${
+              className={`flex items-center gap-2 px-5 h-12 border rounded-full font-sans text-sm transition-colors ${
                 showFilters || selectedTags.length > 0
-                  ? 'border-cobalt-blue/50 text-cobalt-light'
-                  : 'border-white/8 text-gray-500 hover:border-white/15 hover:text-gray-300'
+                  ? 'border-cobalt-blue/50 text-cobalt-light bg-cobalt-blue/10'
+                  : 'border-white/10 text-gray-500 bg-white/5 hover:border-white/20 hover:text-gray-300'
               }`}
             >
               <Filter className="w-4 h-4" />
@@ -136,7 +134,7 @@ export default function ResearchPage() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="mb-8 flex flex-wrap gap-2"
+              className="mb-8 flex flex-wrap gap-2 justify-center"
             >
               {allTags.map((tag) => (
                 <button
@@ -165,7 +163,7 @@ export default function ResearchPage() {
 
           {/* Results count */}
           {!loading && (
-            <div className="mb-6 font-sans text-[11px] tracking-widest uppercase text-gray-700">
+            <div className="mb-6 text-center font-sans text-[11px] tracking-widest uppercase text-gray-700">
               {sortedPosts.length} {sortedPosts.length === 1 ? 'paper' : 'papers'}
             </div>
           )}
@@ -207,8 +205,27 @@ export default function ResearchPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.04 }}
-                className="group border border-white/8 rounded-xl overflow-hidden hover:border-cobalt-blue/40 transition-all duration-300 flex flex-col cursor-pointer"
+                className="group relative rounded-xl overflow-hidden flex flex-col cursor-pointer"
+                style={{
+                  background: 'rgba(255,255,255,0.04)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                }}
+                whileHover={{ scale: 1.02 }}
+                onMouseMove={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect()
+                  e.currentTarget.style.setProperty('--mx', `${((e.clientX - rect.left) / rect.width) * 100}%`)
+                  e.currentTarget.style.setProperty('--my', `${((e.clientY - rect.top) / rect.height) * 100}%`)
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.setProperty('--mx', '50%')
+                  e.currentTarget.style.setProperty('--my', '50%')
+                }}
               >
+                <div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                  style={{ background: 'radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.07) 0%, transparent 60%)' }}
+                />
                 {post.imageUrl && (
                   <div className="relative w-full overflow-hidden" style={{ height: '160px' }}>
                     <Image
@@ -220,7 +237,7 @@ export default function ResearchPage() {
                     />
                   </div>
                 )}
-                <div className="flex flex-col flex-1 p-4">
+                <div className="flex flex-col flex-1 p-4 relative z-10">
                   <div className="flex flex-wrap gap-1.5 mb-2">
                     {post.tags.map((tagId: string) => {
                       const tag = getTagById(tagId)

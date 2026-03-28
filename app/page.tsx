@@ -1,12 +1,40 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useAnimation } from 'framer-motion'
 import { Target, PlusCircle, Radar, Eye, ArrowRight, ChevronDown, Plus } from 'lucide-react'
 import { getResearchPosts, getSignalPosts, getObserverPosts } from '@/lib/firebase'
 import { getTagById } from '@/lib/dataService'
 import Image from 'next/image'
 import { SparklesCore } from '@/components/ui/sparkles'
+import { DottedSurface } from '@/components/ui/dotted-surface'
+import NeuralBackground from '@/components/ui/flow-field-background'
+
+function CtaCard({ href, title, subtitle, delay = 0.3 }: { href: string; title: string; subtitle: string; delay?: number }) {
+  const controls = useAnimation()
+  return (
+    <motion.a
+      href={href}
+      onHoverStart={() => controls.start({ rotate: 360, transition: { duration: 2.5, repeat: Infinity, ease: 'linear' } })}
+      onHoverEnd={() => controls.stop()}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5, delay }}
+      className="flex-shrink-0 flex flex-col items-center justify-center cursor-pointer gap-3"
+      style={{ width: '160px', maxWidth: '80vw' }}
+    >
+      <div className="relative w-9 h-9 flex items-center justify-center">
+        <motion.div animate={controls} className="absolute inset-0 rounded-full border border-white/20" />
+        <ArrowRight className="w-4 h-4 text-white/35" />
+      </div>
+      <div className="text-center">
+        <p className="font-sans text-xs font-light text-white/35">{title}</p>
+        <p className="font-sans text-[9px] tracking-[0.35em] uppercase text-white/20 mt-0.5">{subtitle}</p>
+      </div>
+    </motion.a>
+  )
+}
 
 export default function Home() {
   const [researchPosts, setResearchPosts] = useState<any[]>([])
@@ -160,8 +188,9 @@ export default function Home() {
       </section>
 
       {/* ── Mission / Pillars ── */}
-      <section id="explore" className="py-28 px-4 border-t border-white/5">
-        <div className="container mx-auto max-w-4xl">
+      <section id="explore" className="relative py-28 px-4 border-t border-white/5 overflow-hidden">
+        <NeuralBackground className="z-0 opacity-40" color="#6366f1" trailOpacity={0.12} particleCount={500} />
+        <div className="relative z-10 container mx-auto max-w-4xl">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -252,8 +281,9 @@ export default function Home() {
       </section>
 
       {/* ── Research ── */}
-      <section id="research" className="py-28 px-4 border-t border-white/5">
-        <div className="container mx-auto">
+      <section id="research" className="relative py-28 px-4 border-t border-white/5 overflow-hidden">
+        <DottedSurface className="absolute inset-0 z-0 opacity-30" />
+        <div className="relative z-10 container mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -279,121 +309,69 @@ export default function Home() {
           </motion.div>
 
           <div
-            className="overflow-x-auto horizontal-scroll"
+            className="overflow-auto horizontal-scroll"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
-            <div className="flex gap-4 pb-4 items-stretch" style={{ minWidth: 'max-content' }}>
+            <div className="flex gap-4 py-2 pb-4 items-stretch" style={{ minWidth: 'max-content' }}>
               {(() => {
                 const sorted = [...researchPosts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-                return sorted.slice(0, 6).map((post, index) => {
-                  const isFeatured = index === 0
-
-                  if (isFeatured) {
-                    return (
-                      <motion.a
-                        key={post.id || 'featured'}
-                        href={`/research/${post.id}`}
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.5 }}
-                        className="group flex-shrink-0 relative overflow-hidden rounded-2xl cursor-pointer"
-                        style={{ width: '520px', height: '340px', maxWidth: '85vw' }}
-                      >
-                        {post.imageUrl ? (
-                          <Image
-                            src={post.imageUrl}
-                            alt={post.title}
-                            fill
-                            className="object-cover transition-transform duration-700 group-hover:scale-105"
-                            sizes="520px"
-                            priority
-                          />
-                        ) : (
-                          <div className="absolute inset-0 bg-cobalt-blue/20" />
-                        )}
-                        {/* gradient overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
-                        {/* content */}
-                        <div className="absolute inset-0 flex flex-col justify-end p-6">
-                          <div className="flex flex-wrap gap-1.5 mb-3">
-                            {post.tags.map((tagId: string) => {
-                              const tag = getTagById(tagId)
-                              return tag ? (
-                                <span key={tagId} className="px-2 py-0.5 font-sans text-[9px] tracking-wider rounded-full"
-                                  style={{ backgroundColor: tag.color + '33', border: `1px solid ${tag.color}55`, color: tag.color }}>
-                                  {tag.name}
-                                </span>
-                              ) : null
-                            })}
-                          </div>
-                          <h3 className="font-sans text-base font-medium text-white mb-2 group-hover:text-cobalt-light transition-colors line-clamp-2 leading-snug">
-                            {post.title}
-                          </h3>
-                          <div className="flex items-center justify-between">
-                            <p className="font-body text-gray-400 text-xs">
-                              {post.author} &middot; {new Date(post.date).toLocaleDateString()}
-                            </p>
-                            <span className="font-sans text-[10px] tracking-widest uppercase text-cobalt-light/70 group-hover:text-cobalt-light transition-colors flex items-center gap-1.5">
-                              Read <ArrowRight className="w-3 h-3" />
-                            </span>
-                          </div>
-                        </div>
-                      </motion.a>
-                    )
-                  }
-
-                  // Regular cards — vertical, borderless image
-                  return (
-                    <motion.a
-                      key={post.id || `research-${index}`}
+                return sorted.slice(0, 3).map((post, index) => (
+                  <motion.div
+                    key={post.id || `research-${index}`}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: index * 0.06 }}
+                    className="flex-shrink-0"
+                  >
+                    <a
                       href={`/research/${post.id}`}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.5, delay: index * 0.06 }}
-                      className="group flex-shrink-0 border border-white/8 rounded-xl overflow-hidden hover:border-cobalt-blue/40 transition-all duration-300 flex flex-col cursor-pointer"
-                      style={{ width: '240px', maxWidth: '80vw' }}
+                      className="group relative block overflow-hidden rounded-2xl cursor-pointer"
+                      style={{ width: '380px', height: '220px', maxWidth: '80vw' }}
                     >
-                      {post.imageUrl && (
-                        <div className="relative w-full overflow-hidden" style={{ height: '140px' }}>
-                          <Image
-                            src={post.imageUrl}
-                            alt={post.title}
-                            fill
-                            className="object-cover transition-transform duration-500 group-hover:scale-105"
-                            sizes="240px"
-                          />
-                        </div>
+                      {post.imageUrl ? (
+                        <Image
+                          src={post.imageUrl}
+                          alt={post.title}
+                          fill
+                          className="object-cover transition-transform duration-700 group-hover:scale-105"
+                          sizes="380px"
+                          priority={index === 0}
+                        />
+                      ) : (
+                        <div className="absolute inset-0 bg-cobalt-blue/20" />
                       )}
-                      <div className="flex flex-col flex-1 p-4">
-                        <div className="flex flex-wrap gap-1.5 mb-2">
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
+                      <div className="absolute inset-0 flex flex-col justify-end p-5">
+                        <div className="flex flex-wrap gap-1.5 mb-3">
                           {post.tags.map((tagId: string) => {
                             const tag = getTagById(tagId)
                             return tag ? (
                               <span key={tagId} className="px-2 py-0.5 font-sans text-[9px] tracking-wider rounded-full"
-                                style={{ backgroundColor: tag.color + '22', border: `1px solid ${tag.color}44`, color: tag.color }}>
+                                style={{ backgroundColor: tag.color + '33', border: `1px solid ${tag.color}55`, color: tag.color }}>
                                 {tag.name}
                               </span>
                             ) : null
                           })}
                         </div>
-                        <h3 className="font-sans text-sm font-medium text-white mb-1.5 group-hover:text-cobalt-light transition-colors line-clamp-2 leading-snug flex-1">
+                        <h3 className="font-sans text-sm font-medium text-white mb-2 group-hover:text-cobalt-light transition-colors line-clamp-2 leading-snug">
                           {post.title}
                         </h3>
-                        <p className="font-body text-gray-600 text-[10px] mb-3">
-                          {post.author} &middot; {new Date(post.date).toLocaleDateString()}
-                        </p>
-                        <div className="flex justify-end">
-                          <span className="font-sans text-[10px] tracking-widest uppercase text-cobalt-light/50 group-hover:text-cobalt-light transition-colors flex items-center gap-1">
+                        <div className="flex items-center justify-between">
+                          <p className="font-body text-gray-400 text-xs">
+                            {post.author} &middot; {new Date(post.date).toLocaleDateString()}
+                          </p>
+                          <span className="font-sans text-[10px] tracking-widest uppercase text-cobalt-light/70 group-hover:text-cobalt-light transition-colors flex items-center gap-1.5">
                             Read <ArrowRight className="w-3 h-3" />
                           </span>
                         </div>
                       </div>
-                    </motion.a>
-                  )
-                })
+                    </a>
+                  </motion.div>
+                ))
               })()}
+
+              <CtaCard href="/research" title="All Research" subtitle="View all papers" />
             </div>
           </div>
         </div>
@@ -445,66 +423,93 @@ export default function Home() {
             transition={{ duration: 0.8 }}
           >
             <div
-              className="overflow-x-auto horizontal-scroll"
+              className="overflow-auto horizontal-scroll"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
-              <div className="flex gap-5 pb-4" style={{ minWidth: 'max-content' }}>
+              <div className="flex gap-5 py-2 pb-4" style={{ minWidth: 'max-content' }}>
                 {[
                   ...signalPosts.map((p) => ({ ...p, _type: 'Signal' as const })),
                   ...observerPosts.map((p) => ({ ...p, _type: 'Observer' as const })),
                 ]
                   .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-                  .slice(0, 10)
+                  .slice(0, 3)
                   .map((post, index) => (
-                    <motion.a
+                    <motion.div
                       key={post.id || `radar-${index}`}
-                      href={`/radar/${post.id}`}
                       initial={{ opacity: 0, y: 20 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
                       transition={{ duration: 0.5, delay: index * 0.06 }}
-                      className="group flex-shrink-0 border border-white/8 rounded-xl p-6 hover:border-cobalt-blue/40 hover:bg-cobalt-blue/[0.04] transition-all duration-300 cursor-pointer"
-                      style={{ width: '360px', maxWidth: '90vw' }}
+                      className="flex-shrink-0"
                     >
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          {post.tags.map((tagId: string) => {
-                            const tag = getTagById(tagId)
-                            return tag ? (
-                              <span
-                                key={tagId}
-                                className="px-2 py-0.5 font-sans text-[9px] tracking-wider rounded-full"
-                                style={{
-                                  backgroundColor: tag.color + '22',
-                                  border: `1px solid ${tag.color}44`,
-                                  color: tag.color,
-                                }}
-                              >
-                                {tag.name}
-                              </span>
-                            ) : null
-                          })}
+                      <a
+                        href={`/radar/${post.id}`}
+                        className="group relative block rounded-xl p-6 cursor-pointer"
+                        style={{
+                          width: '360px',
+                          maxWidth: '90vw',
+                          background: 'rgba(255,255,255,0.04)',
+                          backdropFilter: 'blur(10px)',
+                          border: '1px solid rgba(255,255,255,0.08)',
+                        }}
+                        onMouseMove={(e) => {
+                          const rect = e.currentTarget.getBoundingClientRect()
+                          e.currentTarget.style.setProperty('--mx', `${((e.clientX - rect.left) / rect.width) * 100}%`)
+                          e.currentTarget.style.setProperty('--my', `${((e.clientY - rect.top) / rect.height) * 100}%`)
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.setProperty('--mx', '50%')
+                          e.currentTarget.style.setProperty('--my', '50%')
+                        }}
+                      >
+                        <div
+                          className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                          style={{ background: 'radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.07) 0%, transparent 60%)' }}
+                        />
+                        <div className="relative z-10 flex flex-col h-full">
+                          <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {post.tags.map((tagId: string) => {
+                                const tag = getTagById(tagId)
+                                return tag ? (
+                                  <span
+                                    key={tagId}
+                                    className="px-2 py-0.5 font-sans text-[9px] tracking-wider rounded-full"
+                                    style={{
+                                      backgroundColor: tag.color + '22',
+                                      border: `1px solid ${tag.color}44`,
+                                      color: tag.color,
+                                    }}
+                                  >
+                                    {tag.name}
+                                  </span>
+                                ) : null
+                              })}
+                            </div>
+                            <span className="font-sans text-[9px] tracking-widest uppercase text-gray-700 flex-shrink-0 ml-2">
+                              {post._type}
+                            </span>
+                          </div>
+                          <h4 className="font-sans text-sm font-semibold text-white mb-3 group-hover:text-cobalt-light transition-colors leading-snug">
+                            {post.heading}
+                          </h4>
+                          <p className="font-body text-gray-500 text-xs line-clamp-4 mb-4 leading-relaxed">
+                            {post.content}
+                          </p>
+                          <div className="flex items-center justify-between mt-auto">
+                            <span className="font-body text-[11px] text-gray-700">
+                              {new Date(post.date).toLocaleDateString()}
+                            </span>
+                            <span className="font-sans text-[10px] tracking-widest uppercase text-cobalt-light/60 group-hover:text-cobalt-light transition-colors flex items-center gap-1.5">
+                              Read <ArrowRight className="w-3 h-3" />
+                            </span>
+                          </div>
                         </div>
-                        <span className="font-sans text-[9px] tracking-widest uppercase text-gray-700 flex-shrink-0 ml-2">
-                          {post._type}
-                        </span>
-                      </div>
-                      <h4 className="font-sans text-sm font-semibold text-white mb-3 group-hover:text-cobalt-light transition-colors leading-snug">
-                        {post.heading}
-                      </h4>
-                      <p className="font-body text-gray-500 text-xs line-clamp-4 mb-4 leading-relaxed">
-                        {post.content}
-                      </p>
-                      <div className="flex items-center justify-between">
-                        <span className="font-body text-[11px] text-gray-700">
-                          {new Date(post.date).toLocaleDateString()}
-                        </span>
-                        <span className="font-sans text-[10px] tracking-widest uppercase text-cobalt-light/60 group-hover:text-cobalt-light transition-colors flex items-center gap-1.5">
-                          Read <ArrowRight className="w-3 h-3" />
-                        </span>
-                      </div>
-                    </motion.a>
+                      </a>
+                    </motion.div>
                   ))}
+
+                <CtaCard href="/radar" title="All Radar" subtitle="Signals &amp; insights" />
               </div>
             </div>
           </motion.div>

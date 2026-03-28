@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import NeuralBackground from '@/components/ui/flow-field-background'
 
 const pillars = [
   {
@@ -41,8 +42,9 @@ const values = [
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-[#050508] text-white">
-      <div className="pt-24 pb-24">
+    <div className="relative min-h-screen bg-[#050508] text-white overflow-hidden">
+      <NeuralBackground className="z-0 opacity-35" color="#6366f1" trailOpacity={0.12} particleCount={500} />
+      <div className="relative z-10 pt-24 pb-24">
         <div className="container mx-auto px-4 max-w-4xl">
 
           {/* Header */}

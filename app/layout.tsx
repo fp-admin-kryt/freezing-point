@@ -4,6 +4,7 @@ import './globals.css'
 import Image from 'next/image'
 import PageTransition from '@/components/PageTransition'
 import { AppNavBar } from '@/components/AppNavBar'
+import { Providers } from '@/components/Providers'
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
@@ -31,11 +32,12 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${spaceGrotesk.variable} ${inter.variable}`}>
+    <html lang="en" className={`${spaceGrotesk.variable} ${inter.variable}`} suppressHydrationWarning>
       <head>
         <link rel="icon" type="image/svg+xml" href="/assets/logos/fp-logo.svg" />
       </head>
       <body>
+        <Providers>
         <AppNavBar />
         <div className="min-h-screen bg-[#050508] flex flex-col">
           <div className="flex-1">
@@ -54,6 +56,7 @@ export default function RootLayout({
             </span>
           </footer>
         </div>
+        </Providers>
       </body>
     </html>
   )
