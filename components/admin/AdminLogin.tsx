@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { GradientButton } from '@/components/ui/gradient-button'
+import { CanvasRevealEffect } from '@/components/ui/sign-in-flow-1'
 
 interface AdminLoginProps {
   onLogin: () => void
@@ -29,15 +29,33 @@ const AdminLogin = ({ onLogin }: AdminLoginProps) => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#050508]">
+    <div className="min-h-screen flex items-center justify-center bg-black relative overflow-hidden">
+      {/* Animated dot matrix background */}
+      <div className="absolute inset-0 z-0">
+        <CanvasRevealEffect
+          animationSpeed={3}
+          containerClassName="bg-black"
+          colors={[
+            [255, 255, 255],
+            [255, 255, 255],
+          ]}
+          dotSize={6}
+          showGradient={false}
+        />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(0,0,0,0.85)_0%,_transparent_100%)]" />
+        <div className="absolute top-0 left-0 right-0 h-1/3 bg-gradient-to-b from-black to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-black to-transparent" />
+      </div>
+
+      {/* Login form */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="w-full max-w-sm px-4"
+        className="relative z-10 w-full max-w-sm px-4"
       >
-        <div className="border border-white/8 rounded-2xl p-8">
-          <div className="mb-8">
+        <div className="border border-white/10 rounded-2xl p-8 bg-black/40 backdrop-blur-md">
+          <div className="mb-8 text-center">
             <p className="font-sans text-[10px] tracking-[0.5em] uppercase text-cobalt-light mb-4">
               Admin
             </p>
@@ -55,7 +73,7 @@ const AdminLogin = ({ onLogin }: AdminLoginProps) => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
-              className="w-full px-4 py-3 bg-transparent border border-white/8 rounded-lg text-white placeholder-gray-700 font-sans text-sm focus:outline-none focus:border-cobalt-blue/50 transition-colors"
+              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-full text-white placeholder-gray-600 font-sans text-sm focus:outline-none focus:border-white/30 transition-colors text-center"
               required
             />
 
@@ -63,19 +81,21 @@ const AdminLogin = ({ onLogin }: AdminLoginProps) => {
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="font-sans text-xs text-red-400"
+                className="font-sans text-xs text-red-400 text-center"
               >
                 {error}
               </motion.p>
             )}
 
-            <GradientButton
+            <motion.button
               type="submit"
               disabled={isLoading}
-              className="w-full !min-w-0 !px-6 !py-3 !text-sm !rounded-lg !font-light"
+              className="w-full rounded-full bg-white text-black font-medium py-3 hover:bg-white/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              whileHover={{ scale: isLoading ? 1 : 1.02 }}
+              whileTap={{ scale: isLoading ? 1 : 0.98 }}
             >
               {isLoading ? 'Authenticating…' : 'Login'}
-            </GradientButton>
+            </motion.button>
           </form>
         </div>
       </motion.div>
