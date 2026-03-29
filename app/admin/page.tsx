@@ -11,7 +11,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     // Check if admin is already authenticated
-    const token = localStorage.getItem('admin-token')
+    const token = sessionStorage.getItem('admin-token')
     if (token) {
       setIsAuthenticated(true)
     }

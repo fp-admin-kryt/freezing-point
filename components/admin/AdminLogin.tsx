@@ -19,7 +19,7 @@ const AdminLogin = ({ onLogin }: AdminLoginProps) => {
     setError('')
 
     if (password === 'freezingpoint2024') {
-      localStorage.setItem('admin-token', 'authenticated')
+      sessionStorage.setItem('admin-token', 'authenticated')
       onLogin()
     } else {
       setError('Invalid password')
