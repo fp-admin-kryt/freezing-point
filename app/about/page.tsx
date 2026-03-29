@@ -5,38 +5,38 @@ import NeuralBackground from '@/components/ui/flow-field-background'
 
 const pillars = [
   {
-    title: 'Research Analysis',
-    description: 'Deep dives into groundbreaking AI research papers and their real-world implications.',
+    title: 'Nucleation',
+    description: 'Every development begins in an uncertain state, we operate first in the space before consensus exists.',
     accent: '#136fd7',
   },
   {
-    title: 'Industry Signals',
-    description: 'Tracking emerging trends and signals that shape the future of AI technology.',
+    title: 'Crystallization',
+    description: 'This is where exploration becomes structure, emergent ideas are formalized into frameworks and conceptual models.',
     accent: '#10b981',
   },
   {
-    title: 'The Observer',
-    description: 'Thoughtful commentary and analysis on the broader AI ecosystem and its impact.',
+    title: 'Solidification',
+    description: 'This is where abstraction takes form, and translates into outcomes that inform fields, enable systems, and redefine what is possible.',
     accent: '#a855f7',
   },
 ]
 
 const values = [
   {
-    title: 'Accuracy First',
-    description: 'We prioritize factual accuracy and thorough research in everything we publish.',
+    title: 'Humility',
+    description: 'Knowledge begins with recognizing the limits of what we know.',
   },
   {
-    title: 'Accessibility',
-    description: 'Making complex AI concepts understandable without oversimplification.',
+    title: 'Responsibility',
+    description: 'Precision is not a preference, it\'s an obligation.',
   },
   {
-    title: 'Forward Thinking',
-    description: 'Focusing on emerging technologies and their potential future impact.',
+    title: 'Curiosity',
+    description: 'Every point of certainty exists within a wider field of possibility.',
   },
   {
-    title: 'Ethical Awareness',
-    description: 'Considering the ethical implications and societal impact of AI developments.',
+    title: 'Consequence',
+    description: 'The value of an idea is inseparable from the consequences it creates.',
   },
 ]
 
@@ -61,7 +61,7 @@ export default function AboutPage() {
               Freezing Point
             </h1>
             <p className="font-body text-gray-500 max-w-xl text-sm leading-relaxed">
-              Exploring the frontiers of artificial intelligence, where innovation meets insight.
+              Crystallizing Innovation.
             </p>
           </motion.div>
 
@@ -75,19 +75,12 @@ export default function AboutPage() {
             <p className="font-sans text-[10px] tracking-[0.5em] uppercase text-cobalt-light mb-8">
               Our Mission
             </p>
-            <p className="font-body text-gray-400 text-base leading-relaxed mb-5 max-w-3xl">
-              At Freezing Point AI, every breakthrough begins as an idea in a fluid state, shaped by
-              research, exploration, and raw data. The freezing point marks the critical moment when
-              abstract insights solidify into real solutions.
-            </p>
-            <p className="font-body text-gray-500 text-base leading-relaxed max-w-3xl">
-              We curate and analyze the latest developments in machine learning, computer vision,
-              natural language processing, robotics, and beyond — providing you with insights that
-              matter in an ever-evolving technological landscape.
+            <p className="font-body text-gray-400 text-base leading-relaxed max-w-3xl">
+              Freezing Point is a multi-domain research platform focused on the ideas that precede breakthroughs. It explores the conceptual work that emerges before a field has the language to define its needs. We move beyond the present to explore what the future demands and translate uncertainty into possibility spaces, shaping conceptual architectures for systems that have not yet entered reality.
             </p>
           </motion.div>
 
-          {/* What We Do */}
+          {/* Our Method */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -95,7 +88,7 @@ export default function AboutPage() {
             className="border-t border-white/5 pt-16 mb-20"
           >
             <p className="font-sans text-[10px] tracking-[0.5em] uppercase text-cobalt-light mb-12">
-              What We Do
+              Our Method
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {pillars.map((pillar, i) => (
@@ -117,15 +110,15 @@ export default function AboutPage() {
             </div>
           </motion.div>
 
-          {/* Values */}
+          {/* Our Virtues */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.35 }}
-            className="border-t border-white/5 pt-16"
+            className="border-t border-white/5 pt-16 mb-20"
           >
             <p className="font-sans text-[10px] tracking-[0.5em] uppercase text-cobalt-light mb-12">
-              Our Values
+              Our Virtues
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {values.map((value, i) => (
@@ -144,6 +137,23 @@ export default function AboutPage() {
                 </motion.div>
               ))}
             </div>
+          </motion.div>
+
+          {/* Founder Quote */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.45 }}
+            className="border-t border-white/5 pt-16"
+          >
+            <blockquote className="max-w-2xl">
+              <p className="font-display text-2xl md:text-3xl font-light text-white/80 leading-snug tracking-tight mb-6">
+                &ldquo;Every idea we pursue exists to change something that matters.&rdquo;
+              </p>
+              <cite className="font-sans text-[10px] tracking-[0.4em] uppercase text-cobalt-light not-italic">
+                Founder, Freezing Point
+              </cite>
+            </blockquote>
           </motion.div>
 
         </div>

@@ -64,28 +64,28 @@ export default function Home() {
     {
       icon: Target,
       title: 'Impact',
-      description: 'At FreezingPoint.Ai, every breakthrough begins as an idea in a fluid state, shaped by research, exploration and raw data. The freezing point marks the critical moment when abstract insights solidify into real solutions. The mission is to crystallize innovation, transforming research into tangible outcomes that shape the future of healthcare. This begins with publishing white papers and conceptual frameworks that will evolve into real-world applications and products.',
+      description: 'Every breakthrough begins as an idea in flux, unstable, unformed, and boundless in its possibility. Freezing Point is the threshold of change, where abstract thinking solidifies into tangible outcomes that redefine what is possible.',
       link: '/research',
       accent: '#136fd7',
     },
     {
       icon: PlusCircle,
-      title: 'Health',
-      description: 'Positioned at the crossroads of medicine and machine learning, Health at FreezingPoint.Ai delves into how artificial intelligence, systems thinking, and data-driven approaches are reshaping care delivery. From predictive diagnostics to patient-centered innovations, this section showcases cutting-edge research, actionable methodologies, and forward-looking solutions aimed at improving outcomes and fundamentally redefining healthcare.',
+      title: 'Research',
+      description: 'Innovation begins not with the solution, but with the thinking that makes it possible. Foundational research and conceptual frameworks formalize emerging ideas before they can be translated into systems. Each piece of research is a rigorous attempt to unlock different possibilities that can guide the future.',
       link: '/research',
       accent: '#10b981',
     },
     {
       icon: Radar,
-      title: 'Signals',
-      description: 'A curated stream of early indicators, emerging patterns, and subtle shifts shaping the future of healthcare and artificial intelligence. Signals highlight emerging patterns and weak signals that often go unnoticed but hold the potential to redefine the landscape. This section invites curiosity and foresight, providing a front-row seat to innovation before it reaches the mainstream.',
+      title: 'Radar',
+      description: 'Every significant shift in a field begins as a weak signal, an anomaly, a pattern at the periphery, a question nobody is asking yet. Radar exists to detect those signals before they become consensus. Drawing on emerging research, cross-domain observation, and deep domain expertise, it tracks the ideas and developments that will define the next phase of technology innovation.',
       link: '/radar',
       accent: '#a855f7',
     },
     {
       icon: Eye,
-      title: 'The Observer',
-      description: 'The Observer offers a curated lens on the evolving landscape of AI, systems innovation, and healthcare transformation. Expect in-depth analysis, ideas, critical commentary, and comprehensive trend reviews that cut through the noise. Whether it\'s a deep dive into policy shifts or reflections on paradigm-changing research, this space invites critical thought and continuous learning.',
+      title: 'Health',
+      description: 'Health represents one of our key domains of exploration, where AI holds the potential to drive transformative impact. The convergence of artificial intelligence, healthcare data, and computational power has created possibilities that existing frameworks are not yet fully equipped to address, opening new pathways for care and systems-level transformation.',
       link: '/radar',
       accent: '#f97316',
     },
@@ -188,7 +188,7 @@ export default function Home() {
       </section>
 
       {/* ── Mission / Pillars ── */}
-      <section id="explore" className="relative py-28 px-4 border-t border-white/5 overflow-hidden">
+      <section id="explore" className="relative py-28 px-4 border-t border-white/5">
         <NeuralBackground className="z-0 opacity-40" color="#6366f1" trailOpacity={0.12} particleCount={500} />
         <div className="relative z-10 container mx-auto max-w-4xl">
           <motion.div
@@ -304,7 +304,7 @@ export default function Home() {
               </a>
             </div>
             <p className="font-body text-gray-500 max-w-xl text-sm">
-              Cutting-edge research papers and whitepapers from leading AI researchers and institutions
+              Charting the unknown through research directions and conceptual frameworks.
             </p>
           </motion.div>
 
@@ -411,7 +411,7 @@ export default function Home() {
               </a>
             </div>
             <p className="font-body text-gray-500 max-w-xl text-sm">
-              Real-time signals and deep insights from the AI frontier
+              Signals shaping the next era of intelligent systems.
             </p>
           </motion.div>
 

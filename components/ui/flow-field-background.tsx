@@ -90,14 +90,18 @@ export default function NeuralBackground({
       }
     }
 
-    const init = () => {
+    const resizeCanvas = () => {
       const dpr = window.devicePixelRatio || 1
       canvas.width = width * dpr
       canvas.height = height * dpr
+      ctx.setTransform(1, 0, 0, 1, 0, 0)
       ctx.scale(dpr, dpr)
       canvas.style.width = `${width}px`
       canvas.style.height = `${height}px`
+    }
 
+    const init = () => {
+      resizeCanvas()
       particles = []
       for (let i = 0; i < particleCount; i++) {
         particles.push(new Particle())
@@ -120,15 +124,17 @@ export default function NeuralBackground({
     const handleResize = () => {
       width = container.clientWidth
       height = container.clientHeight
-      init()
+      resizeCanvas()
     }
 
-    window.addEventListener('resize', handleResize)
+    const resizeObserver = new ResizeObserver(handleResize)
+    resizeObserver.observe(container)
+
     init()
     animate()
 
     return () => {
-      window.removeEventListener('resize', handleResize)
+      resizeObserver.disconnect()
       cancelAnimationFrame(animationFrameId)
     }
   }, [color, trailOpacity, particleCount, speed])
