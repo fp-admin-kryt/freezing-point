@@ -168,26 +168,6 @@ export default function ResearchPage() {
             </div>
           )}
 
-          {/* Skeleton grid */}
-          {loading && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="border border-white/8 rounded-xl overflow-hidden flex flex-col">
-                  <div className="w-full animate-pulse bg-white/6" style={{ height: '160px' }} />
-                  <div className="p-4 flex flex-col gap-3">
-                    <div className="flex gap-1.5">
-                      <div className="h-4 w-14 rounded-full animate-pulse bg-white/6" />
-                      <div className="h-4 w-10 rounded-full animate-pulse bg-white/6" />
-                    </div>
-                    <div className="h-4 w-full animate-pulse bg-white/6 rounded" />
-                    <div className="h-4 w-4/5 animate-pulse bg-white/6 rounded" />
-                    <div className="h-3 w-28 animate-pulse bg-white/6 rounded mt-1" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
           {/* Grid */}
           {!loading && (
           <motion.div
