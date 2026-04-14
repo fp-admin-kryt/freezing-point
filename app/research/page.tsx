@@ -82,7 +82,7 @@ export default function ResearchPage() {
               Research
             </h1>
             <p className="font-body text-gray-500 max-w-xl text-sm">
-              Cutting-edge research papers and whitepapers from leading AI researchers and institutions
+              Charting the unknown through research directions and conceptual frameworks.
             </p>
           </motion.div>
 

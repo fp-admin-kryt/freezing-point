@@ -71,14 +71,14 @@ export default function Home() {
     {
       icon: PlusCircle,
       title: 'Research',
-      description: 'Innovation begins not with the solution, but with the thinking that makes it possible. Foundational research and conceptual frameworks formalize emerging ideas before they can be translated into systems. Each piece of research is a rigorous attempt to unlock different possibilities that can guide the future.',
+      description: 'Charting the unknown through research directions and conceptual frameworks.',
       link: '/research',
       accent: '#10b981',
     },
     {
       icon: Radar,
       title: 'Radar',
-      description: 'Every significant shift in a field begins as a weak signal, an anomaly, a pattern at the periphery, a question nobody is asking yet. Radar exists to detect those signals before they become consensus. Drawing on emerging research, cross-domain observation, and deep domain expertise, it tracks the ideas and developments that will define the next phase of technology innovation.',
+      description: 'Signals shaping the next era of intelligent systems.',
       link: '/radar',
       accent: '#a855f7',
     },

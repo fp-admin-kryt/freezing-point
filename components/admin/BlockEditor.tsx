@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { ContentBlock } from '@/lib/firebase'
-import { GripVertical, X, Image as ImageIcon, FileText, ImageIcon as ImageTextIcon, ArrowUp, ArrowDown, Upload } from 'lucide-react'
+import { GripVertical, X, Image as ImageIcon, FileText, ImageIcon as ImageTextIcon, ArrowUp, ArrowDown, Upload, Type, Quote } from 'lucide-react'
 import RichTextEditor from './RichTextEditor'
 import { useDropzone } from 'react-dropzone'
 import { uploadToCloudinaryDirect } from '@/lib/cloudinary'
@@ -19,12 +19,13 @@ const inputCls = "w-full px-4 py-2.5 bg-transparent border border-white/8 rounde
 export default function BlockEditor({ blocks, onChange }: BlockEditorProps) {
   const [uploadingImage, setUploadingImage] = useState<string | null>(null)
 
-  const addBlock = (type: 'text' | 'image' | 'imageText') => {
+  const addBlock = (type: ContentBlock['type']) => {
+    const isMedia = type === 'image' || type === 'imageText'
     const newBlock: ContentBlock = {
       id: Date.now().toString(),
       type,
-      content: type === 'text' || type === 'imageText' ? '' : undefined,
-      imageUrl: type === 'image' || type === 'imageText' ? '' : undefined,
+      content: !isMedia ? '' : type === 'imageText' ? '' : undefined,
+      imageUrl: isMedia ? '' : undefined,
       align: type === 'imageText' ? 'left' : undefined,
       order: blocks.length,
     }
@@ -68,19 +69,42 @@ export default function BlockEditor({ blocks, onChange }: BlockEditorProps) {
   return (
     <div className="space-y-4">
       {/* Add block toolbar */}
-      <div className="flex flex-wrap gap-2 p-4 border border-white/8 rounded-xl">
-        <p className="w-full font-sans text-[10px] tracking-widest uppercase text-gray-600 mb-1">Add Block</p>
-        {[
-          { type: 'text' as const, icon: FileText, label: 'Text' },
-          { type: 'image' as const, icon: ImageIcon, label: 'Image' },
-          { type: 'imageText' as const, icon: ImageTextIcon, label: 'Image + Text' },
-        ].map(({ type, icon: Icon, label }) => (
-          <button key={type} type="button" onClick={() => addBlock(type)}
-            className="flex items-center gap-2 px-4 py-2 border border-white/8 rounded-lg text-gray-400 hover:text-white hover:border-white/20 transition-colors font-sans text-sm">
-            <Icon className="w-4 h-4" />
-            {label}
-          </button>
-        ))}
+      <div className="p-4 border border-white/8 rounded-xl space-y-3">
+        <div>
+          <p className="font-sans text-[10px] tracking-widest uppercase text-gray-600 mb-2">Typography</p>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { type: 'sectionLabel' as const, icon: Type, label: 'Section Header' },
+              { type: 'documentTitle' as const, icon: Type, label: 'Title' },
+              { type: 'subtitle' as const, icon: Type, label: 'Subtitle' },
+              { type: 'heading1' as const, icon: Type, label: 'Heading 1' },
+              { type: 'heading2' as const, icon: Type, label: 'Heading 2' },
+              { type: 'text' as const, icon: FileText, label: 'Body' },
+              { type: 'pullQuote' as const, icon: Quote, label: 'Pull Quote' },
+            ].map(({ type, icon: Icon, label }) => (
+              <button key={type} type="button" onClick={() => addBlock(type)}
+                className="flex items-center gap-2 px-3 py-1.5 border border-white/8 rounded-lg text-gray-400 hover:text-white hover:border-white/20 transition-colors font-sans text-xs">
+                <Icon className="w-3.5 h-3.5" />
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <p className="font-sans text-[10px] tracking-widest uppercase text-gray-600 mb-2">Media</p>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { type: 'image' as const, icon: ImageIcon, label: 'Image' },
+              { type: 'imageText' as const, icon: ImageTextIcon, label: 'Image + Text' },
+            ].map(({ type, icon: Icon, label }) => (
+              <button key={type} type="button" onClick={() => addBlock(type)}
+                className="flex items-center gap-2 px-3 py-1.5 border border-white/8 rounded-lg text-gray-400 hover:text-white hover:border-white/20 transition-colors font-sans text-xs">
+                <Icon className="w-3.5 h-3.5" />
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Blocks */}
@@ -92,9 +116,15 @@ export default function BlockEditor({ blocks, onChange }: BlockEditorProps) {
               <div className="flex items-center gap-2">
                 <GripVertical className="w-4 h-4 text-gray-700" />
                 <span className="font-sans text-xs tracking-wider uppercase text-gray-500">
-                  {block.type === 'text' && 'Text Block'}
-                  {block.type === 'image' && 'Image Block'}
-                  {block.type === 'imageText' && 'Image + Text Block'}
+                  {block.type === 'sectionLabel' && 'Section Header'}
+                  {block.type === 'documentTitle' && 'Title'}
+                  {block.type === 'subtitle' && 'Subtitle'}
+                  {block.type === 'heading1' && 'Heading 1'}
+                  {block.type === 'heading2' && 'Heading 2'}
+                  {block.type === 'text' && 'Body'}
+                  {block.type === 'pullQuote' && 'Pull Quote'}
+                  {block.type === 'image' && 'Image'}
+                  {block.type === 'imageText' && 'Image + Text'}
                 </span>
               </div>
               <div className="flex items-center gap-1">
@@ -115,11 +145,34 @@ export default function BlockEditor({ blocks, onChange }: BlockEditorProps) {
               </div>
             </div>
 
+            {(['sectionLabel', 'documentTitle', 'subtitle', 'heading1', 'heading2'] as Array<ContentBlock['type']>).includes(block.type) && (
+              <PlainTextEditor
+                value={block.content || ''}
+                onChange={(val) => updateBlock(block.id, { content: val })}
+                placeholder={
+                  block.type === 'sectionLabel' ? 'e.g. RADAR · 01 · HEALTH & AI' :
+                  block.type === 'documentTitle' ? 'Article title…' :
+                  block.type === 'subtitle' ? 'Subtitle or deck text…' :
+                  block.type === 'heading1' ? 'e.g. THE BROKEN CHAIN' :
+                  'Subheading…'
+                }
+              />
+            )}
+
+            {block.type === 'pullQuote' && (
+              <PlainTextEditor
+                value={block.content || ''}
+                onChange={(val) => updateBlock(block.id, { content: val })}
+                placeholder="Enter pull quote…"
+                rows={3}
+              />
+            )}
+
             {block.type === 'text' && (
               <RichTextEditor
                 value={block.content || ''}
                 onChange={(html) => updateBlock(block.id, { content: html })}
-                placeholder="Enter text content…"
+                placeholder="Enter body text…"
               />
             )}
 
@@ -150,6 +203,23 @@ export default function BlockEditor({ blocks, onChange }: BlockEditorProps) {
         )}
       </div>
     </div>
+  )
+}
+
+function PlainTextEditor({ value, onChange, placeholder, rows = 1 }: {
+  value: string
+  onChange: (val: string) => void
+  placeholder?: string
+  rows?: number
+}) {
+  return (
+    <textarea
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      rows={rows}
+      className="w-full px-4 py-2.5 bg-transparent border border-white/8 rounded-lg text-white placeholder-gray-700 font-sans text-sm focus:outline-none focus:border-cobalt-blue/50 transition-colors resize-none"
+    />
   )
 }
 

@@ -5,6 +5,7 @@ import { X, Eye } from 'lucide-react'
 import { TemplateType, ContentBlock } from '@/lib/firebase'
 import { getTypography } from '@/lib/typography'
 import Image from 'next/image'
+import { DocumentBlocks } from '@/components/DocumentBlocks'
 
 interface PostPreviewProps {
   templateType: TemplateType
@@ -172,72 +173,15 @@ export default function PostPreview({
 
               {/* Blocks */}
               {blocks && blocks.length > 0 ? (
-                <div className="space-y-8">
-                  {blocks
-                    .sort((a, b) => a.order - b.order)
-                    .map((block) => (
-                      <div key={block.id}>
-                        {block.type === 'text' && block.content && (
-                          <div
-                            className="prose prose-invert max-w-none"
-                            dangerouslySetInnerHTML={{ __html: block.content }}
-                            style={typography?.body ? {
-                              fontSize: typography.body.fontSize.desktop,
-                              fontWeight: typography.body.fontWeight,
-                              color: typography.body.color,
-                              lineHeight: typography.body.lineHeight,
-                            } : {}}
-                          />
-                        )}
-
-                        {block.type === 'image' && block.imageUrl && (
-                          <div className="w-full">
-                            <Image
-                              src={block.imageUrl}
-                              alt="Block image"
-                              width={1200}
-                              height={800}
-                              className="w-full h-auto rounded-lg"
-                            />
-                          </div>
-                        )}
-
-                        {block.type === 'imageText' && (
-                          <div
-                            className={`flex flex-col ${
-                              block.align === 'right' ? 'md:flex-row-reverse' : 'md:flex-row'
-                            } gap-6 items-start`}
-                          >
-                            {block.imageUrl && (
-                              <div className="w-full md:w-1/2 flex-shrink-0">
-                                <Image
-                                  src={block.imageUrl}
-                                  alt="Block image"
-                                  width={600}
-                                  height={400}
-                                  className="w-full h-auto rounded-lg"
-                                />
-                              </div>
-                            )}
-                            {block.content && (
-                              <div
-                                className={`w-full md:w-1/2 prose prose-invert max-w-none ${
-                                  block.align === 'right' ? 'md:text-right' : ''
-                                }`}
-                                dangerouslySetInnerHTML={{ __html: block.content }}
-                                style={typography?.body ? {
-                                  fontSize: typography.body.fontSize.desktop,
-                                  fontWeight: typography.body.fontWeight,
-                                  color: typography.body.color,
-                                  lineHeight: typography.body.lineHeight,
-                                } : {}}
-                              />
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                </div>
+                <DocumentBlocks
+                  blocks={blocks}
+                  typoBodyStyle={typography?.body ? {
+                    fontSize: typography.body.fontSize.desktop,
+                    fontWeight: typography.body.fontWeight,
+                    color: typography.body.color,
+                    lineHeight: typography.body.lineHeight,
+                  } : {}}
+                />
               ) : (
                 <p className="text-gray-500 italic text-center py-12">No blocks added yet</p>
               )}

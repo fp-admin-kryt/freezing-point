@@ -4,12 +4,13 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
-import { getSignalPosts, getObserverPosts, SignalPost, ObserverPost } from '@/lib/firebase'
+import { getSignalPosts, getObserverPosts, getRadarPosts, RadarPost as RadarPostType } from '@/lib/firebase'
 import { getTagById, getDomainById } from '@/lib/dataService'
 import { getTypography } from '@/lib/typography'
 import Image from 'next/image'
+import { DocumentBlocks } from '@/components/DocumentBlocks'
 
-type RadarPost = (SignalPost | ObserverPost) & { _type: 'signal' | 'observer' }
+type RadarPost = RadarPostType
 
 function Sk({ className = '' }: { className?: string }) {
   return <div className={`animate-pulse rounded bg-white/6 ${className}`} />
@@ -108,12 +109,11 @@ export default function RadarDetailPage() {
     Promise.all([
       getSignalPosts(),
       getObserverPosts(),
+      getRadarPosts(),
       getTypography().catch(() => null),
-    ]).then(([signals, observers, typo]) => {
-      const combined: RadarPost[] = [
-        ...signals.map((p) => ({ ...p, _type: 'signal' as const })),
-        ...observers.map((p) => ({ ...p, _type: 'observer' as const })),
-      ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    ]).then(([signals, observers, radar, typo]) => {
+      const combined: RadarPost[] = [...radar, ...signals, ...observers]
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       setAllPosts(combined)
       setPost(combined.find((p) => p.id === postId) || null)
       setTypography(typo)
@@ -134,10 +134,6 @@ export default function RadarDetailPage() {
   const prev = idx < allPosts.length - 1 ? allPosts[idx + 1] : null
   const next = idx > 0 ? allPosts[idx - 1] : null
 
-  const typeBadgeCls = post._type === 'signal'
-    ? 'bg-cobalt-blue/15 text-cobalt-light border border-cobalt-blue/25'
-    : 'bg-purple-700/15 text-purple-400 border border-purple-700/25'
-
   const typoH1Style = typography?.heading1 ? {
     fontSize: typography.heading1.fontSize.desktop,
     fontWeight: typography.heading1.fontWeight,
@@ -154,11 +150,6 @@ export default function RadarDetailPage() {
 
   const SharedHeader = ({ className = '' }: { className?: string }) => (
     <div className={className}>
-      <div className="flex items-center gap-2 mb-4">
-        <span className={`px-2.5 py-1 font-sans text-[9px] tracking-widest uppercase rounded-full ${typeBadgeCls}`}>
-          {post._type === 'signal' ? 'Signal' : 'Observer'}
-        </span>
-      </div>
       <TagRow tags={post.tags} domain={post.domain} />
       <h1 className="font-sans font-light text-3xl md:text-5xl text-white leading-tight mb-4" style={typoH1Style}>
         {post.heading}
@@ -215,34 +206,7 @@ export default function RadarDetailPage() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-3xl mx-auto">
             <SharedHeader className="mb-10" />
             {post.blocks && post.blocks.length > 0 && (
-              <div className="space-y-10">
-                {post.blocks.sort((a, b) => a.order - b.order).map((block) => (
-                  <div key={block.id}>
-                    {block.type === 'text' && block.content && (
-                      <div className="prose prose-invert prose-p:font-body prose-headings:font-sans prose-headings:font-light max-w-none"
-                        dangerouslySetInnerHTML={{ __html: block.content }} style={typoBodyStyle} />
-                    )}
-                    {block.type === 'image' && block.imageUrl && (
-                      <div className="relative w-full rounded-xl overflow-hidden" style={{ aspectRatio: '16/9' }}>
-                        <Image src={block.imageUrl} alt="" fill className="object-cover" sizes="(max-width: 768px) 100vw, 768px" />
-                      </div>
-                    )}
-                    {block.type === 'imageText' && (
-                      <div className={`flex flex-col ${block.align === 'right' ? 'md:flex-row-reverse' : 'md:flex-row'} gap-6 items-start`}>
-                        {block.imageUrl && (
-                          <div className="relative w-full md:w-1/2 flex-shrink-0 rounded-xl overflow-hidden" style={{ aspectRatio: '4/3' }}>
-                            <Image src={block.imageUrl} alt="" fill className="object-cover" sizes="50vw" />
-                          </div>
-                        )}
-                        {block.content && (
-                          <div className="w-full md:w-1/2 prose prose-invert prose-p:font-body prose-headings:font-sans prose-headings:font-light max-w-none"
-                            dangerouslySetInnerHTML={{ __html: block.content }} style={typoBodyStyle} />
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
+              <DocumentBlocks blocks={post.blocks} typoBodyStyle={typoBodyStyle} />
             )}
             <PostNav prev={prev} next={next} />
             <div className="mt-12">

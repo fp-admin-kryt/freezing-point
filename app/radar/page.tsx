@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowRight, Filter, ChevronDown } from 'lucide-react'
 import { ExpandingSearchDock } from '@/components/ui/expanding-search-dock'
-import { getSignalPosts, getObserverPosts } from '@/lib/firebase'
+import { getSignalPosts, getObserverPosts, getRadarPosts } from '@/lib/firebase'
 import { getTagById, getDomainById } from '@/lib/dataService'
 
 type RadarPost = {
@@ -14,27 +14,25 @@ type RadarPost = {
   date: string
   tags: string[]
   domain?: string
-  _type: 'Signal' | 'Observer'
 }
 
 export default function RadarPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedDomain, setSelectedDomain] = useState('all')
   const [showDomainFilter, setShowDomainFilter] = useState(false)
-  const [signalPosts, setSignalPosts] = useState<any[]>([])
-  const [observerPosts, setObserverPosts] = useState<any[]>([])
+  const [allPosts, setAllPosts] = useState<RadarPost[]>([])
   const [domains, setDomains] = useState<{ id: string; name: string; color: string }[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [signals, observers] = await Promise.all([getSignalPosts(), getObserverPosts()])
-        setSignalPosts(signals)
-        setObserverPosts(observers)
-        // Derive unique domains
+        const [signals, observers, radar] = await Promise.all([getSignalPosts(), getObserverPosts(), getRadarPosts()])
+        const merged: RadarPost[] = [...radar, ...signals, ...observers]
+          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        setAllPosts(merged)
         const domainMap = new Map<string, { id: string; name: string; color: string }>()
-        ;[...signals, ...observers].forEach((post) => {
+        merged.forEach((post) => {
           if (post.domain) {
             const d = getDomainById(post.domain)
             if (d && !domainMap.has(post.domain)) domainMap.set(post.domain, { id: post.domain, ...d })
@@ -49,11 +47,6 @@ export default function RadarPage() {
     }
     loadData()
   }, [])
-
-  const allPosts: RadarPost[] = [
-    ...signalPosts.map((p) => ({ ...p, _type: 'Signal' as const })),
-    ...observerPosts.map((p) => ({ ...p, _type: 'Observer' as const })),
-  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
   const filteredPosts = allPosts.filter((post) => {
     const q = searchQuery.toLowerCase()
@@ -92,7 +85,7 @@ export default function RadarPage() {
               Radar
             </h1>
             <p className="font-body text-gray-500 max-w-xl text-sm">
-              Real-time signals and deep insights from the AI frontier
+              Signals shaping the next era of intelligent systems.
             </p>
           </motion.div>
 
@@ -210,35 +203,24 @@ export default function RadarPage() {
                   style={{ background: 'radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.07) 0%, transparent 60%)' }}
                 />
                 <div className="relative z-10 flex flex-col flex-1">
-                  {/* Top row: tags + type badge */}
-                  <div className="flex items-start justify-between mb-4 gap-2">
-                    <div className="flex flex-wrap gap-1.5">
-                      {post.tags.map((tagId: string) => {
-                        const tag = getTagById(tagId)
-                        return tag ? (
-                          <span
-                            key={tagId}
-                            className="px-2 py-0.5 font-sans text-[9px] tracking-wider rounded-full"
-                            style={{
-                              backgroundColor: tag.color + '22',
-                              border: `1px solid ${tag.color}44`,
-                              color: tag.color,
-                            }}
-                          >
-                            {tag.name}
-                          </span>
-                        ) : null
-                      })}
-                    </div>
-                    <span
-                      className={`flex-shrink-0 px-2 py-0.5 font-sans text-[9px] tracking-widest uppercase rounded-full ${
-                        post._type === 'Signal'
-                          ? 'bg-cobalt-blue/15 text-cobalt-light border border-cobalt-blue/25'
-                          : 'bg-purple-700/15 text-purple-400 border border-purple-700/25'
-                      }`}
-                    >
-                      {post._type}
-                    </span>
+                  {/* Tags */}
+                  <div className="flex flex-wrap gap-1.5 mb-4">
+                    {post.tags.map((tagId: string) => {
+                      const tag = getTagById(tagId)
+                      return tag ? (
+                        <span
+                          key={tagId}
+                          className="px-2 py-0.5 font-sans text-[9px] tracking-wider rounded-full"
+                          style={{
+                            backgroundColor: tag.color + '22',
+                            border: `1px solid ${tag.color}44`,
+                            color: tag.color,
+                          }}
+                        >
+                          {tag.name}
+                        </span>
+                      ) : null
+                    })}
                   </div>
 
                   <h3 className="font-sans text-sm font-medium text-white mb-3 group-hover:text-cobalt-light transition-colors line-clamp-2 leading-snug flex-1">

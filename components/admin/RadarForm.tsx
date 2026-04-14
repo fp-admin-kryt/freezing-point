@@ -5,7 +5,7 @@ import { useDropzone } from 'react-dropzone'
 import { Layout, FileImage, Eye, ArrowLeft, Upload } from 'lucide-react'
 import { Image as ImageIcon } from 'lucide-react'
 import { uploadToCloudinaryDirect } from '@/lib/cloudinary'
-import { saveSignalPost, saveObserverPost, TemplateType, ContentBlock } from '@/lib/firebase'
+import { saveRadarPost, TemplateType, ContentBlock } from '@/lib/firebase'
 import TagSelector from './TagSelector'
 import DomainSelector from './DomainSelector'
 import RichTextEditor from './RichTextEditor'
@@ -16,7 +16,6 @@ import toast from 'react-hot-toast'
 
 interface RadarFormProps {
   onBack: () => void
-  type: 'signal' | 'observer'
   editPost?: any
 }
 
@@ -24,7 +23,10 @@ const inputCls = "w-full px-4 py-2.5 bg-transparent border border-white/8 rounde
 const labelCls = "block font-sans text-[10px] tracking-widest uppercase text-gray-600 mb-2"
 const secBtnCls = "px-4 py-2.5 border border-white/8 rounded-lg text-gray-400 hover:text-white hover:border-white/20 transition-colors font-sans text-sm"
 
-export default function RadarForm({ onBack, type, editPost }: RadarFormProps) {
+const toSlug = (text: string) =>
+  text.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').trim()
+
+export default function RadarForm({ onBack, editPost }: RadarFormProps) {
   const [templateType, setTemplateType] = useState<TemplateType | ''>(editPost?.templateType || '')
   const [formData, setFormData] = useState({
     heading: editPost?.heading || '',
@@ -33,6 +35,8 @@ export default function RadarForm({ onBack, type, editPost }: RadarFormProps) {
     domain: editPost?.domain || '',
     date: editPost?.date || new Date().toISOString().split('T')[0]
   })
+  const [slug, setSlug] = useState<string>(editPost?.id || '')
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(!!editPost)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imageUrl, setImageUrl] = useState(editPost?.imageUrl || '')
   const [richContent, setRichContent] = useState(editPost?.richContent || '')
@@ -49,6 +53,7 @@ export default function RadarForm({ onBack, type, editPost }: RadarFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!templateType) { toast.error('Please select a template type'); return }
+    if (!slug.trim()) { toast.error('Please enter a slug'); return }
     setLoading(true)
     try {
       let finalImageUrl = imageUrl
@@ -60,9 +65,8 @@ export default function RadarForm({ onBack, type, editPost }: RadarFormProps) {
       const postData: any = { ...formData, templateType }
       if (templateType === 'singleImage') { postData.imageUrl = finalImageUrl || undefined; postData.richContent = richContent || undefined }
       else if (templateType === 'document') { postData.blocks = blocks.length > 0 ? blocks : undefined }
-      if (type === 'signal') await saveSignalPost(postData)
-      else await saveObserverPost(postData)
-      toast.success(`${type === 'signal' ? 'Signal' : 'Observer'} post saved!`)
+      await saveRadarPost(postData, slug.trim())
+      toast.success('Radar post saved!')
       onBack()
     } catch (error) {
       console.error('Error saving post:', error)
@@ -71,11 +75,6 @@ export default function RadarForm({ onBack, type, editPost }: RadarFormProps) {
       setLoading(false)
     }
   }
-
-  const typeLabel = type === 'signal' ? 'Signal' : 'Observer'
-  const typeBadgeCls = type === 'signal'
-    ? 'bg-cobalt-blue/15 text-cobalt-light border border-cobalt-blue/25'
-    : 'bg-purple-700/15 text-purple-400 border border-purple-700/25'
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -86,12 +85,7 @@ export default function RadarForm({ onBack, type, editPost }: RadarFormProps) {
             <p className="font-sans text-[10px] tracking-[0.5em] uppercase text-cobalt-light mb-2">
               {editPost ? 'Edit' : 'Create'}
             </p>
-            <div className="flex items-center gap-3">
-              <h2 className="font-sans font-light text-2xl text-white">Radar Post</h2>
-              <span className={`px-2 py-0.5 font-sans text-[9px] tracking-widest uppercase rounded-full ${typeBadgeCls}`}>
-                {typeLabel}
-              </span>
-            </div>
+            <h2 className="font-sans font-light text-2xl text-white">Radar Post</h2>
           </div>
         </div>
         <button onClick={onBack} className={`flex items-center gap-2 ${secBtnCls}`}>
@@ -107,8 +101,11 @@ export default function RadarForm({ onBack, type, editPost }: RadarFormProps) {
             <div>
               <label className={labelCls}>Heading *</label>
               <input type="text" required value={formData.heading}
-                onChange={(e) => setFormData({ ...formData, heading: e.target.value })}
-                className={inputCls} placeholder={`${typeLabel} heading`} />
+                onChange={(e) => {
+                  setFormData({ ...formData, heading: e.target.value })
+                  if (!slugManuallyEdited) setSlug(toSlug(e.target.value))
+                }}
+                className={inputCls} placeholder="Radar post heading" />
             </div>
             <div>
               <label className={labelCls}>Date *</label>
@@ -140,6 +137,24 @@ export default function RadarForm({ onBack, type, editPost }: RadarFormProps) {
             <textarea value={formData.content}
               onChange={(e) => setFormData({ ...formData, content: e.target.value })}
               rows={3} className={inputCls} placeholder="Short preview text shown on cards" />
+          </div>
+          <div>
+            <label className={labelCls}>Slug (URL) *</label>
+            <input
+              type="text"
+              required
+              value={slug}
+              disabled={!!editPost}
+              onChange={(e) => {
+                setSlug(toSlug(e.target.value))
+                setSlugManuallyEdited(true)
+              }}
+              className={`${inputCls} ${editPost ? 'opacity-40 cursor-not-allowed' : ''}`}
+              placeholder="my-radar-post"
+            />
+            <p className="mt-1.5 font-sans text-[10px] text-gray-700">
+              freezingpoint.ai/radar/<span className="text-gray-500">{slug || 'my-radar-post'}</span>
+            </p>
           </div>
         </div>
 

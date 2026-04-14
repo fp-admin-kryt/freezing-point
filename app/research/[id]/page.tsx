@@ -9,6 +9,7 @@ import { getResearchPosts, ResearchPost } from '@/lib/firebase'
 import { getTagById } from '@/lib/dataService'
 import { getTypography } from '@/lib/typography'
 import Image from 'next/image'
+import { DocumentBlocks } from '@/components/DocumentBlocks'
 
 // ── Skeleton primitives ──────────────────────────────────────────────────────
 function Sk({ className = '' }: { className?: string }) {
@@ -232,38 +233,7 @@ export default function ResearchDetailPage() {
             <SharedHeader className="mb-10" />
 
             {post.blocks && post.blocks.length > 0 && (
-              <div className="space-y-10">
-                {post.blocks.sort((a, b) => a.order - b.order).map((block) => (
-                  <div key={block.id}>
-                    {block.type === 'text' && block.content && (
-                      <div className="prose prose-invert prose-p:font-body prose-headings:font-sans prose-headings:font-light max-w-none"
-                        dangerouslySetInnerHTML={{ __html: block.content }}
-                        style={typoBodyStyle}
-                      />
-                    )}
-                    {block.type === 'image' && block.imageUrl && (
-                      <div className="relative w-full rounded-xl overflow-hidden" style={{ aspectRatio: '16/9' }}>
-                        <Image src={block.imageUrl} alt="" fill className="object-cover" sizes="(max-width: 768px) 100vw, 768px" />
-                      </div>
-                    )}
-                    {block.type === 'imageText' && (
-                      <div className={`flex flex-col ${block.align === 'right' ? 'md:flex-row-reverse' : 'md:flex-row'} gap-6 items-start`}>
-                        {block.imageUrl && (
-                          <div className="relative w-full md:w-1/2 flex-shrink-0 rounded-xl overflow-hidden" style={{ aspectRatio: '4/3' }}>
-                            <Image src={block.imageUrl} alt="" fill className="object-cover" sizes="50vw" />
-                          </div>
-                        )}
-                        {block.content && (
-                          <div className={`w-full md:w-1/2 prose prose-invert prose-p:font-body prose-headings:font-sans prose-headings:font-light max-w-none`}
-                            dangerouslySetInnerHTML={{ __html: block.content }}
-                            style={typoBodyStyle}
-                          />
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
+              <DocumentBlocks blocks={post.blocks} typoBodyStyle={typoBodyStyle} />
             )}
 
             <PostNav prev={prev} next={next} />

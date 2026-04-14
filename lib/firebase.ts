@@ -54,8 +54,8 @@ export type TemplateType = 'singleImage' | 'document';
 
 export interface ContentBlock {
   id: string;
-  type: 'text' | 'image' | 'imageText';
-  content?: string; // HTML content for text blocks
+  type: 'text' | 'image' | 'imageText' | 'sectionLabel' | 'documentTitle' | 'subtitle' | 'heading1' | 'heading2' | 'pullQuote';
+  content?: string; // HTML for 'text'; plain text for all others
   imageUrl?: string;
   align?: 'left' | 'right' | 'full'; // For imageText blocks
   order: number;
@@ -73,6 +73,20 @@ export interface ResearchPost {
   templateType?: TemplateType;
   blocks?: ContentBlock[]; // For document template
   richContent?: string; // HTML content for single image template
+  createdAt: Date;
+}
+
+export interface RadarPost {
+  id?: string;
+  heading: string;
+  content: string;
+  tags: string[];
+  domain: string;
+  imageUrl?: string;
+  templateType?: TemplateType;
+  blocks?: ContentBlock[];
+  richContent?: string;
+  date: string;
   createdAt: Date;
 }
 
@@ -119,14 +133,12 @@ export interface Domain {
 }
 
 // Research Posts
-export const saveResearchPost = async (post: Omit<ResearchPost, 'id' | 'createdAt'>): Promise<string> => {
+export const saveResearchPost = async (post: Omit<ResearchPost, 'id' | 'createdAt'>, slug: string): Promise<string> => {
   try {
-    const docRef = await withRetry(() => addDoc(collection(db, 'research'), sanitize({
-      ...post,
-      createdAt: new Date()
-    })));
-    console.log('Research post saved with ID:', docRef.id);
-    return docRef.id;
+    const docRef = doc(db, 'research', slug);
+    await withRetry(() => setDoc(docRef, sanitize({ ...post, createdAt: new Date() })));
+    console.log('Research post saved with ID:', slug);
+    return slug;
   } catch (error) {
     console.error('Error saving research post:', error);
     throw error;
@@ -310,6 +322,57 @@ export const deleteObserverPost = async (id: string): Promise<void> => {
     console.log('Observer post deleted:', id);
   } catch (error) {
     console.error('Error deleting observer post:', error);
+    throw error;
+  }
+};
+
+// Radar Posts
+export const saveRadarPost = async (post: Omit<RadarPost, 'id' | 'createdAt'>, slug: string): Promise<string> => {
+  try {
+    const docRef = doc(db, 'radar', slug);
+    await withRetry(() => setDoc(docRef, sanitize({ ...post, createdAt: new Date() })));
+    return slug;
+  } catch (error) {
+    console.error('Error saving radar post:', error);
+    throw error;
+  }
+};
+
+export const getRadarPosts = async (): Promise<RadarPost[]> => {
+  try {
+    const q = query(collection(db, 'radar'), orderBy('createdAt', 'desc'));
+    const querySnapshot = await withRetry(() => getDocs(q));
+    const posts: RadarPost[] = [];
+    querySnapshot.forEach((doc) => {
+      posts.push({ id: doc.id, ...doc.data() } as RadarPost);
+    });
+    return posts;
+  } catch (error) {
+    console.error('Error getting radar posts:', error);
+    return [];
+  }
+};
+
+export const deleteRadarPost = async (id: string): Promise<void> => {
+  try {
+    const postRef = doc(db, 'radar', id);
+    const postSnap = await getDoc(postRef);
+    if (postSnap.exists()) {
+      const postData = postSnap.data() as RadarPost;
+      const urlsToDelete: string[] = [];
+      if (postData.imageUrl) urlsToDelete.push(postData.imageUrl);
+      if (postData.blocks) {
+        postData.blocks.forEach((block) => {
+          if (block.imageUrl) urlsToDelete.push(block.imageUrl);
+        });
+      }
+      if (urlsToDelete.length > 0) {
+        await deleteMultipleFromCloudinary(urlsToDelete);
+      }
+    }
+    await withRetry(() => deleteDoc(doc(db, 'radar', id)));
+  } catch (error) {
+    console.error('Error deleting radar post:', error);
     throw error;
   }
 };

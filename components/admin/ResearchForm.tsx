@@ -21,6 +21,9 @@ const inputCls = "w-full px-4 py-2.5 bg-transparent border border-white/8 rounde
 const labelCls = "block font-sans text-[10px] tracking-widest uppercase text-gray-600 mb-2"
 const secBtnCls = "px-4 py-2.5 border border-white/8 rounded-lg text-gray-400 hover:text-white hover:border-white/20 transition-colors font-sans text-sm"
 
+const toSlug = (text: string) =>
+  text.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').trim()
+
 export default function ResearchForm({ onBack, editPost }: ResearchFormProps) {
   const [templateType, setTemplateType] = useState<TemplateType | ''>(editPost?.templateType || '')
   const [formData, setFormData] = useState({
@@ -30,6 +33,8 @@ export default function ResearchForm({ onBack, editPost }: ResearchFormProps) {
     excerpt: editPost?.excerpt || '',
     tags: editPost?.tags || []
   })
+  const [slug, setSlug] = useState<string>(editPost?.id || '')
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(!!editPost)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imageUrl, setImageUrl] = useState(editPost?.imageUrl || '')
   const [richContent, setRichContent] = useState(editPost?.richContent || '')
@@ -54,6 +59,7 @@ export default function ResearchForm({ onBack, editPost }: ResearchFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!templateType) { toast.error('Please select a template type'); return }
+    if (!slug.trim()) { toast.error('Please enter a slug'); return }
     setLoading(true)
     try {
       let finalImageUrl = imageUrl
@@ -71,7 +77,7 @@ export default function ResearchForm({ onBack, editPost }: ResearchFormProps) {
       const postData: any = { ...formData, templateType, whitepaperUrl: finalWhitepaperUrl || undefined }
       if (templateType === 'singleImage') { postData.imageUrl = finalImageUrl || undefined; postData.richContent = richContent || undefined }
       else if (templateType === 'document') { postData.blocks = blocks.length > 0 ? blocks : undefined }
-      await saveResearchPost(postData)
+      await saveResearchPost(postData, slug.trim())
       toast.success('Research post saved!')
       onBack()
     } catch (error) {
@@ -105,7 +111,10 @@ export default function ResearchForm({ onBack, editPost }: ResearchFormProps) {
             <div>
               <label className={labelCls}>Title *</label>
               <input type="text" required value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, title: e.target.value })
+                  if (!slugManuallyEdited) setSlug(toSlug(e.target.value))
+                }}
                 className={inputCls} placeholder="Research title" />
             </div>
             <div>
@@ -136,6 +145,24 @@ export default function ResearchForm({ onBack, editPost }: ResearchFormProps) {
             <textarea required value={formData.excerpt}
               onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
               rows={3} className={inputCls} placeholder="Short preview text shown on cards" />
+          </div>
+          <div>
+            <label className={labelCls}>Slug (URL) *</label>
+            <input
+              type="text"
+              required
+              value={slug}
+              disabled={!!editPost}
+              onChange={(e) => {
+                setSlug(toSlug(e.target.value))
+                setSlugManuallyEdited(true)
+              }}
+              className={`${inputCls} ${editPost ? 'opacity-40 cursor-not-allowed' : ''}`}
+              placeholder="my-research-title"
+            />
+            <p className="mt-1.5 font-sans text-[10px] text-gray-700">
+              freezingpoint.ai/research/<span className="text-gray-500">{slug || 'my-research-title'}</span>
+            </p>
           </div>
         </div>
 
