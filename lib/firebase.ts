@@ -484,38 +484,23 @@ export const updateDomain = async (id: string, data: Partial<Domain>): Promise<v
 };
 
 // Typography Settings
+export interface TypographyStyleConfig {
+  fontSize: { desktop: string; mobile: string };
+  fontWeight: string;
+  color: string;
+  lineHeight: string;
+  fontFamily?: string;
+  htmlElement?: string;
+  letterSpacing?: string;
+}
+
 export interface TypographySettings {
   id?: string;
-  heading1: {
-    fontSize: { desktop: string; mobile: string };
-    fontWeight: string;
-    color: string;
-    lineHeight: string;
-  };
-  heading2: {
-    fontSize: { desktop: string; mobile: string };
-    fontWeight: string;
-    color: string;
-    lineHeight: string;
-  };
-  heading3: {
-    fontSize: { desktop: string; mobile: string };
-    fontWeight: string;
-    color: string;
-    lineHeight: string;
-  };
-  body: {
-    fontSize: { desktop: string; mobile: string };
-    fontWeight: string;
-    color: string;
-    lineHeight: string;
-  };
-  caption: {
-    fontSize: { desktop: string; mobile: string };
-    fontWeight: string;
-    color: string;
-    lineHeight: string;
-  };
+  heading1: TypographyStyleConfig;
+  heading2: TypographyStyleConfig;
+  heading3: TypographyStyleConfig;
+  body: TypographyStyleConfig;
+  caption: TypographyStyleConfig;
   updatedAt?: Date;
 }
 

@@ -3,7 +3,7 @@ import { Space_Grotesk, Inter } from 'next/font/google'
 import './globals.css'
 import Image from 'next/image'
 import PageTransition from '@/components/PageTransition'
-import { AppNavBar } from '@/components/AppNavBar'
+import { NavbarConditional } from '@/components/NavbarConditional'
 import { Providers } from '@/components/Providers'
 
 const spaceGrotesk = Space_Grotesk({
@@ -38,7 +38,7 @@ export default function RootLayout({
       </head>
       <body>
         <Providers>
-        <AppNavBar />
+        <NavbarConditional />
         <div className="min-h-screen bg-[#050508] flex flex-col">
           <div className="flex-1">
             <PageTransition>{children}</PageTransition>
