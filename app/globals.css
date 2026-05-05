@@ -235,7 +235,7 @@ body {
 
 /* ── Default Blog Template ── */
 .default-blog-body {
-  --db-serif: var(--font-blog), 'Playfair Display', Georgia, serif;
+  --db-serif: var(--font-sans), system-ui, sans-serif;
   --db-sans: var(--font-sans), system-ui, sans-serif;
   --db-body: var(--font-body), system-ui, sans-serif;
   max-width: 680px;

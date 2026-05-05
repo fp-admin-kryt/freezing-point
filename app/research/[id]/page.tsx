@@ -209,7 +209,7 @@ export default function ResearchDetailPage() {
             <h1
               className="leading-[1.15] tracking-tight text-white mb-6"
               style={{
-                fontFamily: 'var(--font-blog), "Playfair Display", Georgia, serif',
+                fontFamily: 'var(--font-sans), system-ui, sans-serif',
                 fontSize: 'clamp(2.2rem, 5vw, 3.6rem)',
                 fontWeight: 400,
               }}
