@@ -233,6 +233,136 @@ body {
   }
 }
 
+/* ── Default Blog Template ── */
+.default-blog-body {
+  --db-serif: var(--font-blog), 'Playfair Display', Georgia, serif;
+  --db-sans: var(--font-sans), system-ui, sans-serif;
+  --db-body: var(--font-body), system-ui, sans-serif;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.db-lead {
+  font-family: var(--db-serif);
+  font-size: clamp(1.2rem, 2.2vw, 1.45rem);
+  font-weight: 400;
+  line-height: 1.85;
+  color: rgba(255,255,255,0.88);
+  margin: 0 0 2rem;
+  letter-spacing: 0.01em;
+}
+
+.db-para {
+  font-family: var(--db-body);
+  font-size: clamp(0.95rem, 1.6vw, 1.05rem);
+  font-weight: 300;
+  line-height: 1.9;
+  color: rgba(200,210,230,0.82);
+  margin: 0 0 1.6rem;
+}
+
+.db-section-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 3rem 0 1.4rem;
+}
+.db-section-header::before {
+  content: '';
+  display: block;
+  width: 2rem;
+  height: 1px;
+  background: #4da6ff;
+  flex-shrink: 0;
+}
+.db-section-label {
+  font-family: var(--db-sans);
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #4da6ff;
+}
+
+.db-pullquote {
+  font-family: var(--db-serif);
+  font-style: italic;
+  font-size: clamp(1.2rem, 2.4vw, 1.55rem);
+  line-height: 1.65;
+  color: rgba(255,255,255,0.75);
+  border-left: 2px solid #136fd7;
+  padding: 0.25rem 0 0.25rem 2rem;
+  margin: 2.5rem 0;
+  position: relative;
+}
+.db-pullquote-mark {
+  color: #4da6ff;
+  font-size: 1.4em;
+  line-height: 0;
+  vertical-align: -0.25em;
+  margin: 0 0.1em;
+  font-style: normal;
+}
+
+.db-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 2.5rem 0;
+}
+.db-divider::before,
+.db-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255,255,255,0.06);
+}
+.db-divider::after {
+  content: '· · ·';
+  font-family: var(--db-sans);
+  font-size: 0.65rem;
+  letter-spacing: 0.4em;
+  color: rgba(255,255,255,0.15);
+  flex: none;
+}
+
+.db-image-wrap {
+  margin: 2.5rem -2rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+.db-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 0.75rem;
+  max-height: 520px;
+  object-fit: cover;
+}
+
+@media (max-width: 640px) {
+  .db-image-wrap { margin: 2rem 0; }
+  .db-pullquote { padding-left: 1.25rem; }
+}
+
+/* ── Image-centric cards ── */
+.img-card-excerpt {
+  transform: translateY(100%);
+  transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease;
+  opacity: 0;
+}
+.img-card:hover .img-card-excerpt {
+  transform: translateY(0);
+  opacity: 1;
+}
+.img-card-title {
+  transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.img-card:hover .img-card-title {
+  transform: translateY(-4px);
+}
+
 /* Strip loader (home loader) */
 :root {
   --ns: 12;

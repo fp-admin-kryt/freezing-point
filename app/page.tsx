@@ -312,7 +312,7 @@ export default function Home() {
             className="overflow-auto horizontal-scroll"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
-            <div className="flex gap-4 py-2 pb-4 items-stretch" style={{ minWidth: 'max-content' }}>
+            <div className="flex gap-4 py-2 pb-4 items-end" style={{ minWidth: 'max-content' }}>
               {(() => {
                 const sorted = [...researchPosts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                 return sorted.slice(0, 3).map((post, index) => (
@@ -326,8 +326,8 @@ export default function Home() {
                   >
                     <a
                       href={`/research/${post.id}`}
-                      className="group relative block overflow-hidden rounded-2xl cursor-pointer"
-                      style={{ width: '380px', height: '220px', maxWidth: '80vw' }}
+                      className="img-card group relative block overflow-hidden rounded-2xl cursor-pointer"
+                      style={{ width: '300px', height: '400px', maxWidth: '82vw' }}
                     >
                       {post.imageUrl ? (
                         <Image
@@ -335,33 +335,50 @@ export default function Home() {
                           alt={post.title}
                           fill
                           className="object-cover transition-transform duration-700 group-hover:scale-105"
-                          sizes="380px"
+                          sizes="300px"
                           priority={index === 0}
                         />
                       ) : (
-                        <div className="absolute inset-0 bg-cobalt-blue/20" />
+                        <div
+                          className="absolute inset-0"
+                          style={{ background: 'linear-gradient(135deg, #0a1628 0%, #0d2452 50%, #136fd7/20 100%)' }}
+                        />
                       )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
-                      <div className="absolute inset-0 flex flex-col justify-end p-5">
-                        <div className="flex flex-wrap gap-1.5 mb-3">
-                          {post.tags.map((tagId: string) => {
-                            const tag = getTagById(tagId)
-                            return tag ? (
-                              <span key={tagId} className="px-2 py-0.5 font-sans text-[9px] tracking-wider rounded-full"
-                                style={{ backgroundColor: tag.color + '33', border: `1px solid ${tag.color}55`, color: tag.color }}>
-                                {tag.name}
-                              </span>
-                            ) : null
-                          })}
-                        </div>
-                        <h3 className="font-sans text-sm font-medium text-white mb-2 group-hover:text-cobalt-light transition-colors line-clamp-2 leading-snug">
+                      {/* Persistent gradient */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+                      {/* Hover darkening */}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-400" />
+
+                      {/* Tags — top */}
+                      <div className="absolute top-4 left-4 flex flex-wrap gap-1.5 z-10">
+                        {post.tags.slice(0, 2).map((tagId: string) => {
+                          const tag = getTagById(tagId)
+                          return tag ? (
+                            <span key={tagId} className="px-2 py-0.5 font-sans text-[8px] tracking-wider rounded-full backdrop-blur-sm"
+                              style={{ backgroundColor: tag.color + '33', border: `1px solid ${tag.color}55`, color: tag.color }}>
+                              {tag.name}
+                            </span>
+                          ) : null
+                        })}
+                      </div>
+
+                      {/* Title — always visible, nudges up on hover */}
+                      <div className="img-card-title absolute bottom-0 left-0 right-0 px-5 pb-14 z-10">
+                        <h3 className="font-sans text-sm font-medium text-white line-clamp-2 leading-snug">
                           {post.title}
                         </h3>
-                        <div className="flex items-center justify-between">
-                          <p className="font-body text-gray-400 text-xs">
-                            {post.author} &middot; {new Date(post.date).toLocaleDateString()}
+                        <p className="font-body text-gray-500 text-[11px] mt-1.5">
+                          {post.author} · {new Date(post.date).toLocaleDateString()}
+                        </p>
+                      </div>
+
+                      {/* Excerpt — slides up on hover */}
+                      <div className="img-card-excerpt absolute bottom-0 left-0 right-0 px-5 pb-5 z-20">
+                        <div className="bg-black/70 backdrop-blur-sm rounded-xl p-3.5 border border-white/8">
+                          <p className="font-body text-gray-300 text-[11px] leading-relaxed line-clamp-3 mb-2">
+                            {post.excerpt}
                           </p>
-                          <span className="font-sans text-[10px] tracking-widest uppercase text-cobalt-light/70 group-hover:text-cobalt-light transition-colors flex items-center gap-1.5">
+                          <span className="font-sans text-[9px] tracking-[0.35em] uppercase text-cobalt-light flex items-center gap-1.5">
                             Read <ArrowRight className="w-3 h-3" />
                           </span>
                         </div>
@@ -426,7 +443,7 @@ export default function Home() {
               className="overflow-auto horizontal-scroll"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
-              <div className="flex gap-5 py-2 pb-4" style={{ minWidth: 'max-content' }}>
+              <div className="flex gap-4 py-2 pb-4 items-end" style={{ minWidth: 'max-content' }}>
                 {[
                   ...signalPosts.map((p) => ({ ...p, _type: 'Signal' as const })),
                   ...observerPosts.map((p) => ({ ...p, _type: 'Observer' as const })),
@@ -444,63 +461,67 @@ export default function Home() {
                     >
                       <a
                         href={`/radar/${post.id}`}
-                        className="group relative block rounded-xl p-6 cursor-pointer"
-                        style={{
-                          width: '360px',
-                          maxWidth: '90vw',
-                          background: 'rgba(255,255,255,0.04)',
-                          backdropFilter: 'blur(10px)',
-                          border: '1px solid rgba(255,255,255,0.08)',
-                        }}
-                        onMouseMove={(e) => {
-                          const rect = e.currentTarget.getBoundingClientRect()
-                          e.currentTarget.style.setProperty('--mx', `${((e.clientX - rect.left) / rect.width) * 100}%`)
-                          e.currentTarget.style.setProperty('--my', `${((e.clientY - rect.top) / rect.height) * 100}%`)
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.setProperty('--mx', '50%')
-                          e.currentTarget.style.setProperty('--my', '50%')
-                        }}
+                        className="img-card group relative block overflow-hidden rounded-2xl cursor-pointer"
+                        style={{ width: '300px', height: '400px', maxWidth: '82vw' }}
                       >
-                        <div
-                          className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-                          style={{ background: 'radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.07) 0%, transparent 60%)' }}
-                        />
-                        <div className="relative z-10 flex flex-col h-full">
-                          <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              {post.tags.map((tagId: string) => {
-                                const tag = getTagById(tagId)
-                                return tag ? (
-                                  <span
-                                    key={tagId}
-                                    className="px-2 py-0.5 font-sans text-[9px] tracking-wider rounded-full"
-                                    style={{
-                                      backgroundColor: tag.color + '22',
-                                      border: `1px solid ${tag.color}44`,
-                                      color: tag.color,
-                                    }}
-                                  >
-                                    {tag.name}
-                                  </span>
-                                ) : null
-                              })}
-                            </div>
-                            <span className="font-sans text-[9px] tracking-widest uppercase text-gray-700 flex-shrink-0 ml-2">
-                              {post._type}
-                            </span>
+                        {post.imageUrl ? (
+                          <Image
+                            src={post.imageUrl}
+                            alt={post.heading}
+                            fill
+                            className="object-cover transition-transform duration-700 group-hover:scale-105"
+                            sizes="300px"
+                          />
+                        ) : (
+                          <div
+                            className="absolute inset-0"
+                            style={{
+                              background: `linear-gradient(160deg, #050a14 0%, #0c1a2e 40%, #0a2040 70%, #081830 100%)`,
+                            }}
+                          >
+                            {/* Subtle cobalt glow for no-image cards */}
+                            <div className="absolute inset-0 opacity-30"
+                              style={{ background: 'radial-gradient(ellipse 80% 60% at 50% 80%, #136fd7 0%, transparent 70%)' }} />
                           </div>
-                          <h4 className="font-sans text-sm font-semibold text-white mb-3 group-hover:text-cobalt-light transition-colors leading-snug">
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-400" />
+
+                        {/* Type badge + tags */}
+                        <div className="absolute top-4 left-4 right-4 flex items-start justify-between z-10">
+                          <div className="flex flex-wrap gap-1.5">
+                            {post.tags.slice(0, 2).map((tagId: string) => {
+                              const tag = getTagById(tagId)
+                              return tag ? (
+                                <span key={tagId} className="px-2 py-0.5 font-sans text-[8px] tracking-wider rounded-full backdrop-blur-sm"
+                                  style={{ backgroundColor: tag.color + '33', border: `1px solid ${tag.color}55`, color: tag.color }}>
+                                  {tag.name}
+                                </span>
+                              ) : null
+                            })}
+                          </div>
+                          <span className="font-sans text-[8px] tracking-[0.3em] uppercase text-gray-600 bg-black/40 backdrop-blur-sm px-2 py-1 rounded-full border border-white/8">
+                            {post._type}
+                          </span>
+                        </div>
+
+                        {/* Heading */}
+                        <div className="img-card-title absolute bottom-0 left-0 right-0 px-5 pb-14 z-10">
+                          <h3 className="font-sans text-sm font-medium text-white line-clamp-2 leading-snug">
                             {post.heading}
-                          </h4>
-                          <p className="font-body text-gray-500 text-xs line-clamp-4 mb-4 leading-relaxed">
-                            {post.content}
+                          </h3>
+                          <p className="font-body text-gray-500 text-[11px] mt-1.5">
+                            {new Date(post.date).toLocaleDateString()}
                           </p>
-                          <div className="flex items-center justify-between mt-auto">
-                            <span className="font-body text-[11px] text-gray-700">
-                              {new Date(post.date).toLocaleDateString()}
-                            </span>
-                            <span className="font-sans text-[10px] tracking-widest uppercase text-cobalt-light/60 group-hover:text-cobalt-light transition-colors flex items-center gap-1.5">
+                        </div>
+
+                        {/* Content excerpt */}
+                        <div className="img-card-excerpt absolute bottom-0 left-0 right-0 px-5 pb-5 z-20">
+                          <div className="bg-black/70 backdrop-blur-sm rounded-xl p-3.5 border border-white/8">
+                            <p className="font-body text-gray-300 text-[11px] leading-relaxed line-clamp-3 mb-2">
+                              {post.content}
+                            </p>
+                            <span className="font-sans text-[9px] tracking-[0.35em] uppercase text-cobalt-light flex items-center gap-1.5">
                               Read <ArrowRight className="w-3 h-3" />
                             </span>
                           </div>

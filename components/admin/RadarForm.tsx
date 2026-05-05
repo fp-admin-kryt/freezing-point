@@ -2,13 +2,11 @@
 
 import { useState } from 'react'
 import { useDropzone } from 'react-dropzone'
-import { Layout, FileImage, Eye, ArrowLeft, Upload } from 'lucide-react'
-import { Image as ImageIcon } from 'lucide-react'
+import { Layout, BookOpen, Eye, ArrowLeft, Upload, X } from 'lucide-react'
 import { uploadToCloudinaryDirect } from '@/lib/cloudinary'
 import { saveRadarPost, TemplateType, ContentBlock } from '@/lib/firebase'
 import TagSelector from './TagSelector'
 import DomainSelector from './DomainSelector'
-import RichTextEditor from './RichTextEditor'
 import BlockEditor from './BlockEditor'
 import PostPreview from './PostPreview'
 import { GradientButton } from '@/components/ui/gradient-button'
@@ -26,6 +24,89 @@ const secBtnCls = "px-4 py-2.5 border border-white/8 rounded-lg text-gray-400 ho
 const toSlug = (text: string) =>
   text.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').trim()
 
+const BODY_PLACEHOLDER = `## Introduction
+
+Write your opening paragraph here. This becomes the lead text in a larger, elegant serif font.
+
+[IMAGE_1]
+
+## Section Title
+
+Your section body text goes here. Write naturally — each paragraph is separated by a blank line.
+
+[IMAGE_2]
+
+## Another Section
+
+Continue your writing...
+
+> A powerful pull quote or key insight goes here.
+
+[IMAGE_3]
+
+## Conclusion
+
+Closing thoughts.`
+
+interface ImageZoneProps {
+  label: string
+  hint: string
+  file: File | null
+  url: string
+  onFile: (f: File | null) => void
+  onUrl: (u: string) => void
+}
+
+function ImageZone({ label, hint, file, url, onFile, onUrl }: ImageZoneProps) {
+  const { getRootProps, getInputProps } = useDropzone({
+    accept: { 'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp'] },
+    maxFiles: 1,
+    onDrop: (files) => onFile(files[0]),
+  })
+  return (
+    <div>
+      <label className={labelCls}>{label}</label>
+      <p className="font-sans text-[10px] text-gray-700 mb-2">{hint}</p>
+      <div
+        {...getRootProps()}
+        className="border border-dashed border-white/10 rounded-xl p-5 text-center cursor-pointer hover:border-cobalt-blue/40 transition-colors"
+      >
+        <input {...getInputProps()} />
+        {file ? (
+          <div className="text-white flex items-center justify-center gap-3">
+            <p className="font-sans text-sm">{file.name}</p>
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onFile(null) }}
+              className="text-gray-600 hover:text-red-400 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        ) : url ? (
+          <div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={url} alt="Preview" className="max-h-32 mx-auto rounded-lg mb-3 object-cover" />
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onUrl('') }}
+              className="font-sans text-xs text-red-400 hover:text-red-300"
+            >
+              Remove
+            </button>
+          </div>
+        ) : (
+          <div>
+            <Upload className="mx-auto h-7 w-7 text-gray-700 mb-2" />
+            <p className="font-body text-sm text-gray-600">Drag & drop or click</p>
+            <p className="font-body text-xs text-gray-700 mt-0.5">PNG, JPG up to 10MB</p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function RadarForm({ onBack, editPost }: RadarFormProps) {
   const [templateType, setTemplateType] = useState<TemplateType | ''>(editPost?.templateType || '')
   const [formData, setFormData] = useState({
@@ -37,18 +118,35 @@ export default function RadarForm({ onBack, editPost }: RadarFormProps) {
   })
   const [slug, setSlug] = useState<string>(editPost?.id || '')
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(!!editPost)
-  const [imageFile, setImageFile] = useState<File | null>(null)
-  const [imageUrl, setImageUrl] = useState(editPost?.imageUrl || '')
-  const [richContent, setRichContent] = useState(editPost?.richContent || '')
+
+  // Default template state
+  const [defaultContent, setDefaultContent] = useState(editPost?.defaultContent || '')
+  const [coverFile, setCoverFile] = useState<File | null>(null)
+  const [coverUrl, setCoverUrl] = useState(editPost?.imageUrl || '')
+  const [img2File, setImg2File] = useState<File | null>(null)
+  const [img2Url, setImg2Url] = useState(editPost?.image2Url || '')
+  const [img3File, setImg3File] = useState<File | null>(null)
+  const [img3Url, setImg3Url] = useState(editPost?.image3Url || '')
+
+  // Document template state
   const [blocks, setBlocks] = useState<ContentBlock[]>(editPost?.blocks || [])
+
   const [loading, setLoading] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
 
-  const { getRootProps, getInputProps } = useDropzone({
-    accept: { 'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp'] },
-    maxFiles: 1,
-    onDrop: (files) => setImageFile(files[0]),
-  })
+  const uploadImage = async (file: File, label: string): Promise<string> => {
+    toast.loading(`Uploading ${label}…`)
+    try {
+      const url = await uploadToCloudinaryDirect(file)
+      toast.dismiss()
+      toast.success(`${label} uploaded!`)
+      return url
+    } catch (err) {
+      toast.dismiss()
+      toast.error(`Failed to upload ${label}`)
+      throw err
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -56,15 +154,23 @@ export default function RadarForm({ onBack, editPost }: RadarFormProps) {
     if (!slug.trim()) { toast.error('Please enter a slug'); return }
     setLoading(true)
     try {
-      let finalImageUrl = imageUrl
-      if (imageFile && templateType === 'singleImage') {
-        toast.loading('Uploading image…')
-        try { finalImageUrl = await uploadToCloudinaryDirect(imageFile); toast.dismiss(); toast.success('Image uploaded!') }
-        catch (err) { toast.dismiss(); toast.error('Failed to upload image'); throw err }
-      }
       const postData: any = { ...formData, templateType }
-      if (templateType === 'singleImage') { postData.imageUrl = finalImageUrl || undefined; postData.richContent = richContent || undefined }
-      else if (templateType === 'document') { postData.blocks = blocks.length > 0 ? blocks : undefined }
+
+      if (templateType === 'default') {
+        postData.defaultContent = defaultContent || undefined
+        let finalCover = coverUrl
+        let finalImg2 = img2Url
+        let finalImg3 = img3Url
+        if (coverFile) finalCover = await uploadImage(coverFile, 'Cover image')
+        if (img2File) finalImg2 = await uploadImage(img2File, 'Body image 1')
+        if (img3File) finalImg3 = await uploadImage(img3File, 'Body image 2')
+        postData.imageUrl = finalCover || undefined
+        postData.image2Url = finalImg2 || undefined
+        postData.image3Url = finalImg3 || undefined
+      } else if (templateType === 'document') {
+        postData.blocks = blocks.length > 0 ? blocks : undefined
+      }
+
       await saveRadarPost(postData, slug.trim())
       toast.success('Radar post saved!')
       onBack()
@@ -78,7 +184,6 @@ export default function RadarForm({ onBack, editPost }: RadarFormProps) {
 
   return (
     <div className="max-w-5xl mx-auto">
-      {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
           <div>
@@ -163,15 +268,15 @@ export default function RadarForm({ onBack, editPost }: RadarFormProps) {
           <div className="border border-white/8 rounded-xl p-6">
             <p className="font-sans text-[10px] tracking-widest uppercase text-gray-600 mb-4">Template *</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <button type="button" onClick={() => setTemplateType('singleImage')}
+              <button type="button" onClick={() => setTemplateType('default')}
                 className={`p-5 border rounded-xl transition-all text-left ${
-                  templateType === 'singleImage'
+                  templateType === 'default'
                     ? 'border-cobalt-blue/60 bg-cobalt-blue/8'
                     : 'border-white/8 hover:border-white/20'
                 }`}>
-                <FileImage className="w-8 h-8 text-cobalt-light mb-3" />
-                <h3 className="font-sans text-sm font-medium text-white mb-1">Single Image</h3>
-                <p className="font-body text-xs text-gray-600">Sticky image left, rich text right</p>
+                <BookOpen className="w-8 h-8 text-cobalt-light mb-3" />
+                <h3 className="font-sans text-sm font-medium text-white mb-1">Default Blog</h3>
+                <p className="font-body text-xs text-gray-600">Beautiful editorial layout with up to 3 images</p>
               </button>
               <button type="button" onClick={() => setTemplateType('document')}
                 className={`p-5 border rounded-xl transition-all text-left ${
@@ -187,40 +292,55 @@ export default function RadarForm({ onBack, editPost }: RadarFormProps) {
           </div>
         )}
 
-        {/* Single Image editor */}
-        {templateType === 'singleImage' && (
-          <div className="border border-white/8 rounded-xl p-6 space-y-5">
-            <p className="font-sans text-[10px] tracking-widest uppercase text-gray-600">Single Image Template</p>
+        {/* Default Blog editor */}
+        {templateType === 'default' && (
+          <div className="border border-white/8 rounded-xl p-6 space-y-6">
+            <p className="font-sans text-[10px] tracking-widest uppercase text-gray-600">Default Blog Template</p>
+
             <div>
-              <label className={labelCls}>Sticky Image (left side) *</label>
-              <div {...getRootProps()}
-                className="border border-dashed border-white/10 rounded-xl p-6 text-center cursor-pointer hover:border-cobalt-blue/40 transition-colors">
-                <input {...getInputProps()} />
-                {imageFile ? (
-                  <div className="text-white">
-                    <p className="font-sans text-sm">{imageFile.name}</p>
-                    <button type="button" onClick={(e) => { e.stopPropagation(); setImageFile(null) }}
-                      className="mt-2 font-sans text-xs text-red-400 hover:text-red-300">Remove</button>
-                  </div>
-                ) : imageUrl ? (
-                  <div>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={imageUrl} alt="Preview" className="max-h-40 mx-auto rounded-lg mb-3" />
-                    <button type="button" onClick={(e) => { e.stopPropagation(); setImageUrl('') }}
-                      className="font-sans text-xs text-red-400 hover:text-red-300">Remove</button>
-                  </div>
-                ) : (
-                  <div>
-                    <Upload className="mx-auto h-8 w-8 text-gray-700 mb-3" />
-                    <p className="font-body text-sm text-gray-600">Drag & drop or click to upload</p>
-                    <p className="font-body text-xs text-gray-700 mt-1">PNG, JPG up to 10MB</p>
-                  </div>
-                )}
-              </div>
+              <label className={labelCls}>Body Content *</label>
+              <p className="font-sans text-[10px] text-gray-700 mb-3 leading-relaxed">
+                Use <code className="text-cobalt-light/70 bg-white/4 px-1 rounded">## Heading</code> for section titles,&nbsp;
+                <code className="text-cobalt-light/70 bg-white/4 px-1 rounded">{`> Quote`}</code> for pull quotes,&nbsp;
+                <code className="text-cobalt-light/70 bg-white/4 px-1 rounded">[IMAGE_1]</code>&nbsp;
+                <code className="text-cobalt-light/70 bg-white/4 px-1 rounded">[IMAGE_2]</code>&nbsp;
+                <code className="text-cobalt-light/70 bg-white/4 px-1 rounded">[IMAGE_3]</code> to place images,&nbsp;
+                <code className="text-cobalt-light/70 bg-white/4 px-1 rounded">---</code> for a divider.
+              </p>
+              <textarea
+                value={defaultContent}
+                onChange={(e) => setDefaultContent(e.target.value)}
+                rows={18}
+                className={`${inputCls} font-mono text-xs leading-relaxed`}
+                placeholder={BODY_PLACEHOLDER}
+              />
             </div>
-            <div>
-              <label className={labelCls}>Rich Text Content (right side) *</label>
-              <RichTextEditor value={richContent} onChange={setRichContent} placeholder="Enter formatted content…" />
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <ImageZone
+                label="Cover / Hero Image"
+                hint="Full-width hero at top. Also [IMAGE_1] in body."
+                file={coverFile}
+                url={coverUrl}
+                onFile={setCoverFile}
+                onUrl={setCoverUrl}
+              />
+              <ImageZone
+                label="Body Image 2"
+                hint="Inserted where [IMAGE_2] appears."
+                file={img2File}
+                url={img2Url}
+                onFile={setImg2File}
+                onUrl={setImg2Url}
+              />
+              <ImageZone
+                label="Body Image 3"
+                hint="Inserted where [IMAGE_3] appears."
+                file={img3File}
+                url={img3Url}
+                onFile={setImg3File}
+                onUrl={setImg3Url}
+              />
             </div>
           </div>
         )}
@@ -236,7 +356,7 @@ export default function RadarForm({ onBack, editPost }: RadarFormProps) {
         {/* Actions */}
         <div className="flex justify-end items-center gap-3 pt-2">
           <button type="button" onClick={onBack} className={secBtnCls}>Cancel</button>
-          {templateType && (
+          {templateType === 'document' && (
             <button type="button" onClick={() => setShowPreview(true)}
               className={`flex items-center gap-2 ${secBtnCls}`}>
               <Eye className="w-4 h-4" /> Preview
@@ -252,11 +372,11 @@ export default function RadarForm({ onBack, editPost }: RadarFormProps) {
         </div>
       </form>
 
-      {showPreview && templateType && (
+      {showPreview && templateType === 'document' && (
         <PostPreview
           templateType={templateType}
-          imageUrl={imageUrl}
-          richContent={richContent}
+          imageUrl={coverUrl}
+          richContent=""
           blocks={blocks}
           heading={formData.heading}
           date={formData.date}

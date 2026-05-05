@@ -50,7 +50,7 @@ const withRetry = async <T>(fn: () => Promise<T>, attempts = 3): Promise<T> => {
 }
 
 // Types
-export type TemplateType = 'singleImage' | 'document';
+export type TemplateType = 'singleImage' | 'document' | 'default';
 
 export interface ContentBlock {
   id: string;
@@ -71,8 +71,11 @@ export interface ResearchPost {
   imageUrl?: string;
   whitepaperUrl?: string;
   templateType?: TemplateType;
-  blocks?: ContentBlock[]; // For document template
-  richContent?: string; // HTML content for single image template
+  blocks?: ContentBlock[];
+  richContent?: string;
+  defaultContent?: string;
+  image2Url?: string;
+  image3Url?: string;
   createdAt: Date;
 }
 
@@ -86,6 +89,9 @@ export interface RadarPost {
   templateType?: TemplateType;
   blocks?: ContentBlock[];
   richContent?: string;
+  defaultContent?: string;
+  image2Url?: string;
+  image3Url?: string;
   date: string;
   createdAt: Date;
 }
@@ -98,8 +104,11 @@ export interface SignalPost {
   domain: string;
   imageUrl?: string;
   templateType?: TemplateType;
-  blocks?: ContentBlock[]; // For document template
-  richContent?: string; // HTML content for single image template
+  blocks?: ContentBlock[];
+  richContent?: string;
+  defaultContent?: string;
+  image2Url?: string;
+  image3Url?: string;
   date: string;
   createdAt: Date;
 }
@@ -112,8 +121,11 @@ export interface ObserverPost {
   domain: string;
   imageUrl?: string;
   templateType?: TemplateType;
-  blocks?: ContentBlock[]; // For document template
-  richContent?: string; // HTML content for single image template
+  blocks?: ContentBlock[];
+  richContent?: string;
+  defaultContent?: string;
+  image2Url?: string;
+  image3Url?: string;
   date: string;
   createdAt: Date;
 }

@@ -175,7 +175,7 @@ export default function ResearchPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4 }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4"
           >
             {sortedPosts.map((post, index) => (
               <motion.a
@@ -185,59 +185,60 @@ export default function ResearchPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.04 }}
-                className="group relative rounded-xl overflow-hidden flex flex-col cursor-pointer"
-                style={{
-                  background: 'rgba(255,255,255,0.04)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                }}
-                whileHover={{ scale: 1.02 }}
-                onMouseMove={(e) => {
-                  const rect = e.currentTarget.getBoundingClientRect()
-                  e.currentTarget.style.setProperty('--mx', `${((e.clientX - rect.left) / rect.width) * 100}%`)
-                  e.currentTarget.style.setProperty('--my', `${((e.clientY - rect.top) / rect.height) * 100}%`)
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.setProperty('--mx', '50%')
-                  e.currentTarget.style.setProperty('--my', '50%')
-                }}
+                className="img-card group relative block overflow-hidden rounded-xl cursor-pointer"
+                style={{ aspectRatio: '3/4' }}
               >
-                <div
-                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-                  style={{ background: 'radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.07) 0%, transparent 60%)' }}
-                />
-                {post.imageUrl && (
-                  <div className="relative w-full overflow-hidden" style={{ height: '160px' }}>
-                    <Image
-                      src={post.imageUrl}
-                      alt={post.title}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                    />
+                {post.imageUrl ? (
+                  <Image
+                    src={post.imageUrl}
+                    alt={post.title}
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  />
+                ) : (
+                  <div
+                    className="absolute inset-0"
+                    style={{ background: 'linear-gradient(135deg, #0a1628 0%, #0d2452 50%, #0a1628 100%)' }}
+                  >
+                    <div className="absolute inset-0 opacity-25"
+                      style={{ background: 'radial-gradient(ellipse 80% 60% at 50% 80%, #136fd7 0%, transparent 70%)' }} />
                   </div>
                 )}
-                <div className="flex flex-col flex-1 p-4 relative z-10">
-                  <div className="flex flex-wrap gap-1.5 mb-2">
-                    {post.tags.map((tagId: string) => {
-                      const tag = getTagById(tagId)
-                      return tag ? (
-                        <span key={tagId} className="px-2 py-0.5 font-sans text-[9px] tracking-wider rounded-full"
-                          style={{ backgroundColor: tag.color + '22', border: `1px solid ${tag.color}44`, color: tag.color }}>
-                          {tag.name}
-                        </span>
-                      ) : null
-                    })}
-                  </div>
-                  <h3 className="font-sans text-sm font-medium text-white mb-1.5 group-hover:text-cobalt-light transition-colors line-clamp-2 leading-snug flex-1">
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/45 to-transparent" />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors duration-400" />
+
+                {/* Tags */}
+                <div className="absolute top-3 left-3 flex flex-wrap gap-1 z-10">
+                  {post.tags.slice(0, 1).map((tagId: string) => {
+                    const tag = getTagById(tagId)
+                    return tag ? (
+                      <span key={tagId} className="px-1.5 py-0.5 font-sans text-[8px] tracking-wider rounded-full backdrop-blur-sm"
+                        style={{ backgroundColor: tag.color + '33', border: `1px solid ${tag.color}55`, color: tag.color }}>
+                        {tag.name}
+                      </span>
+                    ) : null
+                  })}
+                </div>
+
+                {/* Title */}
+                <div className="img-card-title absolute bottom-0 left-0 right-0 px-4 pb-11 z-10">
+                  <h3 className="font-sans text-xs font-medium text-white line-clamp-2 leading-snug">
                     {post.title}
                   </h3>
-                  <p className="font-body text-gray-600 text-[11px] mb-3">
-                    {post.author} &middot; {new Date(post.date).toLocaleDateString()}
+                  <p className="font-body text-gray-500 text-[10px] mt-1">
+                    {post.author} · {new Date(post.date).toLocaleDateString()}
                   </p>
-                  <div className="flex justify-end">
-                    <span className="font-sans text-[10px] tracking-widest uppercase text-cobalt-light/50 group-hover:text-cobalt-light transition-colors flex items-center gap-1.5">
-                      Read <ArrowRight className="w-3 h-3" />
+                </div>
+
+                {/* Excerpt */}
+                <div className="img-card-excerpt absolute bottom-0 left-0 right-0 px-4 pb-4 z-20">
+                  <div className="bg-black/75 backdrop-blur-sm rounded-lg p-3 border border-white/8">
+                    <p className="font-body text-gray-300 text-[10px] leading-relaxed line-clamp-3 mb-1.5">
+                      {post.excerpt}
+                    </p>
+                    <span className="font-sans text-[8px] tracking-[0.35em] uppercase text-cobalt-light flex items-center gap-1">
+                      Read <ArrowRight className="w-2.5 h-2.5" />
                     </span>
                   </div>
                 </div>

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Space_Grotesk, Inter } from 'next/font/google'
+import { Space_Grotesk, Inter, Playfair_Display } from 'next/font/google'
 import './globals.css'
 import Image from 'next/image'
 import PageTransition from '@/components/PageTransition'
@@ -20,6 +20,14 @@ const inter = Inter({
   display: 'swap',
 })
 
+const playfairDisplay = Playfair_Display({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  style: ['normal', 'italic'],
+  variable: '--font-blog',
+  display: 'swap',
+})
+
 export const metadata: Metadata = {
   title: 'Freezing Point AI',
   description: 'Ultra modern AI newsletter space exploring the frontiers of technology',
@@ -32,7 +40,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${spaceGrotesk.variable} ${inter.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${spaceGrotesk.variable} ${inter.variable} ${playfairDisplay.variable}`} suppressHydrationWarning>
       <head>
         <link rel="icon" type="image/svg+xml" href="/assets/logos/fp-logo.svg" />
       </head>

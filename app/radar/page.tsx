@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowRight, Filter, ChevronDown } from 'lucide-react'
+import Image from 'next/image'
 import { ExpandingSearchDock } from '@/components/ui/expanding-search-dock'
 import { getSignalPosts, getObserverPosts, getRadarPosts } from '@/lib/firebase'
 import { getTagById, getDomainById } from '@/lib/dataService'
@@ -14,6 +15,7 @@ type RadarPost = {
   date: string
   tags: string[]
   domain?: string
+  imageUrl?: string
 }
 
 export default function RadarPage() {
@@ -171,90 +173,86 @@ export default function RadarPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4"
           >
-            {filteredPosts.map((post, index) => (
-              <motion.a
-                key={post.id || `radar-${index}`}
-                href={`/radar/${post.id}`}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.05 }}
-                className="group relative rounded-xl p-5 flex flex-col cursor-pointer"
-                style={{
-                  background: 'rgba(255,255,255,0.04)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                }}
-                whileHover={{ scale: 1.02 }}
-                onMouseMove={(e) => {
-                  const rect = e.currentTarget.getBoundingClientRect()
-                  e.currentTarget.style.setProperty('--mx', `${((e.clientX - rect.left) / rect.width) * 100}%`)
-                  e.currentTarget.style.setProperty('--my', `${((e.clientY - rect.top) / rect.height) * 100}%`)
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.setProperty('--mx', '50%')
-                  e.currentTarget.style.setProperty('--my', '50%')
-                }}
-              >
-                <div
-                  className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-                  style={{ background: 'radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.07) 0%, transparent 60%)' }}
-                />
-                <div className="relative z-10 flex flex-col flex-1">
-                  {/* Tags */}
-                  <div className="flex flex-wrap gap-1.5 mb-4">
-                    {post.tags.map((tagId: string) => {
-                      const tag = getTagById(tagId)
-                      return tag ? (
-                        <span
-                          key={tagId}
-                          className="px-2 py-0.5 font-sans text-[9px] tracking-wider rounded-full"
-                          style={{
-                            backgroundColor: tag.color + '22',
-                            border: `1px solid ${tag.color}44`,
-                            color: tag.color,
-                          }}
-                        >
-                          {tag.name}
-                        </span>
-                      ) : null
-                    })}
-                  </div>
-
-                  <h3 className="font-sans text-sm font-medium text-white mb-3 group-hover:text-cobalt-light transition-colors line-clamp-2 leading-snug flex-1">
-                    {post.heading}
-                  </h3>
-
-                  <p className="font-body text-gray-500 text-xs line-clamp-3 mb-4 leading-relaxed">
-                    {post.content}
-                  </p>
-
-                  <div className="flex items-center justify-between mt-auto">
-                    <div className="flex items-center gap-2">
-                      <span className="font-body text-[11px] text-gray-700">
-                        {new Date(post.date).toLocaleDateString()}
-                      </span>
-                      {post.domain && getDomainById(post.domain) && (
-                        <span className="flex items-center gap-1">
-                          <div
-                            className="w-1.5 h-1.5 rounded-full"
-                            style={{ backgroundColor: getDomainById(post.domain)?.color }}
-                          />
-                          <span className="font-sans text-[10px] text-gray-700">
-                            {getDomainById(post.domain)?.name}
-                          </span>
-                        </span>
-                      )}
+            {filteredPosts.map((post, index) => {
+              const domainData = post.domain ? getDomainById(post.domain) : null
+              const accentColor = domainData?.color || '#136fd7'
+              return (
+                <motion.a
+                  key={post.id || `radar-${index}`}
+                  href={`/radar/${post.id}`}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: index * 0.04 }}
+                  className="img-card group relative block overflow-hidden rounded-xl cursor-pointer"
+                  style={{ aspectRatio: '3/4' }}
+                >
+                  {post.imageUrl ? (
+                    <Image
+                      src={post.imageUrl}
+                      alt={post.heading}
+                      fill
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                    />
+                  ) : (
+                    <div className="absolute inset-0" style={{
+                      background: `linear-gradient(160deg, #050a14 0%, #0c1a2e 40%, #0a2040 70%, #081830 100%)`
+                    }}>
+                      <div className="absolute inset-0 opacity-25"
+                        style={{ background: `radial-gradient(ellipse 80% 60% at 50% 80%, ${accentColor} 0%, transparent 70%)` }} />
                     </div>
-                    <span className="font-sans text-[10px] tracking-widest uppercase text-cobalt-light/60 group-hover:text-cobalt-light transition-colors flex items-center gap-1.5">
-                      Read <ArrowRight className="w-3 h-3" />
-                    </span>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/45 to-transparent" />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors duration-400" />
+
+                  {/* Tags + domain badge */}
+                  <div className="absolute top-3 left-3 right-3 flex items-start justify-between z-10">
+                    <div className="flex flex-wrap gap-1">
+                      {post.tags.slice(0, 1).map((tagId: string) => {
+                        const tag = getTagById(tagId)
+                        return tag ? (
+                          <span key={tagId} className="px-1.5 py-0.5 font-sans text-[8px] tracking-wider rounded-full backdrop-blur-sm"
+                            style={{ backgroundColor: tag.color + '33', border: `1px solid ${tag.color}55`, color: tag.color }}>
+                            {tag.name}
+                          </span>
+                        ) : null
+                      })}
+                    </div>
+                    {domainData && (
+                      <span className="flex items-center gap-1 bg-black/40 backdrop-blur-sm px-1.5 py-0.5 rounded-full border border-white/8">
+                        <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: accentColor }} />
+                        <span className="font-sans text-[8px] text-gray-400">{domainData.name}</span>
+                      </span>
+                    )}
                   </div>
-                </div>
-              </motion.a>
-            ))}
+
+                  {/* Heading */}
+                  <div className="img-card-title absolute bottom-0 left-0 right-0 px-4 pb-11 z-10">
+                    <h3 className="font-sans text-xs font-medium text-white line-clamp-2 leading-snug">
+                      {post.heading}
+                    </h3>
+                    <p className="font-body text-gray-500 text-[10px] mt-1">
+                      {new Date(post.date).toLocaleDateString()}
+                    </p>
+                  </div>
+
+                  {/* Content excerpt */}
+                  <div className="img-card-excerpt absolute bottom-0 left-0 right-0 px-4 pb-4 z-20">
+                    <div className="bg-black/75 backdrop-blur-sm rounded-lg p-3 border border-white/8">
+                      <p className="font-body text-gray-300 text-[10px] leading-relaxed line-clamp-3 mb-1.5">
+                        {post.content}
+                      </p>
+                      <span className="font-sans text-[8px] tracking-[0.35em] uppercase text-cobalt-light flex items-center gap-1">
+                        Read <ArrowRight className="w-2.5 h-2.5" />
+                      </span>
+                    </div>
+                  </div>
+                </motion.a>
+              )
+            })}
           </motion.div>
           )}
 

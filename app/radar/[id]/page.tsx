@@ -9,6 +9,7 @@ import { getTagById, getDomainById } from '@/lib/dataService'
 import { getTypography } from '@/lib/typography'
 import Image from 'next/image'
 import { DocumentBlocks } from '@/components/DocumentBlocks'
+import { DefaultBlogRenderer } from '@/components/DefaultBlogRenderer'
 
 type RadarPost = RadarPostType
 
@@ -80,7 +81,7 @@ function PostNav({ prev, next }: { prev: RadarPost | null; next: RadarPost | nul
                 <div className="absolute inset-0 bg-black/50" />
               </div>
             )}
-            <div className={`p-4 ${!prev.imageUrl ? '' : ''}`}>
+            <div className="p-4">
               <span className="font-sans text-[9px] tracking-widest uppercase text-gray-600 flex items-center gap-1 mb-2">
                 <ArrowLeft className="w-3 h-3" /> Previous
               </span>
@@ -179,10 +180,96 @@ export default function RadarDetailPage() {
     letterSpacing: typography.body.letterSpacing || undefined,
   } : {}
 
+  // ── Default Blog Template ──────────────────────────────────────────────────
+  if (post.templateType === 'default') {
+    return (
+      <div className="min-h-screen bg-[#050508]">
+        {post.imageUrl && (
+          <div className="relative w-full overflow-hidden" style={{ height: 'clamp(340px, 68vh, 760px)' }}>
+            <Image
+              src={post.imageUrl}
+              alt={post.heading}
+              fill
+              className="object-cover"
+              priority
+              sizes="100vw"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#050508] via-[#050508]/30 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#050508]/20 via-transparent to-[#050508]/20" />
+          </div>
+        )}
+
+        <motion.article
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+          className="max-w-[720px] mx-auto px-6 md:px-8"
+        >
+          <header className={post.imageUrl ? 'pt-12 pb-10' : 'pt-32 pb-10'}>
+            <div className="mb-6">
+              <TagRow tags={post.tags} domain={post.domain} />
+            </div>
+
+            <h1
+              className="leading-[1.15] tracking-tight text-white mb-6"
+              style={{
+                fontFamily: 'var(--font-blog), "Playfair Display", Georgia, serif',
+                fontSize: 'clamp(2.2rem, 5vw, 3.6rem)',
+                fontWeight: 400,
+              }}
+            >
+              {post.heading}
+            </h1>
+
+            <div className="flex items-center gap-4">
+              <div className="w-px h-8 bg-cobalt-blue/40" />
+              <div>
+                <p className="font-sans text-[10px] tracking-[0.35em] uppercase text-gray-600 mb-0.5">Published</p>
+                <p className="font-sans text-sm text-white/70">
+                  {new Date(post.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                </p>
+              </div>
+              {post.domain && getDomainById(post.domain) && (
+                <>
+                  <div className="w-px h-8 bg-white/8" />
+                  <div>
+                    <p className="font-sans text-[10px] tracking-[0.35em] uppercase text-gray-600 mb-0.5">Domain</p>
+                    <p className="font-sans text-sm text-white/70">{getDomainById(post.domain)?.name}</p>
+                  </div>
+                </>
+              )}
+            </div>
+          </header>
+
+          <div className="relative mb-12 h-px">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cobalt-blue/40 to-transparent" />
+          </div>
+
+          <DefaultBlogRenderer
+            content={post.defaultContent || ''}
+            imageUrl={post.imageUrl}
+            image2Url={post.image2Url}
+            image3Url={post.image3Url}
+          />
+
+          <PostNav prev={prev} next={next} />
+
+          <div className="mt-12 pb-16">
+            <a
+              href="/radar"
+              className="inline-flex items-center gap-2 font-sans text-[10px] tracking-[0.4em] uppercase text-gray-600 hover:text-cobalt-light transition-colors"
+            >
+              <ArrowLeft className="w-3 h-3" /> Back to Radar
+            </a>
+          </div>
+        </motion.article>
+      </div>
+    )
+  }
+
+  // ── Document / singleImage (legacy) / plain content ────────────────────────
   return (
     <div className="min-h-screen bg-[#050508]">
-
-      {/* ── Hero Image (all templates, if imageUrl exists) ── */}
       {post.imageUrl && (
         <div className="relative w-full overflow-hidden" style={{ height: 'clamp(300px, 62vh, 680px)' }}>
           <Image
@@ -193,11 +280,8 @@ export default function RadarDetailPage() {
             priority
             sizes="100vw"
           />
-          {/* Cinematic gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-[#050508] via-[#050508]/20 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-r from-[#050508]/30 via-transparent to-[#050508]/30" />
-
-          {/* Tags float over bottom of hero */}
           <div className="absolute bottom-0 left-0 right-0 px-6 md:px-12 pb-8">
             <div className="max-w-3xl mx-auto">
               <TagRow tags={post.tags} domain={post.domain} />
@@ -206,14 +290,12 @@ export default function RadarDetailPage() {
         </div>
       )}
 
-      {/* ── Article Content ── */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: 'easeOut' }}
         className="max-w-3xl mx-auto px-6 md:px-8"
       >
-        {/* Header */}
         <div className={post.imageUrl ? 'pt-10 pb-8' : 'pt-28 pb-8'}>
           {!post.imageUrl && (
             <div className="mb-5">
@@ -231,10 +313,8 @@ export default function RadarDetailPage() {
           </p>
         </div>
 
-        {/* Divider */}
         <div className="h-px bg-white/[0.06] mb-10" />
 
-        {/* Content */}
         {post.templateType === 'singleImage' && post.richContent && (
           <div
             className="prose prose-invert prose-p:font-body prose-headings:font-sans prose-headings:font-light max-w-none prose-p:leading-relaxed prose-p:text-gray-300 prose-headings:text-white"
@@ -253,10 +333,8 @@ export default function RadarDetailPage() {
           </p>
         )}
 
-        {/* Prev / Next */}
         <PostNav prev={prev} next={next} />
 
-        {/* Back link */}
         <div className="mt-12 pb-16">
           <a
             href="/radar"
