@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence, useAnimation } from 'framer-motion'
 import { Target, PlusCircle, Radar, Eye, ArrowRight, ChevronDown, Plus } from 'lucide-react'
-import { getResearchPosts, getSignalPosts, getObserverPosts } from '@/lib/firebase'
+import { getResearchPosts, getSignalPosts, getObserverPosts, getRadarPosts } from '@/lib/firebase'
 import { getTagById } from '@/lib/dataService'
 import Image from 'next/image'
 import { SparklesCore } from '@/components/ui/sparkles'
@@ -40,19 +40,22 @@ export default function Home() {
   const [researchPosts, setResearchPosts] = useState<any[]>([])
   const [signalPosts, setSignalPosts] = useState<any[]>([])
   const [observerPosts, setObserverPosts] = useState<any[]>([])
+  const [radarPosts, setRadarPosts] = useState<any[]>([])
   const [activeAccordion, setActiveAccordion] = useState<string | null>(null)
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [research, signals, observers] = await Promise.all([
+        const [research, signals, observers, radar] = await Promise.all([
           getResearchPosts(),
           getSignalPosts(),
           getObserverPosts(),
+          getRadarPosts(),
         ])
         setResearchPosts(research)
         setSignalPosts(signals)
         setObserverPosts(observers)
+        setRadarPosts(radar)
       } catch (error) {
         console.error('Error loading home data:', error)
       }
@@ -445,6 +448,7 @@ export default function Home() {
             >
               <div className="flex gap-4 py-2 pb-4 items-end" style={{ minWidth: 'max-content' }}>
                 {[
+                  ...radarPosts.map((p) => ({ ...p, _type: 'Radar' as const })),
                   ...signalPosts.map((p) => ({ ...p, _type: 'Signal' as const })),
                   ...observerPosts.map((p) => ({ ...p, _type: 'Observer' as const })),
                 ]
