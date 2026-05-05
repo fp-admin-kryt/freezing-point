@@ -70,6 +70,8 @@ export interface ResearchPost {
   tags: string[];
   imageUrl?: string;
   whitepaperUrl?: string;
+  abstract?: string;
+  previewBody?: string;
   templateType?: TemplateType;
   blocks?: ContentBlock[];
   richContent?: string;

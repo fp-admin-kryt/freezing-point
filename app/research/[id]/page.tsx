@@ -3,14 +3,11 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Download, ArrowLeft, ArrowRight } from 'lucide-react'
+import { Download, ArrowLeft, ArrowRight, FileText, Lock } from 'lucide-react'
 import { GradientButton } from '@/components/ui/gradient-button'
 import { getResearchPosts, ResearchPost } from '@/lib/firebase'
 import { getTagById } from '@/lib/dataService'
-import { getTypography } from '@/lib/typography'
 import Image from 'next/image'
-import { DocumentBlocks } from '@/components/DocumentBlocks'
-import { DefaultBlogRenderer } from '@/components/DefaultBlogRenderer'
 
 function DetailSkeleton() {
   return (
@@ -119,21 +116,29 @@ function PostNav({ prev, next }: { prev: ResearchPost | null; next: ResearchPost
   )
 }
 
+function downloadPdf(url: string, title: string) {
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `${title || 'whitepaper'}.pdf`
+  link.target = '_blank'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
+
 export default function ResearchDetailPage() {
   const params = useParams()
   const postId = params.id as string
   const [post, setPost] = useState<ResearchPost | null>(null)
   const [allPosts, setAllPosts] = useState<ResearchPost[]>([])
   const [loading, setLoading] = useState(true)
-  const [typography, setTypography] = useState<any>(null)
 
   useEffect(() => {
-    Promise.all([getResearchPosts(), getTypography().catch(() => null)])
-      .then(([posts, typo]) => {
+    getResearchPosts()
+      .then((posts) => {
         const sorted = [...posts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
         setAllPosts(sorted)
         setPost(sorted.find((p) => p.id === postId) || null)
-        setTypography(typo)
       })
       .catch(console.error)
       .finally(() => setLoading(false))
@@ -153,142 +158,14 @@ export default function ResearchDetailPage() {
   const prev = idx < allPosts.length - 1 ? allPosts[idx + 1] : null
   const next = idx > 0 ? allPosts[idx - 1] : null
 
-  const typoH1Style = typography?.heading1 ? {
-    fontSize: typography.heading1.fontSize.desktop,
-    fontWeight: typography.heading1.fontWeight,
-    color: typography.heading1.color,
-    lineHeight: typography.heading1.lineHeight,
-    fontFamily: typography.heading1.fontFamily || undefined,
-    letterSpacing: typography.heading1.letterSpacing || undefined,
-  } : {}
+  const abstractParas = (post.abstract || '').split(/\n\s*\n/).map(p => p.trim()).filter(Boolean)
+  const previewParas = (post.previewBody || '').split(/\n\s*\n/).map(p => p.trim()).filter(Boolean)
 
-  const typoBodyStyle = typography?.body ? {
-    fontSize: typography.body.fontSize.desktop,
-    fontWeight: typography.body.fontWeight,
-    color: typography.body.color,
-    lineHeight: typography.body.lineHeight,
-    fontFamily: typography.body.fontFamily || undefined,
-    letterSpacing: typography.body.letterSpacing || undefined,
-  } : {}
-
-  // ── Default Blog Template ──────────────────────────────────────────────────
-  if (post.templateType === 'default') {
-    return (
-      <div className="min-h-screen bg-[#050508]">
-        {/* Full-width hero image */}
-        {post.imageUrl && (
-          <div className="relative w-full overflow-hidden" style={{ height: 'clamp(340px, 68vh, 760px)' }}>
-            <Image
-              src={post.imageUrl}
-              alt={post.title}
-              fill
-              className="object-cover"
-              priority
-              sizes="100vw"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#050508] via-[#050508]/30 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#050508]/20 via-transparent to-[#050508]/20" />
-          </div>
-        )}
-
-        {/* Article wrapper */}
-        <motion.article
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="max-w-[720px] mx-auto px-6 md:px-8"
-        >
-          {/* Header */}
-          <header className={post.imageUrl ? 'pt-12 pb-10' : 'pt-32 pb-10'}>
-            {/* Tags */}
-            <div className="mb-6">
-              <TagRow tags={post.tags} />
-            </div>
-
-            {/* Title */}
-            <h1
-              className="leading-[1.15] tracking-tight text-white mb-6"
-              style={{
-                fontFamily: 'var(--font-sans), system-ui, sans-serif',
-                fontSize: 'clamp(2.2rem, 5vw, 3.6rem)',
-                fontWeight: 400,
-              }}
-            >
-              {post.title}
-            </h1>
-
-            {/* Meta row */}
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-px h-8 bg-cobalt-blue/40" />
-                <div>
-                  <p className="font-sans text-[10px] tracking-[0.35em] uppercase text-gray-600 mb-0.5">Written by</p>
-                  <p className="font-sans text-sm text-white/70">{post.author}</p>
-                </div>
-                <div className="w-px h-8 bg-white/8" />
-                <div>
-                  <p className="font-sans text-[10px] tracking-[0.35em] uppercase text-gray-600 mb-0.5">Published</p>
-                  <p className="font-sans text-sm text-white/70">
-                    {new Date(post.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-                  </p>
-                </div>
-              </div>
-
-              {post.whitepaperUrl && (
-                <GradientButton
-                  className="!min-w-0 !px-5 !py-2.5 !text-sm !rounded-lg !font-light"
-                  onClick={() => {
-                    const link = document.createElement('a')
-                    link.href = post.whitepaperUrl!
-                    link.download = `${post.title || 'whitepaper'}.pdf`
-                    link.target = '_blank'
-                    document.body.appendChild(link)
-                    link.click()
-                    document.body.removeChild(link)
-                  }}
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  <span className="hidden md:inline">Download PDF</span>
-                </GradientButton>
-              )}
-            </div>
-          </header>
-
-          {/* Decorative divider */}
-          <div className="relative mb-12 h-px">
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cobalt-blue/40 to-transparent" />
-          </div>
-
-          {/* Blog body */}
-          <DefaultBlogRenderer
-            content={post.defaultContent || ''}
-            imageUrl={post.imageUrl}
-            image2Url={post.image2Url}
-            image3Url={post.image3Url}
-          />
-
-          {/* Prev / Next */}
-          <PostNav prev={prev} next={next} />
-
-          {/* Back link */}
-          <div className="mt-12 pb-16">
-            <a
-              href="/research"
-              className="inline-flex items-center gap-2 font-sans text-[10px] tracking-[0.4em] uppercase text-gray-600 hover:text-cobalt-light transition-colors"
-            >
-              <ArrowLeft className="w-3 h-3" /> Back to Research
-            </a>
-          </div>
-        </motion.article>
-      </div>
-    )
-  }
-
-  // ── Document / singleImage (legacy) Templates ──────────────────────────────
   return (
     <div className="min-h-screen bg-[#050508]">
+      {/* Hero image */}
       {post.imageUrl && (
-        <div className="relative w-full overflow-hidden" style={{ height: 'clamp(300px, 62vh, 680px)' }}>
+        <div className="relative w-full overflow-hidden" style={{ height: 'clamp(340px, 68vh, 760px)' }}>
           <Image
             src={post.imageUrl}
             alt={post.title}
@@ -297,75 +174,173 @@ export default function ResearchDetailPage() {
             priority
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#050508] via-[#050508]/20 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#050508]/30 via-transparent to-[#050508]/30" />
-          <div className="absolute bottom-0 left-0 right-0 px-6 md:px-12 pb-8">
-            <div className="max-w-3xl mx-auto">
-              <TagRow tags={post.tags} />
-            </div>
-          </div>
+          <div className="absolute inset-0 bg-gradient-to-t from-[#050508] via-[#050508]/30 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#050508]/20 via-transparent to-[#050508]/20" />
         </div>
       )}
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
+      <motion.article
+        initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: 'easeOut' }}
-        className="max-w-3xl mx-auto px-6 md:px-8"
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+        className="max-w-[760px] mx-auto px-6 md:px-8"
       >
-        <div className={post.imageUrl ? 'pt-10 pb-8' : 'pt-28 pb-8'}>
-          {!post.imageUrl && (
-            <div className="mb-5">
-              <TagRow tags={post.tags} />
-            </div>
-          )}
-          <div className="flex items-start justify-between gap-6 mb-4">
-            <h1
-              className="font-sans font-light text-3xl md:text-5xl text-white leading-tight"
-              style={typoH1Style}
-            >
-              {post.title}
-            </h1>
-            {post.whitepaperUrl && (
-              <GradientButton
-                className="flex-shrink-0 !min-w-0 !px-5 !py-2.5 !text-sm !rounded-lg !font-light mt-1"
-                onClick={() => {
-                  const link = document.createElement('a')
-                  link.href = post.whitepaperUrl!
-                  link.download = `${post.title || 'whitepaper'}.pdf`
-                  link.target = '_blank'
-                  document.body.appendChild(link)
-                  link.click()
-                  document.body.removeChild(link)
-                }}
-              >
-                <Download className="w-4 h-4 mr-2" />
-                <span className="hidden md:inline">Download PDF</span>
-              </GradientButton>
-            )}
+        {/* Header */}
+        <header className={post.imageUrl ? 'pt-12 pb-10' : 'pt-32 pb-10'}>
+          <div className="mb-6">
+            <TagRow tags={post.tags} />
           </div>
-          <p className="font-body text-gray-500 text-sm">
-            By {post.author} &middot;{' '}
-            {new Date(post.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-          </p>
+
+          <h1
+            className="font-sans font-light leading-[1.1] tracking-tight text-white mb-7"
+            style={{ fontSize: 'clamp(2rem, 4.6vw, 3.4rem)' }}
+          >
+            {post.title}
+          </h1>
+
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="w-px h-8 bg-cobalt-blue/40" />
+            <div>
+              <p className="font-sans text-[10px] tracking-[0.35em] uppercase text-gray-600 mb-0.5">Written by</p>
+              <p className="font-sans text-sm text-white/70">{post.author}</p>
+            </div>
+            <div className="w-px h-8 bg-white/8" />
+            <div>
+              <p className="font-sans text-[10px] tracking-[0.35em] uppercase text-gray-600 mb-0.5">Published</p>
+              <p className="font-sans text-sm text-white/70">
+                {new Date(post.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+              </p>
+            </div>
+          </div>
+        </header>
+
+        {/* Cobalt accent rule */}
+        <div className="relative mb-12 h-px">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cobalt-blue/40 to-transparent" />
         </div>
 
-        <div className="h-px bg-white/[0.06] mb-10" />
-
-        {post.templateType === 'singleImage' && post.richContent && (
-          <div
-            className="prose prose-invert prose-p:font-body prose-headings:font-sans prose-headings:font-light max-w-none prose-p:leading-relaxed prose-p:text-gray-300 prose-headings:text-white"
-            dangerouslySetInnerHTML={{ __html: post.richContent }}
-            style={typoBodyStyle}
-          />
+        {/* ── Abstract ── */}
+        {abstractParas.length > 0 && (
+          <section className="mb-14">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-8 h-px bg-cobalt-light" />
+              <span className="font-sans text-[10px] tracking-[0.4em] uppercase text-cobalt-light">
+                Abstract
+              </span>
+            </div>
+            <div className="space-y-5">
+              {abstractParas.map((para, i) => (
+                <p
+                  key={i}
+                  className="font-body text-[1.0625rem] leading-[1.85] text-white/85"
+                  style={{ fontWeight: 300 }}
+                >
+                  {para}
+                </p>
+              ))}
+            </div>
+          </section>
         )}
 
-        {post.templateType === 'document' && post.blocks && post.blocks.length > 0 && (
-          <DocumentBlocks blocks={post.blocks} typoBodyStyle={typoBodyStyle} />
+        {/* ── Blurred preview + Download CTA ── */}
+        {(previewParas.length > 0 || post.whitepaperUrl) && (
+          <section className="relative mb-12">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-8 h-px bg-white/15" />
+              <span className="font-sans text-[10px] tracking-[0.4em] uppercase text-gray-500">
+                Full Paper
+              </span>
+            </div>
+
+            {/* Preview container */}
+            <div className="relative overflow-hidden rounded-2xl border border-white/6">
+              {/* Blurred body text behind */}
+              <div
+                aria-hidden
+                className="px-6 md:px-10 pt-10 pb-24 select-none pointer-events-none"
+                style={{
+                  filter: 'blur(7px)',
+                  WebkitFilter: 'blur(7px)',
+                }}
+              >
+                <div className="space-y-5">
+                  {(previewParas.length > 0 ? previewParas : [
+                    'The full body of this paper covers methodology, experimental setup, key findings, and detailed analysis.',
+                    'Sections include comprehensive literature review, dataset description, model architecture, training procedures, evaluation metrics, and ablation studies.',
+                    'Download the PDF to read the complete research, including all figures, tables, and references.',
+                  ]).map((para, i) => (
+                    <p
+                      key={i}
+                      className="font-body text-[1rem] leading-[1.85] text-white/60"
+                      style={{ fontWeight: 300 }}
+                    >
+                      {para}
+                    </p>
+                  ))}
+                </div>
+              </div>
+
+              {/* Smooth fade to dark at bottom */}
+              <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-[#050508] via-[#050508]/85 to-transparent pointer-events-none" />
+
+              {/* Centered Download CTA */}
+              <div className="absolute inset-0 flex flex-col items-center justify-end pb-10 px-6">
+                <div className="relative w-full max-w-md">
+                  {/* Glow halo */}
+                  <div
+                    className="absolute -inset-6 rounded-3xl pointer-events-none"
+                    style={{ background: 'radial-gradient(ellipse 70% 60% at 50% 60%, rgba(19,111,215,0.18), transparent 70%)' }}
+                  />
+
+                  <div className="relative bg-[#070710]/80 backdrop-blur-md border border-white/8 rounded-2xl p-7 text-center">
+                    <div className="flex items-center justify-center mb-4">
+                      <div className="w-12 h-12 rounded-full bg-cobalt-blue/15 border border-cobalt-blue/30 flex items-center justify-center">
+                        {post.whitepaperUrl ? (
+                          <FileText className="w-5 h-5 text-cobalt-light" />
+                        ) : (
+                          <Lock className="w-5 h-5 text-cobalt-light" />
+                        )}
+                      </div>
+                    </div>
+
+                    <h3 className="font-sans text-lg font-light text-white mb-2">
+                      Read the Full Paper
+                    </h3>
+                    <p className="font-body text-sm text-gray-500 mb-6 leading-relaxed">
+                      {post.whitepaperUrl
+                        ? 'Download the complete research paper for the full methodology, findings, and analysis.'
+                        : 'The full paper will be available soon.'}
+                    </p>
+
+                    {post.whitepaperUrl ? (
+                      <GradientButton
+                        type="button"
+                        onClick={() => downloadPdf(post.whitepaperUrl!, post.title)}
+                        className="!min-w-0 !px-6 !py-3 !text-sm !rounded-lg !font-light w-full sm:w-auto"
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Download Paper (PDF)
+                      </GradientButton>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled
+                        className="px-6 py-3 rounded-lg border border-white/8 text-gray-600 font-sans text-sm cursor-not-allowed"
+                      >
+                        Coming Soon
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
         )}
 
+        {/* Prev / Next */}
         <PostNav prev={prev} next={next} />
 
+        {/* Back link */}
         <div className="mt-12 pb-16">
           <a
             href="/research"
@@ -374,7 +349,7 @@ export default function ResearchDetailPage() {
             <ArrowLeft className="w-3 h-3" /> Back to Research
           </a>
         </div>
-      </motion.div>
+      </motion.article>
     </div>
   )
 }

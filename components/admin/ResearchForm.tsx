@@ -2,12 +2,10 @@
 
 import { useState } from 'react'
 import { useDropzone } from 'react-dropzone'
-import { FileText, Layout, BookOpen, Eye, ArrowLeft, Upload, X } from 'lucide-react'
+import { FileText, ArrowLeft, Upload, X, Image as ImageIcon } from 'lucide-react'
 import { uploadToCloudinaryDirect } from '@/lib/cloudinary'
-import { saveResearchPost, TemplateType, ContentBlock } from '@/lib/firebase'
+import { saveResearchPost } from '@/lib/firebase'
 import TagSelector from './TagSelector'
-import BlockEditor from './BlockEditor'
-import PostPreview from './PostPreview'
 import { GradientButton } from '@/components/ui/gradient-button'
 import toast from 'react-hot-toast'
 
@@ -23,91 +21,7 @@ const secBtnCls = "px-4 py-2.5 border border-white/8 rounded-lg text-gray-400 ho
 const toSlug = (text: string) =>
   text.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').trim()
 
-const BODY_PLACEHOLDER = `## Introduction
-
-Write your opening paragraph here. This becomes the lead text in a larger, elegant serif font.
-
-[IMAGE_1]
-
-## Section Title
-
-Your section body text goes here. Write naturally — each paragraph is separated by a blank line.
-
-[IMAGE_2]
-
-## Another Section
-
-Continue your writing...
-
-> A powerful pull quote or key insight goes here.
-
-[IMAGE_3]
-
-## Conclusion
-
-Closing thoughts.`
-
-interface ImageZoneProps {
-  label: string
-  hint: string
-  file: File | null
-  url: string
-  onFile: (f: File | null) => void
-  onUrl: (u: string) => void
-}
-
-function ImageZone({ label, hint, file, url, onFile, onUrl }: ImageZoneProps) {
-  const { getRootProps, getInputProps } = useDropzone({
-    accept: { 'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp'] },
-    maxFiles: 1,
-    onDrop: (files) => onFile(files[0]),
-  })
-  return (
-    <div>
-      <label className={labelCls}>{label}</label>
-      <p className="font-sans text-[10px] text-gray-700 mb-2">{hint}</p>
-      <div
-        {...getRootProps()}
-        className="border border-dashed border-white/10 rounded-xl p-5 text-center cursor-pointer hover:border-cobalt-blue/40 transition-colors"
-      >
-        <input {...getInputProps()} />
-        {file ? (
-          <div className="text-white flex items-center justify-center gap-3">
-            <p className="font-sans text-sm">{file.name}</p>
-            <button
-              type="button"
-              onClick={(e) => { e.stopPropagation(); onFile(null) }}
-              className="text-gray-600 hover:text-red-400 transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        ) : url ? (
-          <div>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={url} alt="Preview" className="max-h-32 mx-auto rounded-lg mb-3 object-cover" />
-            <button
-              type="button"
-              onClick={(e) => { e.stopPropagation(); onUrl('') }}
-              className="font-sans text-xs text-red-400 hover:text-red-300"
-            >
-              Remove
-            </button>
-          </div>
-        ) : (
-          <div>
-            <Upload className="mx-auto h-7 w-7 text-gray-700 mb-2" />
-            <p className="font-body text-sm text-gray-600">Drag & drop or click</p>
-            <p className="font-body text-xs text-gray-700 mt-0.5">PNG, JPG up to 10MB</p>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
 export default function ResearchForm({ onBack, editPost }: ResearchFormProps) {
-  const [templateType, setTemplateType] = useState<TemplateType | ''>(editPost?.templateType || '')
   const [formData, setFormData] = useState({
     title: editPost?.title || '',
     author: editPost?.author || '',
@@ -118,24 +32,22 @@ export default function ResearchForm({ onBack, editPost }: ResearchFormProps) {
   const [slug, setSlug] = useState<string>(editPost?.id || '')
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(!!editPost)
 
-  // Default template state
-  const [defaultContent, setDefaultContent] = useState(editPost?.defaultContent || '')
   const [coverFile, setCoverFile] = useState<File | null>(null)
   const [coverUrl, setCoverUrl] = useState(editPost?.imageUrl || '')
-  const [img2File, setImg2File] = useState<File | null>(null)
-  const [img2Url, setImg2Url] = useState(editPost?.image2Url || '')
-  const [img3File, setImg3File] = useState<File | null>(null)
-  const [img3Url, setImg3Url] = useState(editPost?.image3Url || '')
 
-  // Document template state
-  const [blocks, setBlocks] = useState<ContentBlock[]>(editPost?.blocks || [])
+  const [abstract, setAbstract] = useState(editPost?.abstract || '')
+  const [previewBody, setPreviewBody] = useState(editPost?.previewBody || '')
 
-  // Whitepaper
   const [whitepaperFile, setWhitepaperFile] = useState<File | null>(null)
   const [whitepaperUrl, setWhitepaperUrl] = useState(editPost?.whitepaperUrl || '')
 
   const [loading, setLoading] = useState(false)
-  const [showPreview, setShowPreview] = useState(false)
+
+  const { getRootProps: getImageRootProps, getInputProps: getImageInputProps } = useDropzone({
+    accept: { 'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp'] },
+    maxFiles: 1,
+    onDrop: (files) => setCoverFile(files[0]),
+  })
 
   const { getRootProps: getPdfRootProps, getInputProps: getPdfInputProps } = useDropzone({
     accept: { 'application/pdf': ['.pdf'] },
@@ -143,7 +55,7 @@ export default function ResearchForm({ onBack, editPost }: ResearchFormProps) {
     onDrop: (files) => setWhitepaperFile(files[0]),
   })
 
-  const uploadImage = async (file: File, label: string): Promise<string> => {
+  const upload = async (file: File, label: string): Promise<string> => {
     toast.loading(`Uploading ${label}…`)
     try {
       const url = await uploadToCloudinaryDirect(file)
@@ -159,30 +71,23 @@ export default function ResearchForm({ onBack, editPost }: ResearchFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!templateType) { toast.error('Please select a template type'); return }
     if (!slug.trim()) { toast.error('Please enter a slug'); return }
+    if (!abstract.trim()) { toast.error('Please enter an abstract'); return }
     setLoading(true)
     try {
-      const postData: any = { ...formData, templateType }
+      let finalCover = coverUrl
+      let finalPdf = whitepaperUrl
+      if (coverFile) finalCover = await upload(coverFile, 'Cover image')
+      if (whitepaperFile) finalPdf = await upload(whitepaperFile, 'Whitepaper')
 
-      if (templateType === 'default') {
-        postData.defaultContent = defaultContent || undefined
-        let finalCover = coverUrl
-        let finalImg2 = img2Url
-        let finalImg3 = img3Url
-        if (coverFile) finalCover = await uploadImage(coverFile, 'Cover image')
-        if (img2File) finalImg2 = await uploadImage(img2File, 'Body image 1')
-        if (img3File) finalImg3 = await uploadImage(img3File, 'Body image 2')
-        postData.imageUrl = finalCover || undefined
-        postData.image2Url = finalImg2 || undefined
-        postData.image3Url = finalImg3 || undefined
-      } else if (templateType === 'document') {
-        postData.blocks = blocks.length > 0 ? blocks : undefined
+      const postData: any = {
+        ...formData,
+        imageUrl: finalCover || undefined,
+        whitepaperUrl: finalPdf || undefined,
+        abstract: abstract || undefined,
+        previewBody: previewBody || undefined,
+        templateType: 'default',
       }
-
-      let finalWhitepaperUrl = whitepaperUrl
-      if (whitepaperFile) finalWhitepaperUrl = await uploadImage(whitepaperFile, 'Whitepaper')
-      postData.whitepaperUrl = finalWhitepaperUrl || undefined
 
       await saveResearchPost(postData, slug.trim())
       toast.success('Research post saved!')
@@ -272,101 +177,80 @@ export default function ResearchForm({ onBack, editPost }: ResearchFormProps) {
           </div>
         </div>
 
-        {/* Template selection */}
-        {!editPost && (
-          <div className="border border-white/8 rounded-xl p-6">
-            <p className="font-sans text-[10px] tracking-widest uppercase text-gray-600 mb-4">Template *</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <button type="button" onClick={() => setTemplateType('default')}
-                className={`p-5 border rounded-xl transition-all text-left ${
-                  templateType === 'default'
-                    ? 'border-cobalt-blue/60 bg-cobalt-blue/8'
-                    : 'border-white/8 hover:border-white/20'
-                }`}>
-                <BookOpen className="w-8 h-8 text-cobalt-light mb-3" />
-                <h3 className="font-sans text-sm font-medium text-white mb-1">Default Blog</h3>
-                <p className="font-body text-xs text-gray-600">Beautiful editorial layout with up to 3 images</p>
-              </button>
-              <button type="button" onClick={() => setTemplateType('document')}
-                className={`p-5 border rounded-xl transition-all text-left ${
-                  templateType === 'document'
-                    ? 'border-cobalt-blue/60 bg-cobalt-blue/8'
-                    : 'border-white/8 hover:border-white/20'
-                }`}>
-                <Layout className="w-8 h-8 text-cobalt-light mb-3" />
-                <h3 className="font-sans text-sm font-medium text-white mb-1">Document</h3>
-                <p className="font-body text-xs text-gray-600">Flexible block-based layout</p>
-              </button>
-            </div>
+        {/* Cover image */}
+        <div className="border border-white/8 rounded-xl p-6 space-y-4">
+          <p className="font-sans text-[10px] tracking-widest uppercase text-gray-600">Cover Image</p>
+          <div {...getImageRootProps()}
+            className="border border-dashed border-white/10 rounded-xl p-6 text-center cursor-pointer hover:border-cobalt-blue/40 transition-colors">
+            <input {...getImageInputProps()} />
+            {coverFile ? (
+              <div className="text-white flex items-center justify-center gap-3">
+                <p className="font-sans text-sm">{coverFile.name}</p>
+                <button type="button" onClick={(e) => { e.stopPropagation(); setCoverFile(null) }}
+                  className="text-gray-600 hover:text-red-400 transition-colors">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ) : coverUrl ? (
+              <div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={coverUrl} alt="Preview" className="max-h-40 mx-auto rounded-lg mb-3 object-cover" />
+                <button type="button" onClick={(e) => { e.stopPropagation(); setCoverUrl('') }}
+                  className="font-sans text-xs text-red-400 hover:text-red-300">Remove</button>
+              </div>
+            ) : (
+              <div>
+                <ImageIcon className="mx-auto h-8 w-8 text-gray-700 mb-3" />
+                <p className="font-body text-sm text-gray-600">Drag & drop or click to upload</p>
+                <p className="font-body text-xs text-gray-700 mt-1">PNG, JPG up to 10MB</p>
+              </div>
+            )}
           </div>
-        )}
+        </div>
 
-        {/* Default Blog editor */}
-        {templateType === 'default' && (
-          <div className="border border-white/8 rounded-xl p-6 space-y-6">
-            <p className="font-sans text-[10px] tracking-widest uppercase text-gray-600">Default Blog Template</p>
-
-            {/* Body content */}
-            <div>
-              <label className={labelCls}>Body Content *</label>
-              <p className="font-sans text-[10px] text-gray-700 mb-3 leading-relaxed">
-                Use <code className="text-cobalt-light/70 bg-white/4 px-1 rounded">## Heading</code> for section titles,&nbsp;
-                <code className="text-cobalt-light/70 bg-white/4 px-1 rounded">{`> Quote`}</code> for pull quotes,&nbsp;
-                <code className="text-cobalt-light/70 bg-white/4 px-1 rounded">[IMAGE_1]</code>&nbsp;
-                <code className="text-cobalt-light/70 bg-white/4 px-1 rounded">[IMAGE_2]</code>&nbsp;
-                <code className="text-cobalt-light/70 bg-white/4 px-1 rounded">[IMAGE_3]</code> to place images,&nbsp;
-                <code className="text-cobalt-light/70 bg-white/4 px-1 rounded">---</code> for a divider.
-              </p>
-              <textarea
-                value={defaultContent}
-                onChange={(e) => setDefaultContent(e.target.value)}
-                rows={18}
-                className={`${inputCls} font-mono text-xs leading-relaxed`}
-                placeholder={BODY_PLACEHOLDER}
-              />
-            </div>
-
-            {/* Image uploads */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <ImageZone
-                label="Cover / Hero Image"
-                hint="Displayed as the full-width hero at top. Also used when [IMAGE_1] appears in body."
-                file={coverFile}
-                url={coverUrl}
-                onFile={setCoverFile}
-                onUrl={setCoverUrl}
-              />
-              <ImageZone
-                label="Body Image 2"
-                hint="Inserted where [IMAGE_2] appears in body."
-                file={img2File}
-                url={img2Url}
-                onFile={setImg2File}
-                onUrl={setImg2Url}
-              />
-              <ImageZone
-                label="Body Image 3"
-                hint="Inserted where [IMAGE_3] appears in body."
-                file={img3File}
-                url={img3Url}
-                onFile={setImg3File}
-                onUrl={setImg3Url}
-              />
-            </div>
+        {/* Abstract */}
+        <div className="border border-white/8 rounded-xl p-6 space-y-3">
+          <div>
+            <label className={labelCls}>Abstract *</label>
+            <p className="font-sans text-[10px] text-gray-700 mb-2">
+              The visible summary shown on the paper page. Separate paragraphs with a blank line.
+            </p>
           </div>
-        )}
+          <textarea
+            required
+            value={abstract}
+            onChange={(e) => setAbstract(e.target.value)}
+            rows={8}
+            className={inputCls}
+            placeholder="Write the abstract / summary that readers will see in full…"
+          />
+        </div>
 
-        {/* Document editor */}
-        {templateType === 'document' && (
-          <div className="border border-white/8 rounded-xl p-6 space-y-4">
-            <p className="font-sans text-[10px] tracking-widest uppercase text-gray-600">Document Template</p>
-            <BlockEditor blocks={blocks} onChange={setBlocks} />
+        {/* Preview body (blurred) */}
+        <div className="border border-white/8 rounded-xl p-6 space-y-3">
+          <div>
+            <label className={labelCls}>Preview Body (shown blurred)</label>
+            <p className="font-sans text-[10px] text-gray-700 mb-2">
+              Text that appears blurred behind the &ldquo;Download Paper&rdquo; CTA — gives readers a glimpse of the depth without giving the paper away. Separate paragraphs with a blank line.
+            </p>
           </div>
-        )}
+          <textarea
+            value={previewBody}
+            onChange={(e) => setPreviewBody(e.target.value)}
+            rows={8}
+            className={inputCls}
+            placeholder="A teaser of the body text — methodology, findings, snippets…"
+          />
+        </div>
 
-        {/* Whitepaper upload */}
-        <div className="border border-white/8 rounded-xl p-6">
-          <label className={labelCls}>Whitepaper PDF (optional)</label>
+        {/* Whitepaper PDF */}
+        <div className="border border-white/8 rounded-xl p-6 space-y-3">
+          <div>
+            <label className={labelCls}>Whitepaper PDF</label>
+            <p className="font-sans text-[10px] text-gray-700 mb-2">
+              The full paper users can download from the CTA on the blurred section.
+            </p>
+          </div>
           <div {...getPdfRootProps()}
             className="border border-dashed border-white/10 rounded-xl p-6 text-center cursor-pointer hover:border-cobalt-blue/40 transition-colors">
             <input {...getPdfInputProps()} />
@@ -378,7 +262,7 @@ export default function ResearchForm({ onBack, editPost }: ResearchFormProps) {
               </div>
             ) : whitepaperUrl ? (
               <div>
-                <p className="font-sans text-sm text-gray-400 mb-2">Whitepaper attached</p>
+                <p className="font-sans text-sm text-gray-400 mb-2">PDF attached</p>
                 <button type="button" onClick={(e) => { e.stopPropagation(); setWhitepaperUrl('') }}
                   className="font-sans text-xs text-red-400 hover:text-red-300">Remove</button>
               </div>
@@ -395,33 +279,15 @@ export default function ResearchForm({ onBack, editPost }: ResearchFormProps) {
         {/* Actions */}
         <div className="flex justify-end items-center gap-3 pt-2">
           <button type="button" onClick={onBack} className={secBtnCls}>Cancel</button>
-          {templateType === 'document' && (
-            <button type="button" onClick={() => setShowPreview(true)}
-              className={`flex items-center gap-2 ${secBtnCls}`}>
-              <Eye className="w-4 h-4" /> Preview
-            </button>
-          )}
           <GradientButton
             type="submit"
-            disabled={loading || !templateType}
+            disabled={loading}
             className="!min-w-0 !px-6 !py-2.5 !text-sm !rounded-lg !font-light"
           >
             {loading ? 'Saving…' : editPost ? 'Update Post' : 'Publish Post'}
           </GradientButton>
         </div>
       </form>
-
-      {showPreview && templateType === 'document' && (
-        <PostPreview
-          templateType={templateType}
-          imageUrl={coverUrl}
-          richContent=""
-          blocks={blocks}
-          heading={formData.title}
-          date={formData.date}
-          onClose={() => setShowPreview(false)}
-        />
-      )}
     </div>
   )
 }
