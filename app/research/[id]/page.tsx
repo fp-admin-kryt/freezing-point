@@ -116,23 +116,35 @@ function PostNav({ prev, next }: { prev: ResearchPost | null; next: ResearchPost
   )
 }
 
-function downloadPdf(url: string, title: string) {
+async function downloadPdf(url: string, title: string) {
   const safeName =
     (title || 'whitepaper').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'whitepaper'
 
-  // Cloudinary's fl_attachment forces Content-Disposition: attachment with the right filename
-  const downloadUrl = url.includes('cloudinary.com') && url.includes('/upload/')
-    ? url.replace('/upload/', `/upload/fl_attachment:${safeName}/`)
-    : url
+  // Cloudinary serves raw PDFs as octet-stream and the `<a download>` attribute is ignored
+  // for cross-origin URLs. So fetch the bytes, wrap them in a PDF blob, and trigger
+  // a same-origin download via an object URL.
+  try {
+    const response = await fetch(url, { mode: 'cors' })
+    if (!response.ok) throw new Error(`Status ${response.status}`)
+    const buf = await response.arrayBuffer()
+    const blob = new Blob([buf], { type: 'application/pdf' })
+    const blobUrl = URL.createObjectURL(blob)
 
-  const link = document.createElement('a')
-  link.href = downloadUrl
-  link.download = `${safeName}.pdf`
-  link.target = '_blank'
-  link.rel = 'noopener'
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
+    const link = document.createElement('a')
+    link.href = blobUrl
+    link.download = `${safeName}.pdf`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 2000)
+  } catch (err) {
+    console.error('PDF download failed, falling back to direct open:', err)
+    // Fallback: try Cloudinary's fl_attachment, then plain open
+    const fallbackUrl = url.includes('cloudinary.com') && url.includes('/upload/')
+      ? url.replace('/upload/', `/upload/fl_attachment:${safeName}/`)
+      : url
+    window.open(fallbackUrl, '_blank', 'noopener')
+  }
 }
 
 export default function ResearchDetailPage() {
