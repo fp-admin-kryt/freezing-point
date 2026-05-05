@@ -235,7 +235,7 @@ export default function AdminDashboard() {
                   <Edit className="h-3.5 w-3.5" />
                 </button>
                 <button
-                  onClick={() => post.id && post.type && handleDelete(post.id, isResearch ? 'research' : post.type as any)}
+                  onClick={() => post.id && handleDelete(post.id, isResearch ? 'research' : (post.type as any))}
                   className="p-2 text-gray-600 hover:text-red-400 transition-colors rounded-lg hover:bg-white/4"
                   disabled={!post.id}
                   title="Delete"
