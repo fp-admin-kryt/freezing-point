@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { ContentBlock } from '@/lib/firebase'
-import { GripVertical, X, Image as ImageIcon, FileText, ImageIcon as ImageTextIcon, ArrowUp, ArrowDown, Upload, Type, Quote } from 'lucide-react'
+import { ContentBlock, GridCell } from '@/lib/firebase'
+import { GripVertical, X, Image as ImageIcon, FileText, ImageIcon as ImageTextIcon, ArrowUp, ArrowDown, Upload, Type, Quote, LayoutGrid, Plus } from 'lucide-react'
 import RichTextEditor from './RichTextEditor'
 import { useDropzone } from 'react-dropzone'
 import { uploadToCloudinaryDirect } from '@/lib/cloudinary'
@@ -21,12 +21,14 @@ export default function BlockEditor({ blocks, onChange }: BlockEditorProps) {
 
   const addBlock = (type: ContentBlock['type']) => {
     const isMedia = type === 'image' || type === 'imageText'
+    const isGrid = type === 'grid'
     const newBlock: ContentBlock = {
       id: Date.now().toString(),
       type,
-      content: !isMedia ? '' : type === 'imageText' ? '' : undefined,
+      content: !isMedia && !isGrid ? '' : type === 'imageText' ? '' : undefined,
       imageUrl: isMedia ? '' : undefined,
       align: type === 'imageText' ? 'left' : undefined,
+      cells: isGrid ? [{ header: '', title: '', content: '' }, { header: '', title: '', content: '' }] : undefined,
       order: blocks.length,
     }
     onChange([...blocks, newBlock])
@@ -105,6 +107,16 @@ export default function BlockEditor({ blocks, onChange }: BlockEditorProps) {
             ))}
           </div>
         </div>
+        <div>
+          <p className="font-sans text-[10px] tracking-widest uppercase text-gray-600 mb-2">Layout</p>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={() => addBlock('grid')}
+              className="flex items-center gap-2 px-3 py-1.5 border border-white/8 rounded-lg text-gray-400 hover:text-white hover:border-white/20 transition-colors font-sans text-xs">
+              <LayoutGrid className="w-3.5 h-3.5" />
+              Grid
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Blocks */}
@@ -125,6 +137,7 @@ export default function BlockEditor({ blocks, onChange }: BlockEditorProps) {
                   {block.type === 'pullQuote' && 'Pull Quote'}
                   {block.type === 'image' && 'Image'}
                   {block.type === 'imageText' && 'Image + Text'}
+                  {block.type === 'grid' && 'Grid'}
                 </span>
               </div>
               <div className="flex items-center gap-1">
@@ -193,6 +206,13 @@ export default function BlockEditor({ blocks, onChange }: BlockEditorProps) {
                 uploading={uploadingImage === block.id}
               />
             )}
+
+            {block.type === 'grid' && (
+              <GridBlockEditor
+                cells={block.cells || []}
+                onChange={(cells) => updateBlock(block.id, { cells })}
+              />
+            )}
           </div>
         ))}
 
@@ -253,6 +273,85 @@ function ImageBlockEditor({ block, onUpdate, onImageUpload, uploading }: {
           {uploading && <p className="font-sans text-xs text-cobalt-light mt-2">Uploading…</p>}
         </div>
       )}
+    </div>
+  )
+}
+
+function GridBlockEditor({ cells, onChange }: {
+  cells: GridCell[]
+  onChange: (cells: GridCell[]) => void
+}) {
+  const update = (index: number, patch: Partial<GridCell>) => {
+    onChange(cells.map((c, i) => (i === index ? { ...c, ...patch } : c)))
+  }
+  const remove = (index: number) => {
+    onChange(cells.filter((_, i) => i !== index))
+  }
+  const move = (index: number, dir: 'up' | 'down') => {
+    const newIndex = dir === 'up' ? index - 1 : index + 1
+    if (newIndex < 0 || newIndex >= cells.length) return
+    const next = [...cells]
+    ;[next[index], next[newIndex]] = [next[newIndex], next[index]]
+    onChange(next)
+  }
+  const add = () => {
+    onChange([...cells, { header: '', title: '', content: '' }])
+  }
+
+  return (
+    <div className="space-y-3">
+      <p className="font-sans text-[10px] text-gray-700 leading-relaxed">
+        Cells stack on phones and auto-fit side-by-side on larger screens.
+      </p>
+      {cells.map((cell, i) => (
+        <div key={i} className="border border-white/8 rounded-lg p-4 space-y-2.5">
+          <div className="flex items-center justify-between">
+            <span className="font-sans text-[9px] tracking-widest uppercase text-gray-600">
+              Cell {i + 1}
+            </span>
+            <div className="flex items-center gap-1">
+              <button type="button" onClick={() => move(i, 'up')} disabled={i === 0}
+                className="p-1 text-gray-600 hover:text-white disabled:opacity-25 transition-colors">
+                <ArrowUp className="w-3.5 h-3.5" />
+              </button>
+              <button type="button" onClick={() => move(i, 'down')} disabled={i === cells.length - 1}
+                className="p-1 text-gray-600 hover:text-white disabled:opacity-25 transition-colors">
+                <ArrowDown className="w-3.5 h-3.5" />
+              </button>
+              <button type="button" onClick={() => remove(i)}
+                className="p-1 text-gray-600 hover:text-red-400 transition-colors ml-1">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+          <input
+            type="text"
+            value={cell.header}
+            onChange={(e) => update(i, { header: e.target.value })}
+            placeholder="Header (e.g. STAGE 01)"
+            className={inputCls}
+          />
+          <input
+            type="text"
+            value={cell.title}
+            onChange={(e) => update(i, { title: e.target.value })}
+            placeholder="Title"
+            className={inputCls}
+          />
+          <textarea
+            value={cell.content}
+            onChange={(e) => update(i, { content: e.target.value })}
+            placeholder="Content (rendered in italics)"
+            rows={3}
+            className={`${inputCls} resize-none`}
+          />
+        </div>
+      ))}
+      <button type="button" onClick={add}
+        className="flex items-center gap-2 px-3 py-2 border border-dashed border-white/10 rounded-lg text-gray-500 hover:text-white hover:border-white/25 transition-colors font-sans text-xs w-full justify-center">
+        <Plus className="w-3.5 h-3.5" />
+        Add Cell
+      </button>
     </div>
   )
 }

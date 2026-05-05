@@ -115,6 +115,43 @@ function Block({ block, typoBodyStyle }: { block: ContentBlock; typoBodyStyle: R
         </div>
       )
 
+    case 'grid': {
+      const cells = (block.cells || []).filter((c) => c.header || c.title || c.content)
+      if (cells.length === 0) return null
+      return (
+        <div
+          style={{
+            display: 'grid',
+            gap: '0.875rem',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          }}
+        >
+          {cells.map((cell, i) => (
+            <div
+              key={i}
+              className="border border-white/12 rounded-xl p-5 flex flex-col"
+            >
+              {cell.header && (
+                <p className="font-sans text-[10px] tracking-[0.3em] uppercase text-gray-400 mb-3 leading-snug">
+                  {cell.header}
+                </p>
+              )}
+              {cell.title && (
+                <p className="font-body text-base text-white mb-2 leading-snug">
+                  {cell.title}
+                </p>
+              )}
+              {cell.content && (
+                <p className="font-body italic text-sm text-gray-400 leading-relaxed">
+                  {cell.content}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      )
+    }
+
     default:
       return null
   }

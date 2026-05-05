@@ -26,13 +26,19 @@ const toSlug = (text: string) =>
 
 const BODY_PLACEHOLDER = `## Introduction
 
-Write your opening paragraph here. This becomes the lead text in a larger, elegant serif font.
+Write your opening paragraph here. This becomes the lead text.
 
 [IMAGE_1]
 
 ## Section Title
 
 Your section body text goes here. Write naturally — each paragraph is separated by a blank line.
+
+[GRID]
+PHASE 01 | Discovery | Initial research and concept formation
+PHASE 02 | Synthesis | Translating insights into frameworks
+PHASE 03 | Application | Deploying systems in real-world contexts
+[/GRID]
 
 [IMAGE_2]
 
@@ -304,8 +310,14 @@ export default function RadarForm({ onBack, editPost }: RadarFormProps) {
                 <code className="text-cobalt-light/70 bg-white/4 px-1 rounded">{`> Quote`}</code> for pull quotes,&nbsp;
                 <code className="text-cobalt-light/70 bg-white/4 px-1 rounded">[IMAGE_1]</code>&nbsp;
                 <code className="text-cobalt-light/70 bg-white/4 px-1 rounded">[IMAGE_2]</code>&nbsp;
-                <code className="text-cobalt-light/70 bg-white/4 px-1 rounded">[IMAGE_3]</code> to place images,&nbsp;
+                <code className="text-cobalt-light/70 bg-white/4 px-1 rounded">[IMAGE_3]</code> for images,&nbsp;
                 <code className="text-cobalt-light/70 bg-white/4 px-1 rounded">---</code> for a divider.
+              </p>
+              <p className="font-sans text-[10px] text-gray-700 mb-3 leading-relaxed">
+                Auto-responsive grid: wrap cells in&nbsp;
+                <code className="text-cobalt-light/70 bg-white/4 px-1 rounded">[GRID]</code> /&nbsp;
+                <code className="text-cobalt-light/70 bg-white/4 px-1 rounded">[/GRID]</code>. One cell per line, fields pipe-separated:&nbsp;
+                <code className="text-cobalt-light/70 bg-white/4 px-1 rounded">HEADER | Title | Content (italic)</code>.
               </p>
               <textarea
                 value={defaultContent}

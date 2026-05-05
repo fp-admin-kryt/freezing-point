@@ -9,12 +9,19 @@ interface DefaultBlogRendererProps {
   image3Url?: string
 }
 
+interface GridCell {
+  header: string
+  title: string
+  content: string
+}
+
 type BlockNode =
   | { kind: 'section'; text: string }
   | { kind: 'paragraph'; text: string }
   | { kind: 'quote'; text: string }
   | { kind: 'divider' }
   | { kind: 'image'; slot: 1 | 2 | 3 }
+  | { kind: 'grid'; cells: GridCell[] }
 
 function parse(content: string): BlockNode[] {
   const nodes: BlockNode[] = []
@@ -60,6 +67,26 @@ function parse(content: string): BlockNode[] {
       continue
     }
 
+    if (line === '[GRID]') {
+      const cells: GridCell[] = []
+      i++
+      while (i < lines.length && lines[i].trimEnd() !== '[/GRID]') {
+        const cellLine = lines[i].trim()
+        if (cellLine) {
+          const parts = cellLine.split('|').map((p) => p.trim())
+          cells.push({
+            header: parts[0] || '',
+            title: parts[1] || '',
+            content: parts[2] || '',
+          })
+        }
+        i++
+      }
+      i++ // skip [/GRID]
+      if (cells.length > 0) nodes.push({ kind: 'grid', cells })
+      continue
+    }
+
     if (line.startsWith('> ')) {
       nodes.push({ kind: 'quote', text: line.slice(2).trim() })
       i++
@@ -77,6 +104,8 @@ function parse(content: string): BlockNode[] {
         l === '[IMAGE_1]' ||
         l === '[IMAGE_2]' ||
         l === '[IMAGE_3]' ||
+        l === '[GRID]' ||
+        l === '[/GRID]' ||
         l.startsWith('> ')
       ) break
       paraLines.push(l)
@@ -148,6 +177,20 @@ export function DefaultBlogRenderer({ content, imageUrl, image2Url, image3Url }:
             <div key={idx} className="db-image-wrap">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={src} alt="" className="db-image" />
+            </div>
+          )
+        }
+
+        if (node.kind === 'grid') {
+          return (
+            <div key={idx} className="db-grid">
+              {node.cells.map((cell, ci) => (
+                <div key={ci} className="db-grid-cell">
+                  {cell.header && <p className="db-grid-header">{cell.header}</p>}
+                  {cell.title && <p className="db-grid-title">{cell.title}</p>}
+                  {cell.content && <p className="db-grid-content">{cell.content}</p>}
+                </div>
+              ))}
             </div>
           )
         }

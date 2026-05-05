@@ -52,12 +52,19 @@ const withRetry = async <T>(fn: () => Promise<T>, attempts = 3): Promise<T> => {
 // Types
 export type TemplateType = 'singleImage' | 'document' | 'default';
 
+export interface GridCell {
+  header: string;
+  title: string;
+  content: string;
+}
+
 export interface ContentBlock {
   id: string;
-  type: 'text' | 'image' | 'imageText' | 'sectionLabel' | 'documentTitle' | 'subtitle' | 'heading1' | 'heading2' | 'pullQuote';
+  type: 'text' | 'image' | 'imageText' | 'sectionLabel' | 'documentTitle' | 'subtitle' | 'heading1' | 'heading2' | 'pullQuote' | 'grid';
   content?: string; // HTML for 'text'; plain text for all others
   imageUrl?: string;
   align?: 'left' | 'right' | 'full'; // For imageText blocks
+  cells?: GridCell[]; // For grid blocks
   order: number;
 }
 
