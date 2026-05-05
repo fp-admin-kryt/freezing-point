@@ -117,10 +117,19 @@ function PostNav({ prev, next }: { prev: ResearchPost | null; next: ResearchPost
 }
 
 function downloadPdf(url: string, title: string) {
+  const safeName =
+    (title || 'whitepaper').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'whitepaper'
+
+  // Cloudinary's fl_attachment forces Content-Disposition: attachment with the right filename
+  const downloadUrl = url.includes('cloudinary.com') && url.includes('/upload/')
+    ? url.replace('/upload/', `/upload/fl_attachment:${safeName}/`)
+    : url
+
   const link = document.createElement('a')
-  link.href = url
-  link.download = `${title || 'whitepaper'}.pdf`
+  link.href = downloadUrl
+  link.download = `${safeName}.pdf`
   link.target = '_blank'
+  link.rel = 'noopener'
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
