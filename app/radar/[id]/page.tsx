@@ -17,7 +17,7 @@ function DetailSkeleton() {
   return (
     <div className="min-h-screen bg-[#050508] animate-pulse">
       <div className="w-full h-[60vh] bg-white/4" />
-      <div className="max-w-3xl mx-auto px-6 py-12 space-y-5">
+      <div className="max-w-[960px] mx-auto px-6 py-12 space-y-5">
         <div className="flex gap-2">
           <div className="h-5 w-16 rounded-full bg-white/6" />
           <div className="h-5 w-20 rounded-full bg-white/6" />
@@ -51,7 +51,7 @@ function TagRow({ tags, domain }: { tags: string[]; domain?: string }) {
         ) : null
       })}
       {domain && getDomainById(domain) && (
-        <span className="px-2.5 py-1 font-sans text-[9px] tracking-wider rounded-full border border-white/8 text-gray-500">
+        <span className="px-2.5 py-1 font-sans text-[9px] tracking-wider rounded-full bg-white/5 text-gray-500">
           {getDomainById(domain)?.name}
         </span>
       )}
@@ -62,12 +62,12 @@ function TagRow({ tags, domain }: { tags: string[]; domain?: string }) {
 function PostNav({ prev, next }: { prev: RadarPost | null; next: RadarPost | null }) {
   if (!prev && !next) return null
   return (
-    <div className="mt-16 pt-8 border-t border-white/5 grid grid-cols-2 gap-4">
+    <div className="mt-16 pt-8 grid grid-cols-2 gap-4" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
       <div>
         {prev && (
           <a
             href={`/radar/${prev.id}`}
-            className="group block border border-white/8 rounded-xl overflow-hidden hover:border-cobalt-blue/30 transition-all duration-300"
+            className="group block bg-white/[0.03] rounded-xl overflow-hidden hover:bg-white/[0.06] transition-all duration-300"
           >
             {prev.imageUrl && (
               <div className="relative w-full h-28 overflow-hidden">
@@ -78,7 +78,7 @@ function PostNav({ prev, next }: { prev: RadarPost | null; next: RadarPost | nul
                   className="object-cover group-hover:scale-105 transition-transform duration-500"
                   sizes="(max-width: 768px) 50vw, 25vw"
                 />
-                <div className="absolute inset-0 bg-black/50" />
+                <div className="absolute inset-0 bg-black/40" />
               </div>
             )}
             <div className="p-4">
@@ -96,7 +96,7 @@ function PostNav({ prev, next }: { prev: RadarPost | null; next: RadarPost | nul
         {next && (
           <a
             href={`/radar/${next.id}`}
-            className="group block border border-white/8 rounded-xl overflow-hidden hover:border-cobalt-blue/30 transition-all duration-300 text-right"
+            className="group block bg-white/[0.03] rounded-xl overflow-hidden hover:bg-white/[0.06] transition-all duration-300 text-right"
           >
             {next.imageUrl && (
               <div className="relative w-full h-28 overflow-hidden">
@@ -107,7 +107,7 @@ function PostNav({ prev, next }: { prev: RadarPost | null; next: RadarPost | nul
                   className="object-cover group-hover:scale-105 transition-transform duration-500"
                   sizes="(max-width: 768px) 50vw, 25vw"
                 />
-                <div className="absolute inset-0 bg-black/50" />
+                <div className="absolute inset-0 bg-black/40" />
               </div>
             )}
             <div className="p-4">
@@ -203,7 +203,7 @@ export default function RadarDetailPage() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="max-w-[720px] mx-auto px-6 md:px-8"
+          className="max-w-[960px] mx-auto px-6 md:px-10"
         >
           <header className={post.imageUrl ? 'pt-12 pb-10' : 'pt-32 pb-10'}>
             <div className="mb-6">
@@ -294,7 +294,7 @@ export default function RadarDetailPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: 'easeOut' }}
-        className="max-w-3xl mx-auto px-6 md:px-8"
+        className="max-w-[960px] mx-auto px-6 md:px-10"
       >
         <div className={post.imageUrl ? 'pt-10 pb-8' : 'pt-28 pb-8'}>
           {!post.imageUrl && (
@@ -313,7 +313,7 @@ export default function RadarDetailPage() {
           </p>
         </div>
 
-        <div className="h-px bg-white/[0.06] mb-10" />
+        <div className="h-px mb-10" style={{ background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.06), transparent)' }} />
 
         {post.templateType === 'singleImage' && post.richContent && (
           <div

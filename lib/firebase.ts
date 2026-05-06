@@ -2,6 +2,7 @@
 
 import { initializeApp, getApps } from 'firebase/app';
 import { initializeFirestore, collection, addDoc, getDocs, getDoc, setDoc, doc, deleteDoc, updateDoc, query, orderBy } from 'firebase/firestore';
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { deleteFromCloudinary, deleteMultipleFromCloudinary } from './cloudinary';
 import { getAuth } from 'firebase/auth';
 
@@ -23,6 +24,25 @@ export const db = typeof window === 'undefined'
   ? initializeFirestore(app, { ignoreUndefinedProperties: true })
   : initializeFirestore(app, { experimentalAutoDetectLongPolling: true, ignoreUndefinedProperties: true });
 export const auth = getAuth(app);
+export const storage = getStorage(app);
+
+export const uploadPdfToStorage = async (file: File, postSlug: string): Promise<string> => {
+  const path = `pdfs/research/${postSlug}/${file.name}`
+  const fileRef = storageRef(storage, path)
+  await uploadBytes(fileRef, file)
+  return getDownloadURL(fileRef)
+}
+
+const deleteFromStorage = async (url: string): Promise<void> => {
+  try {
+    const match = url.match(/\/o\/([^?]+)/)
+    if (!match) return
+    const path = decodeURIComponent(match[1])
+    await deleteObject(storageRef(storage, path))
+  } catch (err) {
+    console.warn('Firebase Storage delete skipped:', err)
+  }
+}
 
 export default app;
 // Utility: remove undefined values to keep Firestore writes clean
@@ -191,7 +211,7 @@ export const deleteResearchPost = async (id: string): Promise<void> => {
       const postData = postSnap.data() as ResearchPost;
       const urlsToDelete: string[] = [];
 
-      // Collect all image URLs
+      // Collect all asset URLs
       if (postData.imageUrl) urlsToDelete.push(postData.imageUrl);
       if (postData.whitepaperUrl) urlsToDelete.push(postData.whitepaperUrl);
 
@@ -202,13 +222,14 @@ export const deleteResearchPost = async (id: string): Promise<void> => {
         });
       }
 
-      // Delete from Cloudinary
-      if (urlsToDelete.length > 0) {
-        await deleteMultipleFromCloudinary(urlsToDelete);
-      }
+      // Route by host: Cloudinary for images, Firebase Storage for PDFs
+      const cloudinaryUrls = urlsToDelete.filter(u => u.includes('res.cloudinary.com'))
+      const storageUrls = urlsToDelete.filter(u => u.includes('firebasestorage.googleapis.com'))
+      if (cloudinaryUrls.length > 0) await deleteMultipleFromCloudinary(cloudinaryUrls)
+      await Promise.all(storageUrls.map(deleteFromStorage))
     }
 
-    // Delete from Firebase
+    // Delete from Firestore
     await withRetry(() => deleteDoc(doc(db, 'research', id)));
     console.log('Research post deleted:', id);
   } catch (error) {

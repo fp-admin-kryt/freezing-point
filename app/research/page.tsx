@@ -175,7 +175,7 @@ export default function ResearchPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4 }}
-            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5"
           >
             {sortedPosts.map((post, index) => (
               <motion.a
@@ -185,8 +185,8 @@ export default function ResearchPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.04 }}
-                className="img-card group relative block overflow-hidden rounded-xl cursor-pointer"
-                style={{ aspectRatio: '3/4' }}
+                className="img-card group relative block overflow-hidden rounded-2xl cursor-pointer"
+                style={{ aspectRatio: '16/9' }}
               >
                 {post.imageUrl ? (
                   <Image
@@ -194,7 +194,7 @@ export default function ResearchPage() {
                     alt={post.title}
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
-                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   />
                 ) : (
                   <div
@@ -205,8 +205,8 @@ export default function ResearchPage() {
                       style={{ background: 'radial-gradient(ellipse 80% 60% at 50% 80%, #136fd7 0%, transparent 70%)' }} />
                   </div>
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/45 to-transparent" />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors duration-400" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
                 {/* Tags */}
                 <div className="absolute top-3 left-3 flex flex-wrap gap-1 z-10">
@@ -221,23 +221,19 @@ export default function ResearchPage() {
                   })}
                 </div>
 
-                {/* Title */}
-                <div className="img-card-title absolute bottom-0 left-0 right-0 px-4 pb-11 z-10">
+                {/* Title + excerpt */}
+                <div className="img-card-title absolute bottom-0 left-0 right-0 px-4 pb-5 z-10">
                   <h3 className="font-sans text-xs font-medium text-white line-clamp-2 leading-snug">
                     {post.title}
                   </h3>
                   <p className="font-body text-gray-500 text-[10px] mt-1">
                     {post.author} · {new Date(post.date).toLocaleDateString()}
                   </p>
-                </div>
-
-                {/* Excerpt */}
-                <div className="img-card-excerpt absolute bottom-0 left-0 right-0 px-4 pb-4 z-20">
-                  <div className="bg-black/75 backdrop-blur-sm rounded-lg p-3 border border-white/8">
-                    <p className="font-body text-gray-300 text-[10px] leading-relaxed line-clamp-3 mb-1.5">
+                  <div className="img-card-excerpt">
+                    <p className="font-body text-gray-300 text-[11px] leading-relaxed line-clamp-2 mt-2.5">
                       {post.excerpt}
                     </p>
-                    <span className="font-sans text-[8px] tracking-[0.35em] uppercase text-cobalt-light flex items-center gap-1">
+                    <span className="font-sans text-[9px] tracking-[0.35em] uppercase text-cobalt-light flex items-center gap-1 mt-2">
                       Read <ArrowRight className="w-2.5 h-2.5" />
                     </span>
                   </div>

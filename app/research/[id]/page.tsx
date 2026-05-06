@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Download, ArrowLeft, ArrowRight, FileText, Lock } from 'lucide-react'
+import { ExternalLink, ArrowLeft, ArrowRight, FileText, Lock } from 'lucide-react'
 import { GradientButton } from '@/components/ui/gradient-button'
 import { getResearchPosts, ResearchPost } from '@/lib/firebase'
 import { getTagById } from '@/lib/dataService'
@@ -13,7 +13,7 @@ function DetailSkeleton() {
   return (
     <div className="min-h-screen bg-[#050508] animate-pulse">
       <div className="w-full h-[60vh] bg-white/4" />
-      <div className="max-w-3xl mx-auto px-6 py-12 space-y-5">
+      <div className="max-w-[960px] mx-auto px-6 py-12 space-y-5">
         <div className="flex gap-2">
           <div className="h-5 w-16 rounded-full bg-white/6" />
           <div className="h-5 w-20 rounded-full bg-white/6" />
@@ -53,12 +53,12 @@ function TagRow({ tags }: { tags: string[] }) {
 function PostNav({ prev, next }: { prev: ResearchPost | null; next: ResearchPost | null }) {
   if (!prev && !next) return null
   return (
-    <div className="mt-16 pt-8 border-t border-white/5 grid grid-cols-2 gap-4">
+    <div className="mt-16 pt-8 grid grid-cols-2 gap-4" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
       <div>
         {prev && (
           <a
             href={`/research/${prev.id}`}
-            className="group block border border-white/8 rounded-xl overflow-hidden hover:border-cobalt-blue/30 transition-all duration-300"
+            className="group block bg-white/[0.03] rounded-xl overflow-hidden hover:bg-white/[0.06] transition-all duration-300"
           >
             {prev.imageUrl && (
               <div className="relative w-full h-28 overflow-hidden">
@@ -69,7 +69,7 @@ function PostNav({ prev, next }: { prev: ResearchPost | null; next: ResearchPost
                   className="object-cover group-hover:scale-105 transition-transform duration-500"
                   sizes="(max-width: 768px) 50vw, 25vw"
                 />
-                <div className="absolute inset-0 bg-black/50" />
+                <div className="absolute inset-0 bg-black/40" />
               </div>
             )}
             <div className="p-4">
@@ -87,7 +87,7 @@ function PostNav({ prev, next }: { prev: ResearchPost | null; next: ResearchPost
         {next && (
           <a
             href={`/research/${next.id}`}
-            className="group block border border-white/8 rounded-xl overflow-hidden hover:border-cobalt-blue/30 transition-all duration-300 text-right"
+            className="group block bg-white/[0.03] rounded-xl overflow-hidden hover:bg-white/[0.06] transition-all duration-300 text-right"
           >
             {next.imageUrl && (
               <div className="relative w-full h-28 overflow-hidden">
@@ -98,7 +98,7 @@ function PostNav({ prev, next }: { prev: ResearchPost | null; next: ResearchPost
                   className="object-cover group-hover:scale-105 transition-transform duration-500"
                   sizes="(max-width: 768px) 50vw, 25vw"
                 />
-                <div className="absolute inset-0 bg-black/50" />
+                <div className="absolute inset-0 bg-black/40" />
               </div>
             )}
             <div className="p-4">
@@ -116,36 +116,6 @@ function PostNav({ prev, next }: { prev: ResearchPost | null; next: ResearchPost
   )
 }
 
-async function downloadPdf(url: string, title: string) {
-  const safeName =
-    (title || 'whitepaper').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'whitepaper'
-
-  // Cloudinary serves raw PDFs as octet-stream and the `<a download>` attribute is ignored
-  // for cross-origin URLs. So fetch the bytes, wrap them in a PDF blob, and trigger
-  // a same-origin download via an object URL.
-  try {
-    const response = await fetch(url, { mode: 'cors' })
-    if (!response.ok) throw new Error(`Status ${response.status}`)
-    const buf = await response.arrayBuffer()
-    const blob = new Blob([buf], { type: 'application/pdf' })
-    const blobUrl = URL.createObjectURL(blob)
-
-    const link = document.createElement('a')
-    link.href = blobUrl
-    link.download = `${safeName}.pdf`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    setTimeout(() => URL.revokeObjectURL(blobUrl), 2000)
-  } catch (err) {
-    console.error('PDF download failed, falling back to direct open:', err)
-    // Fallback: try Cloudinary's fl_attachment, then plain open
-    const fallbackUrl = url.includes('cloudinary.com') && url.includes('/upload/')
-      ? url.replace('/upload/', `/upload/fl_attachment:${safeName}/`)
-      : url
-    window.open(fallbackUrl, '_blank', 'noopener')
-  }
-}
 
 export default function ResearchDetailPage() {
   const params = useParams()
@@ -204,7 +174,7 @@ export default function ResearchDetailPage() {
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
-        className="max-w-[760px] mx-auto px-6 md:px-8"
+        className="max-w-[960px] mx-auto px-6 md:px-10"
       >
         {/* Header */}
         <header className={post.imageUrl ? 'pt-12 pb-10' : 'pt-32 pb-10'}>
@@ -274,7 +244,7 @@ export default function ResearchDetailPage() {
             </div>
 
             {/* Preview container */}
-            <div className="relative overflow-hidden rounded-2xl border border-white/6">
+            <div className="relative overflow-hidden rounded-2xl">
               {/* Blurred body text behind */}
               <div
                 aria-hidden
@@ -313,7 +283,7 @@ export default function ResearchDetailPage() {
                     style={{ background: 'radial-gradient(ellipse 70% 60% at 50% 60%, rgba(19,111,215,0.18), transparent 70%)' }}
                   />
 
-                  <div className="relative bg-[#070710]/80 backdrop-blur-md border border-white/8 rounded-2xl p-7 text-center">
+                  <div className="relative bg-[#070710]/60 backdrop-blur-xl rounded-2xl p-7 text-center">
                     <div className="flex items-center justify-center mb-4">
                       <div className="w-12 h-12 rounded-full bg-cobalt-blue/15 border border-cobalt-blue/30 flex items-center justify-center">
                         {post.whitepaperUrl ? (
@@ -329,18 +299,18 @@ export default function ResearchDetailPage() {
                     </h3>
                     <p className="font-body text-sm text-gray-500 mb-6 leading-relaxed">
                       {post.whitepaperUrl
-                        ? 'Download the complete research paper for the full methodology, findings, and analysis.'
+                        ? 'Opens in a new tab — view or save the complete paper from there.'
                         : 'The full paper will be available soon.'}
                     </p>
 
                     {post.whitepaperUrl ? (
                       <GradientButton
                         type="button"
-                        onClick={() => downloadPdf(post.whitepaperUrl!, post.title)}
+                        onClick={() => window.open(post.whitepaperUrl!, '_blank', 'noopener')}
                         className="!min-w-0 !px-6 !py-3 !text-sm !rounded-lg !font-light w-full sm:w-auto"
                       >
-                        <Download className="w-4 h-4 mr-2" />
-                        Download Paper (PDF)
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        View PDF
                       </GradientButton>
                     ) : (
                       <button

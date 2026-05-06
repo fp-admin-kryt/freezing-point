@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { FileText, ArrowLeft, Upload, X, Image as ImageIcon } from 'lucide-react'
 import { uploadToCloudinaryDirect } from '@/lib/cloudinary'
-import { saveResearchPost } from '@/lib/firebase'
+import { saveResearchPost, uploadPdfToStorage } from '@/lib/firebase'
 import TagSelector from './TagSelector'
 import { GradientButton } from '@/components/ui/gradient-button'
 import toast from 'react-hot-toast'
@@ -55,16 +55,30 @@ export default function ResearchForm({ onBack, editPost }: ResearchFormProps) {
     onDrop: (files) => setWhitepaperFile(files[0]),
   })
 
-  const upload = async (file: File, label: string): Promise<string> => {
-    toast.loading(`Uploading ${label}…`)
+  const uploadImage = async (file: File): Promise<string> => {
+    toast.loading('Uploading cover image…')
     try {
       const url = await uploadToCloudinaryDirect(file)
       toast.dismiss()
-      toast.success(`${label} uploaded!`)
+      toast.success('Cover image uploaded!')
       return url
     } catch (err) {
       toast.dismiss()
-      toast.error(`Failed to upload ${label}`)
+      toast.error('Failed to upload cover image')
+      throw err
+    }
+  }
+
+  const uploadPdf = async (file: File): Promise<string> => {
+    toast.loading('Uploading PDF…')
+    try {
+      const url = await uploadPdfToStorage(file, slug.trim())
+      toast.dismiss()
+      toast.success('PDF uploaded!')
+      return url
+    } catch (err) {
+      toast.dismiss()
+      toast.error('Failed to upload PDF')
       throw err
     }
   }
@@ -77,8 +91,8 @@ export default function ResearchForm({ onBack, editPost }: ResearchFormProps) {
     try {
       let finalCover = coverUrl
       let finalPdf = whitepaperUrl
-      if (coverFile) finalCover = await upload(coverFile, 'Cover image')
-      if (whitepaperFile) finalPdf = await upload(whitepaperFile, 'Whitepaper')
+      if (coverFile) finalCover = await uploadImage(coverFile)
+      if (whitepaperFile) finalPdf = await uploadPdf(whitepaperFile)
 
       const postData: any = {
         ...formData,
@@ -248,7 +262,7 @@ export default function ResearchForm({ onBack, editPost }: ResearchFormProps) {
           <div>
             <label className={labelCls}>Whitepaper PDF</label>
             <p className="font-sans text-[10px] text-gray-700 mb-2">
-              The full paper users can download from the CTA on the blurred section.
+              The full paper users can view from the CTA on the blurred section.
             </p>
           </div>
           <div {...getPdfRootProps()}
