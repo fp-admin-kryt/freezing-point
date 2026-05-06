@@ -10,7 +10,7 @@ import { GradientButton } from '@/components/ui/gradient-button'
 import toast from 'react-hot-toast'
 
 interface ResearchFormProps {
-  onBack: () => void
+  onBack: (refresh?: boolean) => void
   editPost?: any
 }
 
@@ -88,12 +88,30 @@ export default function ResearchForm({ onBack, editPost }: ResearchFormProps) {
     if (!slug.trim()) { toast.error('Please enter a slug'); return }
     if (!abstract.trim()) { toast.error('Please enter an abstract'); return }
     setLoading(true)
-    try {
-      let finalCover = coverUrl
-      let finalPdf = whitepaperUrl
-      if (coverFile) finalCover = await uploadImage(coverFile)
-      if (whitepaperFile) finalPdf = await uploadPdf(whitepaperFile)
 
+    let finalCover = coverUrl
+    let finalPdf = whitepaperUrl
+
+    try {
+      if (coverFile) finalCover = await uploadImage(coverFile)
+    } catch {
+      setLoading(false)
+      return
+    }
+
+    if (whitepaperFile) {
+      try {
+        finalPdf = await uploadPdf(whitepaperFile)
+        setWhitepaperFile(null)
+      } catch {
+        // PDF upload failed — clear the file so future saves aren't blocked,
+        // keep the existing whitepaperUrl, and continue saving text changes
+        setWhitepaperFile(null)
+        toast.error('PDF upload failed — saving other changes without it')
+      }
+    }
+
+    try {
       const postData: any = {
         ...formData,
         imageUrl: finalCover || undefined,
@@ -102,13 +120,12 @@ export default function ResearchForm({ onBack, editPost }: ResearchFormProps) {
         previewBody: previewBody || undefined,
         templateType: 'default',
       }
-
       await saveResearchPost(postData, slug.trim())
-      toast.success('Research post saved!')
-      onBack()
+      toast.success('Post saved!')
+      onBack(true)
     } catch (error) {
       console.error('Error saving research post:', error)
-      toast.error('Failed to save research post')
+      toast.error('Failed to save — check console for details')
     } finally {
       setLoading(false)
     }
@@ -123,7 +140,7 @@ export default function ResearchForm({ onBack, editPost }: ResearchFormProps) {
           </p>
           <h2 className="font-sans font-light text-2xl text-white">Research Post</h2>
         </div>
-        <button onClick={onBack} className={`flex items-center gap-2 ${secBtnCls}`}>
+        <button onClick={() => onBack()} className={`flex items-center gap-2 ${secBtnCls}`}>
           <ArrowLeft className="w-4 h-4" /> Back
         </button>
       </div>
@@ -292,7 +309,7 @@ export default function ResearchForm({ onBack, editPost }: ResearchFormProps) {
 
         {/* Actions */}
         <div className="flex justify-end items-center gap-3 pt-2">
-          <button type="button" onClick={onBack} className={secBtnCls}>Cancel</button>
+          <button type="button" onClick={() => onBack()} className={secBtnCls}>Cancel</button>
           <GradientButton
             type="submit"
             disabled={loading}

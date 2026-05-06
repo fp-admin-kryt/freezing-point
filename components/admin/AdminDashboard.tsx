@@ -86,30 +86,29 @@ export default function AdminDashboard() {
   const [editingPost, setEditingPost] = useState<Post | null>(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const [research, signals, observers, newRadar] = await Promise.all([
-          getResearchPosts(),
-          getSignalPosts(),
-          getObserverPosts(),
-          getRadarPosts(),
-        ])
-        setResearchPosts(research)
-        const merged = [
-          ...newRadar.map(p => ({ ...p, type: 'radar' as const })),
-          ...signals.map(p => ({ ...p, type: 'signal' as const })),
-          ...observers.map(p => ({ ...p, type: 'observer' as const })),
-        ].sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime())
-        setRadarPosts(merged)
-      } catch {
-        toast.error('Failed to load data')
-      } finally {
-        setLoading(false)
-      }
+  const loadData = async () => {
+    try {
+      const [research, signals, observers, newRadar] = await Promise.all([
+        getResearchPosts(),
+        getSignalPosts(),
+        getObserverPosts(),
+        getRadarPosts(),
+      ])
+      setResearchPosts(research)
+      const merged = [
+        ...newRadar.map(p => ({ ...p, type: 'radar' as const })),
+        ...signals.map(p => ({ ...p, type: 'signal' as const })),
+        ...observers.map(p => ({ ...p, type: 'observer' as const })),
+      ].sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime())
+      setRadarPosts(merged)
+    } catch {
+      toast.error('Failed to load data')
+    } finally {
+      setLoading(false)
     }
-    loadData()
-  }, [])
+  }
+
+  useEffect(() => { loadData() }, [])
 
   const handleDelete = async (postId: string, type: 'research' | 'signal' | 'observer' | 'radar') => {
     if (!window.confirm('Delete this post? This cannot be undone.')) return
@@ -138,9 +137,10 @@ export default function AdminDashboard() {
     setView('edit')
   }
 
-  const handleBack = () => {
+  const handleBack = (refresh = false) => {
     setView('manage')
     setEditingPost(null)
+    if (refresh) loadData()
   }
 
   const handleSignOut = () => {
