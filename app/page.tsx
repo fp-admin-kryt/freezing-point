@@ -330,7 +330,7 @@ export default function Home() {
                     <a
                       href={`/research/${post.id}`}
                       className="img-card group relative block overflow-hidden rounded-2xl cursor-pointer"
-                      style={{ width: '300px', height: '400px', maxWidth: '82vw' }}
+                      style={{ width: '480px', height: '270px', maxWidth: '85vw' }}
                     >
                       {post.imageUrl ? (
                         <Image
@@ -338,26 +338,27 @@ export default function Home() {
                           alt={post.title}
                           fill
                           className="object-cover transition-transform duration-700 group-hover:scale-105"
-                          sizes="300px"
+                          sizes="480px"
                           priority={index === 0}
                         />
                       ) : (
                         <div
                           className="absolute inset-0"
-                          style={{ background: 'linear-gradient(135deg, #0a1628 0%, #0d2452 50%, #136fd7/20 100%)' }}
-                        />
+                          style={{ background: 'linear-gradient(135deg, #0a1628 0%, #0d2452 50%, #0a1628 100%)' }}
+                        >
+                          <div className="absolute inset-0 opacity-25"
+                            style={{ background: 'radial-gradient(ellipse 80% 60% at 50% 80%, #136fd7 0%, transparent 70%)' }} />
+                        </div>
                       )}
-                      {/* Persistent gradient */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-                      {/* Hover darkening */}
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-400" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                      {/* Tags — top */}
-                      <div className="absolute top-4 left-4 flex flex-wrap gap-1.5 z-10">
-                        {post.tags.slice(0, 2).map((tagId: string) => {
+                      {/* Tags */}
+                      <div className="absolute top-3 left-3 flex flex-wrap gap-1 z-10">
+                        {post.tags.slice(0, 1).map((tagId: string) => {
                           const tag = getTagById(tagId)
                           return tag ? (
-                            <span key={tagId} className="px-2 py-0.5 font-sans text-[8px] tracking-wider rounded-full backdrop-blur-sm"
+                            <span key={tagId} className="px-1.5 py-0.5 font-sans text-[8px] tracking-wider rounded-full backdrop-blur-sm"
                               style={{ backgroundColor: tag.color + '33', border: `1px solid ${tag.color}55`, color: tag.color }}>
                               {tag.name}
                             </span>
@@ -365,24 +366,20 @@ export default function Home() {
                         })}
                       </div>
 
-                      {/* Title — always visible, nudges up on hover */}
-                      <div className="img-card-title absolute bottom-0 left-0 right-0 px-5 pb-14 z-10">
-                        <h3 className="font-sans text-sm font-medium text-white line-clamp-2 leading-snug">
+                      {/* Title + excerpt */}
+                      <div className="img-card-title absolute bottom-0 left-0 right-0 px-4 pb-5 z-10">
+                        <h3 className="font-sans text-xs font-medium text-white line-clamp-2 leading-snug">
                           {post.title}
                         </h3>
-                        <p className="font-body text-gray-500 text-[11px] mt-1.5">
+                        <p className="font-body text-gray-500 text-[10px] mt-1">
                           {post.author} · {new Date(post.date).toLocaleDateString()}
                         </p>
-                      </div>
-
-                      {/* Excerpt — slides up on hover */}
-                      <div className="img-card-excerpt absolute bottom-0 left-0 right-0 px-5 pb-5 z-20">
-                        <div className="bg-black/70 backdrop-blur-sm rounded-xl p-3.5 border border-white/8">
-                          <p className="font-body text-gray-300 text-[11px] leading-relaxed line-clamp-3 mb-2">
+                        <div className="img-card-excerpt">
+                          <p className="font-body text-gray-300 text-[11px] leading-relaxed line-clamp-2 mt-2.5">
                             {post.excerpt}
                           </p>
-                          <span className="font-sans text-[9px] tracking-[0.35em] uppercase text-cobalt-light flex items-center gap-1.5">
-                            Read <ArrowRight className="w-3 h-3" />
+                          <span className="font-sans text-[9px] tracking-[0.35em] uppercase text-cobalt-light flex items-center gap-1 mt-2">
+                            Read <ArrowRight className="w-2.5 h-2.5" />
                           </span>
                         </div>
                       </div>
@@ -466,7 +463,7 @@ export default function Home() {
                       <a
                         href={`/radar/${post.id}`}
                         className="img-card group relative block overflow-hidden rounded-2xl cursor-pointer"
-                        style={{ width: '300px', height: '400px', maxWidth: '82vw' }}
+                        style={{ width: '480px', height: '270px', maxWidth: '85vw' }}
                       >
                         {post.imageUrl ? (
                           <Image
@@ -474,59 +471,52 @@ export default function Home() {
                             alt={post.heading}
                             fill
                             className="object-cover transition-transform duration-700 group-hover:scale-105"
-                            sizes="300px"
+                            sizes="480px"
                           />
                         ) : (
                           <div
                             className="absolute inset-0"
-                            style={{
-                              background: `linear-gradient(160deg, #050a14 0%, #0c1a2e 40%, #0a2040 70%, #081830 100%)`,
-                            }}
+                            style={{ background: `linear-gradient(160deg, #050a14 0%, #0c1a2e 40%, #0a2040 70%, #081830 100%)` }}
                           >
-                            {/* Subtle cobalt glow for no-image cards */}
-                            <div className="absolute inset-0 opacity-30"
+                            <div className="absolute inset-0 opacity-25"
                               style={{ background: 'radial-gradient(ellipse 80% 60% at 50% 80%, #136fd7 0%, transparent 70%)' }} />
                           </div>
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-400" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-transparent" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                        {/* Type badge + tags */}
-                        <div className="absolute top-4 left-4 right-4 flex items-start justify-between z-10">
-                          <div className="flex flex-wrap gap-1.5">
-                            {post.tags.slice(0, 2).map((tagId: string) => {
+                        {/* Tags + type badge */}
+                        <div className="absolute top-3 left-3 right-3 flex items-start justify-between z-10">
+                          <div className="flex flex-wrap gap-1">
+                            {post.tags.slice(0, 1).map((tagId: string) => {
                               const tag = getTagById(tagId)
                               return tag ? (
-                                <span key={tagId} className="px-2 py-0.5 font-sans text-[8px] tracking-wider rounded-full backdrop-blur-sm"
+                                <span key={tagId} className="px-1.5 py-0.5 font-sans text-[8px] tracking-wider rounded-full backdrop-blur-sm"
                                   style={{ backgroundColor: tag.color + '33', border: `1px solid ${tag.color}55`, color: tag.color }}>
                                   {tag.name}
                                 </span>
                               ) : null
                             })}
                           </div>
-                          <span className="font-sans text-[8px] tracking-[0.3em] uppercase text-gray-600 bg-black/40 backdrop-blur-sm px-2 py-1 rounded-full border border-white/8">
+                          <span className="font-sans text-[8px] tracking-[0.3em] uppercase text-gray-500 bg-black/40 backdrop-blur-sm px-1.5 py-0.5 rounded-full">
                             {post._type}
                           </span>
                         </div>
 
-                        {/* Heading */}
-                        <div className="img-card-title absolute bottom-0 left-0 right-0 px-5 pb-14 z-10">
-                          <h3 className="font-sans text-sm font-medium text-white line-clamp-2 leading-snug">
+                        {/* Heading + excerpt */}
+                        <div className="img-card-title absolute bottom-0 left-0 right-0 px-4 pb-5 z-10">
+                          <h3 className="font-sans text-xs font-medium text-white line-clamp-2 leading-snug">
                             {post.heading}
                           </h3>
-                          <p className="font-body text-gray-500 text-[11px] mt-1.5">
+                          <p className="font-body text-gray-500 text-[10px] mt-1">
                             {new Date(post.date).toLocaleDateString()}
                           </p>
-                        </div>
-
-                        {/* Content excerpt */}
-                        <div className="img-card-excerpt absolute bottom-0 left-0 right-0 px-5 pb-5 z-20">
-                          <div className="bg-black/70 backdrop-blur-sm rounded-xl p-3.5 border border-white/8">
-                            <p className="font-body text-gray-300 text-[11px] leading-relaxed line-clamp-3 mb-2">
+                          <div className="img-card-excerpt">
+                            <p className="font-body text-gray-300 text-[11px] leading-relaxed line-clamp-2 mt-2.5">
                               {post.content}
                             </p>
-                            <span className="font-sans text-[9px] tracking-[0.35em] uppercase text-cobalt-light flex items-center gap-1.5">
-                              Read <ArrowRight className="w-3 h-3" />
+                            <span className="font-sans text-[9px] tracking-[0.35em] uppercase text-cobalt-light flex items-center gap-1 mt-2">
+                              Read <ArrowRight className="w-2.5 h-2.5" />
                             </span>
                           </div>
                         </div>

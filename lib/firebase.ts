@@ -29,7 +29,12 @@ export const storage = getStorage(app);
 export const uploadPdfToStorage = async (file: File, postSlug: string): Promise<string> => {
   const path = `pdfs/research/${postSlug}/${file.name}`
   const fileRef = storageRef(storage, path)
-  await uploadBytes(fileRef, file)
+
+  const timeout = new Promise<never>((_, reject) =>
+    setTimeout(() => reject(new Error('Upload timed out after 60 s — check Firebase Storage rules and network')), 60_000)
+  )
+
+  await Promise.race([uploadBytes(fileRef, file), timeout])
   return getDownloadURL(fileRef)
 }
 
