@@ -21,7 +21,7 @@ function CtaCard({ href, title, subtitle, delay = 0.3 }: { href: string; title: 
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay }}
-      className="flex-shrink-0 flex flex-col items-center justify-center cursor-pointer gap-3"
+      className="flex-shrink-0 flex flex-col items-center justify-center cursor-pointer gap-3 self-center"
       style={{ width: '160px', maxWidth: '80vw' }}
     >
       <div className="relative w-9 h-9 flex items-center justify-center">
