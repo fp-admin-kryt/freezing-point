@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence, useAnimation } from 'framer-motion'
 import { Target, PlusCircle, Radar, Eye, ArrowRight, ChevronDown, Plus } from 'lucide-react'
-import { getResearchPosts, getSignalPosts, getObserverPosts, getRadarPosts } from '@/lib/firebase'
+import { getResearchPosts, getSignalPosts, getObserverPosts, getRadarPosts, incrementHomepageViews } from '@/lib/firebase'
 import { getTagById } from '@/lib/dataService'
 import Image from 'next/image'
 import { SparklesCore } from '@/components/ui/sparkles'
@@ -44,6 +44,7 @@ export default function Home() {
   const [activeAccordion, setActiveAccordion] = useState<string | null>(null)
 
   useEffect(() => {
+    incrementHomepageViews()
     const loadData = async () => {
       try {
         const [research, signals, observers, radar] = await Promise.all([

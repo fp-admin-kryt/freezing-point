@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { ExternalLink, ArrowLeft, ArrowRight, FileText, Lock } from 'lucide-react'
 import { GradientButton } from '@/components/ui/gradient-button'
-import { getResearchPosts, ResearchPost } from '@/lib/firebase'
+import { getResearchPosts, ResearchPost, incrementViewCount, incrementDownloadCount } from '@/lib/firebase'
 import { getTagById } from '@/lib/dataService'
 import Image from 'next/image'
 
@@ -129,7 +129,9 @@ export default function ResearchDetailPage() {
       .then((posts) => {
         const sorted = [...posts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
         setAllPosts(sorted)
-        setPost(sorted.find((p) => p.id === postId) || null)
+        const found = sorted.find((p) => p.id === postId) || null
+        setPost(found)
+        if (found?.id) incrementViewCount('research', found.id)
       })
       .catch(console.error)
       .finally(() => setLoading(false))
@@ -306,7 +308,10 @@ export default function ResearchDetailPage() {
                     {post.whitepaperUrl ? (
                       <GradientButton
                         type="button"
-                        onClick={() => window.open(post.whitepaperUrl!, '_blank', 'noopener')}
+                        onClick={() => {
+                          if (post.id) incrementDownloadCount(post.id)
+                          window.open(post.whitepaperUrl!, '_blank', 'noopener')
+                        }}
                         className="!min-w-0 !px-6 !py-3 !text-sm !rounded-lg !font-light w-full sm:w-auto"
                       >
                         <ExternalLink className="w-4 h-4 mr-2" />

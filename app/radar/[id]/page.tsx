@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
-import { getSignalPosts, getObserverPosts, getRadarPosts, RadarPost as RadarPostType } from '@/lib/firebase'
+import { getSignalPosts, getObserverPosts, getRadarPosts, RadarPost as RadarPostType, incrementViewCount } from '@/lib/firebase'
 import { getTagById, getDomainById } from '@/lib/dataService'
 import { getTypography } from '@/lib/typography'
 import Image from 'next/image'
@@ -140,11 +140,16 @@ export default function RadarDetailPage() {
       getRadarPosts(),
       getTypography().catch(() => null),
     ]).then(([signals, observers, radar, typo]) => {
-      const combined: RadarPost[] = [...radar, ...signals, ...observers]
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      const combined = [
+        ...radar.map(p => ({ ...p, _col: 'radar' })),
+        ...signals.map(p => ({ ...p, _col: 'signals' })),
+        ...observers.map(p => ({ ...p, _col: 'observers' })),
+      ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) as (RadarPost & { _col: string })[]
       setAllPosts(combined)
-      setPost(combined.find((p) => p.id === postId) || null)
+      const found = combined.find((p) => p.id === postId) || null
+      setPost(found)
       setTypography(typo)
+      if (found?.id) incrementViewCount(found._col, found.id)
     }).catch(console.error).finally(() => setLoading(false))
   }, [postId])
 

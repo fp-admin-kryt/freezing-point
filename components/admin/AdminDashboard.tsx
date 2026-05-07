@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   FileText, Radio, Tag, Globe, Plus, Edit, Trash2,
-  Type, LogOut, ChevronRight, LayoutDashboard,
+  Type, LogOut, ChevronRight, BarChart2,
 } from 'lucide-react'
 import Image from 'next/image'
 import ResearchForm from './ResearchForm'
@@ -12,6 +12,7 @@ import RadarForm from './RadarForm'
 import TagManager from './TagManager'
 import DomainManager from './DomainManager'
 import TypographyPanel from './TypographyPanel'
+import AnalyticsPanel from './AnalyticsPanel'
 import { GradientButton } from '@/components/ui/gradient-button'
 import {
   getResearchPosts, getSignalPosts, getObserverPosts, getRadarPosts,
@@ -19,7 +20,7 @@ import {
 } from '@/lib/firebase'
 import toast from 'react-hot-toast'
 
-type SectionType = 'research' | 'radar' | 'tags' | 'domains' | 'typography'
+type SectionType = 'research' | 'radar' | 'tags' | 'domains' | 'typography' | 'analytics'
 type ViewType = 'manage' | 'create' | 'edit'
 
 interface Post {
@@ -45,6 +46,7 @@ const NAV_GROUPS = [
     items: [
       { id: 'tags' as SectionType, label: 'Tags', icon: Tag },
       { id: 'domains' as SectionType, label: 'Domains', icon: Globe },
+      { id: 'analytics' as SectionType, label: 'Analytics', icon: BarChart2 },
     ],
   },
 ]
@@ -55,6 +57,7 @@ const SECTION_META: Record<SectionType, { title: string; description: string; ac
   tags: { title: 'Tags', description: 'Manage content taxonomy' },
   domains: { title: 'Domains', description: 'Manage domain categories' },
   typography: { title: 'Typography', description: 'Font styles, sizes, and rendering' },
+  analytics: { title: 'Analytics', description: 'Views and downloads across all content' },
 }
 
 function NavItem({
@@ -155,6 +158,7 @@ export default function AdminDashboard() {
   }
 
   const renderContent = () => {
+    if (activeSection === 'analytics') return <AnalyticsPanel />
     if (activeSection === 'typography') return <TypographyPanel />
     if (activeSection === 'tags') return <TagManager />
     if (activeSection === 'domains') return <DomainManager />
@@ -255,7 +259,7 @@ export default function AdminDashboard() {
   const showActionButton = isContentSection && view === 'manage'
   const breadcrumbGroup = activeSection === 'research' || activeSection === 'radar'
     ? 'Content'
-    : activeSection === 'tags' || activeSection === 'domains'
+    : activeSection === 'tags' || activeSection === 'domains' || activeSection === 'analytics'
     ? 'Manage'
     : 'Settings'
 

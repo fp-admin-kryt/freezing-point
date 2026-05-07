@@ -1,7 +1,7 @@
 'use client'
 
 import { initializeApp, getApps } from 'firebase/app';
-import { initializeFirestore, collection, addDoc, getDocs, getDoc, setDoc, doc, deleteDoc, updateDoc, query, orderBy } from 'firebase/firestore';
+import { initializeFirestore, collection, addDoc, getDocs, getDoc, setDoc, doc, deleteDoc, updateDoc, query, orderBy, increment } from 'firebase/firestore';
 import { getStorage, ref as storageRef, deleteObject } from 'firebase/storage';
 import { deleteFromCloudinary, deleteMultipleFromCloudinary } from './cloudinary';
 import { uploadPdfToSupabase, deletePdfFromSupabase } from './supabase';
@@ -29,6 +29,31 @@ export const storage = getStorage(app);
 
 export const uploadPdfToStorage = (file: File, postSlug: string): Promise<string> =>
   uploadPdfToSupabase(file, postSlug)
+
+export const incrementViewCount = async (collectionName: string, id: string): Promise<void> => {
+  try {
+    await updateDoc(doc(db, collectionName, id), { viewCount: increment(1) })
+  } catch { /* silent — never block page render */ }
+}
+
+export const incrementDownloadCount = async (id: string): Promise<void> => {
+  try {
+    await updateDoc(doc(db, 'research', id), { downloadCount: increment(1) })
+  } catch { /* silent */ }
+}
+
+export const incrementHomepageViews = async (): Promise<void> => {
+  try {
+    await setDoc(doc(db, 'analytics', 'homepage'), { viewCount: increment(1) }, { merge: true })
+  } catch { /* silent */ }
+}
+
+export const getHomepageViews = async (): Promise<number> => {
+  try {
+    const snap = await getDoc(doc(db, 'analytics', 'homepage'))
+    return snap.exists() ? (snap.data().viewCount ?? 0) : 0
+  } catch { return 0 }
+}
 
 const deleteFromStorage = async (url: string): Promise<void> => {
   try {
@@ -103,6 +128,8 @@ export interface ResearchPost {
   image2Url?: string;
   image3Url?: string;
   createdAt: Date;
+  viewCount?: number;
+  downloadCount?: number;
 }
 
 export interface RadarPost {
@@ -120,6 +147,7 @@ export interface RadarPost {
   image3Url?: string;
   date: string;
   createdAt: Date;
+  viewCount?: number;
 }
 
 export interface SignalPost {
@@ -137,6 +165,7 @@ export interface SignalPost {
   image3Url?: string;
   date: string;
   createdAt: Date;
+  viewCount?: number;
 }
 
 export interface ObserverPost {
@@ -154,6 +183,7 @@ export interface ObserverPost {
   image3Url?: string;
   date: string;
   createdAt: Date;
+  viewCount?: number;
 }
 
 export interface Tag {
