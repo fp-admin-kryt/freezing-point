@@ -2,8 +2,9 @@
 
 import { initializeApp, getApps } from 'firebase/app';
 import { initializeFirestore, collection, addDoc, getDocs, getDoc, setDoc, doc, deleteDoc, updateDoc, query, orderBy } from 'firebase/firestore';
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { getStorage, ref as storageRef, deleteObject } from 'firebase/storage';
 import { deleteFromCloudinary, deleteMultipleFromCloudinary } from './cloudinary';
+import { uploadPdfToSupabase, deletePdfFromSupabase } from './supabase';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
@@ -26,17 +27,8 @@ export const db = typeof window === 'undefined'
 export const auth = getAuth(app);
 export const storage = getStorage(app);
 
-export const uploadPdfToStorage = async (file: File, postSlug: string): Promise<string> => {
-  const path = `pdfs/research/${postSlug}/${file.name}`
-  const fileRef = storageRef(storage, path)
-
-  const timeout = new Promise<never>((_, reject) =>
-    setTimeout(() => reject(new Error('Upload timed out after 60 s — check Firebase Storage rules and network')), 60_000)
-  )
-
-  await Promise.race([uploadBytes(fileRef, file), timeout])
-  return getDownloadURL(fileRef)
-}
+export const uploadPdfToStorage = (file: File, postSlug: string): Promise<string> =>
+  uploadPdfToSupabase(file, postSlug)
 
 const deleteFromStorage = async (url: string): Promise<void> => {
   try {
@@ -227,11 +219,12 @@ export const deleteResearchPost = async (id: string): Promise<void> => {
         });
       }
 
-      // Route by host: Cloudinary for images, Firebase Storage for PDFs
       const cloudinaryUrls = urlsToDelete.filter(u => u.includes('res.cloudinary.com'))
-      const storageUrls = urlsToDelete.filter(u => u.includes('firebasestorage.googleapis.com'))
+      const firebaseUrls = urlsToDelete.filter(u => u.includes('firebasestorage.googleapis.com'))
+      const supabaseUrls = urlsToDelete.filter(u => u.includes('supabase.co'))
       if (cloudinaryUrls.length > 0) await deleteMultipleFromCloudinary(cloudinaryUrls)
-      await Promise.all(storageUrls.map(deleteFromStorage))
+      await Promise.all(firebaseUrls.map(deleteFromStorage))
+      await Promise.all(supabaseUrls.map(deletePdfFromSupabase))
     }
 
     // Delete from Firestore

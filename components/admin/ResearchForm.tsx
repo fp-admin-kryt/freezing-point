@@ -70,15 +70,17 @@ export default function ResearchForm({ onBack, editPost }: ResearchFormProps) {
   }
 
   const uploadPdf = async (file: File): Promise<string> => {
-    toast.loading('Uploading PDF…')
+    const toastId = toast.loading('Uploading PDF…')
     try {
       const url = await uploadPdfToStorage(file, slug.trim())
-      toast.dismiss()
+      toast.dismiss(toastId)
       toast.success('PDF uploaded!')
       return url
-    } catch (err) {
-      toast.dismiss()
-      toast.error('Failed to upload PDF')
+    } catch (err: any) {
+      toast.dismiss(toastId)
+      const detail = err?.code || err?.message || 'unknown error'
+      console.error('PDF upload error:', err)
+      toast.error(`PDF upload failed: ${detail}`, { duration: 6000 })
       throw err
     }
   }
@@ -104,10 +106,11 @@ export default function ResearchForm({ onBack, editPost }: ResearchFormProps) {
         finalPdf = await uploadPdf(whitepaperFile)
         setWhitepaperFile(null)
       } catch {
-        // PDF upload failed — clear the file so future saves aren't blocked,
-        // keep the existing whitepaperUrl, and continue saving text changes
+        // Upload failed — stop here so the user knows the PDF wasn't saved.
+        // They can fix the issue (e.g. Storage rules) and try again.
         setWhitepaperFile(null)
-        toast.error('PDF upload failed — saving other changes without it')
+        setLoading(false)
+        return
       }
     }
 
