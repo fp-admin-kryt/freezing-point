@@ -134,11 +134,11 @@ export default function Home() {
             transition={{ duration: 1, delay: 0.9 }}
             className="mt-6 flex items-center justify-center gap-5"
           >
-            <div className="h-px w-14 bg-gradient-to-r from-transparent to-cobalt-light/50" />
-            <p className="font-sans text-[10px] tracking-[0.65em] uppercase text-gray-500">
+            <div className="h-px w-6 sm:w-14 bg-gradient-to-r from-transparent to-cobalt-light/50" />
+            <p className="font-sans text-[10px] tracking-[0.3em] sm:tracking-[0.65em] uppercase text-gray-500 whitespace-nowrap">
               AI &nbsp;&middot;&nbsp; Research &nbsp;&middot;&nbsp; Health
             </p>
-            <div className="h-px w-14 bg-gradient-to-l from-transparent to-cobalt-light/50" />
+            <div className="h-px w-6 sm:w-14 bg-gradient-to-l from-transparent to-cobalt-light/50" />
           </motion.div>
 
           {/* Gradient accent lines */}
