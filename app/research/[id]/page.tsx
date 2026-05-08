@@ -310,7 +310,8 @@ export default function ResearchDetailPage() {
                         type="button"
                         onClick={() => {
                           if (post.id) incrementDownloadCount(post.id)
-                          window.open(post.whitepaperUrl!, '_blank', 'noopener')
+                          const filename = post.whitepaperUrl!.split('/').pop()!
+                          window.open(`/research/${post.id}/${filename}`, '_blank', 'noopener')
                         }}
                         className="!min-w-0 !px-6 !py-3 !text-sm !rounded-lg !font-light w-full sm:w-auto"
                       >
