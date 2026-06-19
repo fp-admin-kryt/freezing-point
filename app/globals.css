@@ -451,3 +451,15 @@ body {
 }
 @keyframes tx { to { --tx: 1; } }
 @keyframes sx { to { --sx: 1; } }
+
+@keyframes pixel-col-fall {
+  0%   { transform: translateY(-52px); opacity: 1; }
+  52%  { transform: translateY(0px);   opacity: 1; }
+  78%  { transform: translateY(0px);   opacity: 1; }
+  90%  { transform: translateY(0px);   opacity: 0; }
+  100% { transform: translateY(0px);   opacity: 0; }
+}
+.pixel-col {
+  animation: pixel-col-fall 2.6s steps(13, end) infinite;
+  image-rendering: pixelated;
+}

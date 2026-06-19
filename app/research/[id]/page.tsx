@@ -322,9 +322,24 @@ export default function ResearchDetailPage() {
                       <button
                         type="button"
                         disabled
-                        className="px-6 py-3 rounded-lg border border-white/8 text-gray-600 font-sans text-sm cursor-not-allowed"
+                        className="relative px-6 py-3 rounded-lg border border-white/10 text-gray-400 font-sans text-sm cursor-not-allowed overflow-hidden w-full sm:w-auto"
                       >
-                        Coming Soon
+                        {/* Pixel building animation — background layer */}
+                        <div className="absolute inset-0 flex items-end justify-around px-1">
+                          {[8,14,10,20,12,18,8,16,10,20,12,14,8,18,10].map((h, i) => (
+                            <div
+                              key={i}
+                              className="pixel-col"
+                              style={{
+                                width: '4px',
+                                height: `${h}px`,
+                                background: 'rgba(255,255,255,0.10)',
+                                animationDelay: `${i * 0.14}s`,
+                              }}
+                            />
+                          ))}
+                        </div>
+                        <span className="relative z-10">Under Construction</span>
                       </button>
                     )}
                   </div>
