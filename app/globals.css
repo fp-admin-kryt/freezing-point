@@ -401,6 +401,15 @@ body {
 .img-card:hover .img-card-title {
   transform: translateY(-10px);
 }
+@media (max-width: 639px) {
+  .img-card .img-card-excerpt {
+    max-height: 160px;
+    opacity: 1;
+  }
+  .img-card .img-card-title {
+    transform: translateY(-10px);
+  }
+}
 
 /* Strip loader (home loader) */
 :root {

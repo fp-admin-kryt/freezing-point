@@ -193,7 +193,7 @@ export default function ResearchPage() {
                     src={post.imageUrl}
                     alt={post.title}
                     fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    className="object-cover transition-transform duration-700 max-sm:scale-105 sm:group-hover:scale-105"
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   />
                 ) : (
@@ -206,7 +206,7 @@ export default function ResearchPage() {
                   </div>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-transparent" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent max-sm:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-500" />
 
                 {/* Tags */}
                 <div className="absolute top-3 left-3 flex flex-wrap gap-1 z-10">

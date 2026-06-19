@@ -338,7 +338,7 @@ export default function Home() {
                           src={post.imageUrl}
                           alt={post.title}
                           fill
-                          className="object-cover transition-transform duration-700 group-hover:scale-105"
+                          className="object-cover transition-transform duration-700 max-sm:scale-105 sm:group-hover:scale-105"
                           sizes="480px"
                           priority={index === 0}
                         />
@@ -352,7 +352,7 @@ export default function Home() {
                         </div>
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-transparent" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent max-sm:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-500" />
 
                       {/* Tags */}
                       <div className="absolute top-3 left-3 flex flex-wrap gap-1 z-10">
@@ -471,7 +471,7 @@ export default function Home() {
                             src={post.imageUrl}
                             alt={post.heading}
                             fill
-                            className="object-cover transition-transform duration-700 group-hover:scale-105"
+                            className="object-cover transition-transform duration-700 max-sm:scale-105 sm:group-hover:scale-105"
                             sizes="480px"
                           />
                         ) : (
@@ -484,7 +484,7 @@ export default function Home() {
                           </div>
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-transparent" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent max-sm:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-500" />
 
                         {/* Tags + type badge */}
                         <div className="absolute top-3 left-3 right-3 flex items-start justify-between z-10">
